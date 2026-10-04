@@ -275,7 +275,7 @@ if (incoming.length) {
         </div>
         <button type="button" onClick={toggleSound} className={soundOn ? "adm-btn-primary" : "adm-btn"} aria-pressed={soundOn}>
           {soundOn ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
-          {soundOn ? "✅ ORDER ALERTS ACTIVE" : "🔊 ENABLE ORDER ALERTS"}
+          {soundOn ? "ORDER ALERTS ACTIVE" : "ENABLE ORDER ALERTS"}
         </button>
         <button type="button" onClick={() => void refresh()} className="adm-btn" aria-label="Refresh orders">
           <RefreshCw aria-hidden="true" />
