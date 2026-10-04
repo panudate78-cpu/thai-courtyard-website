@@ -102,7 +102,7 @@ export function OrdersBoard({ initialOrders, scope, today }: Props) {
   const [orders, setOrders] = useState(initialOrders);
   const [tab, setTab] = useState<Tab>(scope === "live" ? "active" : "all");
   const [query, setQuery] = useState("");
-  const [soundOn, setSoundOn] = useState(true);
+  const [soundOn, setSoundOn] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [fresh, setFresh] = useState<number[]>([]);
   const [now, setNow] = useState<LondonNow | null>(null);
@@ -110,7 +110,7 @@ export function OrdersBoard({ initialOrders, scope, today }: Props) {
   const [error, setError] = useState<string | null>(null);
   const known = useRef(new Set(initialOrders.map((o) => o.id)));
   const audio = useRef<AudioContext | null>(null);
-  const soundRef = useRef(true);
+  const soundRef = useRef(false);
   const alarmTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 function startAlarm() {
   if (!audio.current) return;
@@ -275,7 +275,7 @@ if (incoming.length) {
         </div>
         <button type="button" onClick={toggleSound} className={soundOn ? "adm-btn-primary" : "adm-btn"} aria-pressed={soundOn}>
           {soundOn ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
-          {soundOn ? "Sound on" : "Enable sound"}
+          {soundOn ? "✅ ORDER ALERTS ACTIVE" : "🔊 ENABLE ORDER ALERTS"}
         </button>
         <button type="button" onClick={() => void refresh()} className="adm-btn" aria-label="Refresh orders">
           <RefreshCw aria-hidden="true" />
