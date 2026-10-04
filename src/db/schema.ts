@@ -1,0 +1,139 @@
+import { sql } from "drizzle-orm";
+import { boolean, index, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import type { OrderOption } from "../lib/types";
+
+export const menuCategories = pgTable("menu_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  visible: boolean("visible").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const menuItems = pgTable(
+  "menu_items",
+  {
+    id: serial("id").primaryKey(),
+    categoryId: integer("category_id")
+      .notNull()
+      .references(() => menuCategories.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description"),
+    pricePence: integer("price_pence").notNull(),
+    dietary: text("dietary").array().notNull().default(sql`'{}'::text[]`),
+    available: boolean("available").notNull().default(true),
+    visible: boolean("visible").notNull().default(true),
+    featured: boolean("featured").notNull().default(false),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("menu_items_category_idx").on(t.categoryId)],
+);
+
+/**
+ * Option groups (e.g. "Choice of Protein", "Spice Level") can belong to a whole
+ * category (applies to every dish in it) or to a single dish.
+ */
+export const optionGroups = pgTable("option_groups", {
+  id: serial("id").primaryKey(),
+  categoryId: integer("category_id").references(() => menuCategories.id, { onDelete: "cascade" }),
+  itemId: integer("item_id").references(() => menuItems.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  required: boolean("required").notNull().default(true),
+  maxSelect: integer("max_select").notNull().default(1),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+export const optionChoices = pgTable(
+  "option_choices",
+  {
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => optionGroups.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    pricePence: integer("price_pence").notNull().default(0),
+    available: boolean("available").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (t) => [index("option_choices_group_idx").on(t.groupId)],
+);
+
+export const orders = pgTable(
+  "orders",
+  {
+    id: serial("id").primaryKey(),
+    publicId: text("public_id").notNull().unique(),
+    customerName: text("customer_name").notNull(),
+    phone: text("phone").notNull(),
+    email: text("email"),
+    instructions: text("instructions"),
+    collectionDate: text("collection_date").notNull(),
+    collectionTime: text("collection_time").notNull(),
+    subtotalPence: integer("subtotal_pence").notNull(),
+    itemCount: integer("item_count").notNull(),
+    status: text("status").notNull().default("new"),
+    emailStatus: text("email_status").notNull().default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("orders_status_idx").on(t.status),
+    index("orders_collection_idx").on(t.collectionDate, t.collectionTime),
+  ],
+);
+
+export const orderItems = pgTable(
+  "order_items",
+  {
+    id: serial("id").primaryKey(),
+    orderId: integer("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    menuItemId: integer("menu_item_id"),
+    name: text("name").notNull(),
+    options: jsonb("options").$type<OrderOption[]>().notNull().default(sql`'[]'::jsonb`),
+    unitPricePence: integer("unit_price_pence").notNull(),
+    quantity: integer("quantity").notNull(),
+    lineTotalPence: integer("line_total_pence").notNull(),
+  },
+  (t) => [index("order_items_order_idx").on(t.orderId)],
+);
+
+export const bookings = pgTable("bookings", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  phone: text("phone").notNull(),
+  email: text("email"),
+  partySize: integer("party_size").notNull(),
+  date: text("date").notNull(),
+  time: text("time").notNull(),
+  notes: text("notes"),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  message: text("message").notNull(),
+  read: boolean("read").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const siteSettings = pgTable("site_settings", {
+  id: integer("id").primaryKey(),
+  orderingEnabled: boolean("ordering_enabled").notNull().default(true),
+  pausedMessage: text("paused_message"),
+  leadTimeMinutes: integer("lead_time_minutes").notNull().default(20),
+  slotIntervalMinutes: integer("slot_interval_minutes").notNull().default(15),
+  maxDaysAhead: integer("max_days_ahead").notNull().default(7),
+  closedDates: text("closed_dates").array().notNull().default(sql`'{}'::text[]`),
+  notificationEmail: text("notification_email"),
+  announcement: text("announcement"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

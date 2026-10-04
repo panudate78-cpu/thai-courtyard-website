@@ -1,0 +1,223 @@
+import nodemailer, { type Transporter } from "nodemailer";
+import { escapeHtml as e, formatPrice } from "./format";
+import { formatDateLong } from "./hours";
+import { SITE } from "./site";
+import type { BookingView, OrderView, Settings } from "./types";
+
+export type MailResult = "sent" | "logged" | "failed";
+type Mail = { to: string; subject: string; html: string; text: string; replyTo?: string | null };
+
+let transport: Transporter | null = null;
+
+export function emailProvider(): "resend" | "smtp" | null {
+  if (process.env.RESEND_API_KEY) return "resend";
+  if (process.env.SMTP_HOST) return "smtp";
+  return null;
+}
+
+/** Where restaurant notifications go: admin setting first, then environment. */
+export function restaurantEmail(settings?: Pick<Settings, "notificationEmail"> | null) {
+  return settings?.notificationEmail || process.env.RESTAURANT_EMAIL || process.env.ORDER_NOTIFICATION_EMAIL || null;
+}
+
+function fromAddress() {
+  if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
+  if (process.env.SMTP_FROM) return process.env.SMTP_FROM;
+  if (process.env.SMTP_USER && process.env.SMTP_USER.includes("@")) return `Thai Courtyard <${process.env.SMTP_USER}>`;
+  return "Thai Courtyard <onboarding@resend.dev>";
+}
+
+export async function sendMail(mail: Mail): Promise<MailResult> {
+  const provider = emailProvider();
+  if (!provider) {
+    console.info(`[email:not-configured] to=${mail.to} subject="${mail.subject}"\n${mail.text}`);
+    return "logged";
+  }
+  try {
+    if (provider === "resend") {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: fromAddress(),
+          to: [mail.to],
+          subject: mail.subject,
+          html: mail.html,
+          text: mail.text,
+          ...(mail.replyTo ? { reply_to: mail.replyTo } : {}),
+        }),
+      });
+      if (!res.ok) throw new Error(`Resend responded ${res.status}: ${await res.text()}`);
+      return "sent";
+    }
+    if (!transport) {
+      const port = Number(process.env.SMTP_PORT || 587);
+      transport = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port,
+        secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === "true" : port === 465,
+        auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS ?? "" } : undefined,
+      });
+    }
+    await transport.sendMail({
+      from: fromAddress(),
+      to: mail.to,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+      replyTo: mail.replyTo ?? undefined,
+    });
+    return "sent";
+  } catch (error) {
+    console.error("[email] failed to send", error);
+    return "failed";
+  }
+}
+
+/* ----------------------------- Templates ----------------------------- */
+
+function shell(heading: string, body: string) {
+  return `<!doctype html><html><body style="margin:0;background:#f4eee3;font-family:Arial,Helvetica,sans-serif;color:#1d1b1a">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4eee3;padding:24px 12px"><tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:14px;overflow:hidden">
+<tr><td style="background:#1d1b1a;padding:22px 26px"><div style="font-family:Georgia,serif;font-size:24px;color:#e3c77f">Thai Courtyard</div><div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#faf6ee;opacity:.7;margin-top:4px">East Molesey</div></td></tr>
+<tr><td style="padding:26px"><h1 style="font-family:Georgia,serif;font-size:24px;margin:0 0 16px;color:#1d1b1a">${heading}</h1>${body}</td></tr>
+<tr><td style="padding:16px 26px;background:#faf6ee;font-size:12px;color:#6b4226">${SITE.addressLine} · ${SITE.phoneDisplay}</td></tr>
+</table></td></tr></table></body></html>`;
+}
+
+function row(label: string, value: string) {
+  return `<tr><td style="padding:6px 12px 6px 0;color:#7a5c1c;font-size:13px;width:150px;vertical-align:top">${label}</td><td style="padding:6px 0;font-size:14px;vertical-align:top">${value}</td></tr>`;
+}
+
+function optionsText(options: OrderView["items"][number]["options"]) {
+  return options.map((o) => `${o.choice}${o.pricePence ? ` (+${formatPrice(o.pricePence)})` : ""}`).join(", ");
+}
+
+function itemsTable(order: OrderView) {
+  const rows = order.items
+    .map(
+      (i) => `<tr><td style="padding:10px 0;border-bottom:1px solid #eee4d3;font-size:14px;vertical-align:top"><strong>${i.quantity} × ${e(i.name)}</strong>${
+        i.options.length ? `<div style="font-size:12px;color:#6f6a64;margin-top:3px">${e(optionsText(i.options))}</div>` : ""
+      }</td><td style="padding:10px 0;border-bottom:1px solid #eee4d3;font-size:14px;text-align:right;vertical-align:top">${formatPrice(i.lineTotalPence)}</td></tr>`,
+    )
+    .join("");
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0">${rows}<tr><td style="padding:12px 0;font-size:16px"><strong>Total to pay on collection</strong></td><td style="padding:12px 0;font-size:16px;text-align:right"><strong>${formatPrice(order.subtotalPence)}</strong></td></tr></table>`;
+}
+
+function itemsText(order: OrderView) {
+  return order.items
+    .map((i) => `${i.quantity} x ${i.name}${i.options.length ? ` [${optionsText(i.options)}]` : ""} — ${formatPrice(i.lineTotalPence)}`)
+    .join("\n");
+}
+
+const notice = `<p style="background:#f8f0dc;border:1px solid #e6cf97;border-radius:10px;padding:12px 14px;font-size:13px;margin:0">${SITE.paymentNotice}</p>`;
+
+export function orderRestaurantEmail(order: OrderView) {
+  const when = `${formatDateLong(order.collectionDate)} at ${order.collectionTime}`;
+  const html = shell(
+    `New collection order #${order.number}`,
+    `<table role="presentation" cellpadding="0" cellspacing="0">${row("Collection", `<strong>${e(when)}</strong>`)}${row(
+      "Customer",
+      e(order.customerName),
+    )}${row("Telephone", `<a href="tel:${e(order.phone.replace(/\s/g, ""))}">${e(order.phone)}</a>`)}${row(
+      "Email",
+      order.email ? e(order.email) : "—",
+    )}${order.instructions ? row("Special instructions", `<strong style="color:#a12d24">${e(order.instructions)}</strong>`) : ""}</table>${itemsTable(
+      order,
+    )}${notice}<p style="margin:20px 0 0"><a href="${SITE.url}/admin/orders" style="display:inline-block;background:#c9a14a;color:#1d1b1a;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:999px">Open admin dashboard</a></p>`,
+  );
+  const text = `NEW COLLECTION ORDER #${order.number}\nCollection: ${when}\nCustomer: ${order.customerName}\nTelephone: ${order.phone}\nEmail: ${
+    order.email ?? "-"
+  }\n${order.instructions ? `Special instructions: ${order.instructions}\n` : ""}\n${itemsText(order)}\n\nTOTAL (pay on collection): ${formatPrice(
+    order.subtotalPence,
+  )}\n\nManage orders: ${SITE.url}/admin/orders`;
+  return {
+    subject: `New collection order #${order.number} · ${order.collectionTime} ${formatDateLong(order.collectionDate)} · ${order.customerName}`,
+    html,
+    text,
+  };
+}
+
+export function orderCustomerEmail(order: OrderView) {
+  const when = `${formatDateLong(order.collectionDate)} at ${order.collectionTime}`;
+  const html = shell(
+    `Thank you, ${e(order.customerName)} — we've received your order`,
+    `<p style="font-size:15px;line-height:1.6;margin:0 0 12px">Your collection order <strong>#${order.number}</strong> has been sent to our kitchen.</p><table role="presentation" cellpadding="0" cellspacing="0">${row(
+      "Collection time",
+      `<strong>${e(when)}</strong>`,
+    )}${row("Collect from", e(SITE.addressLine))}</table>${itemsTable(order)}${notice}<p style="font-size:13px;color:#6f6a64;margin:18px 0 0">Need to change something? Call us on <a href="${SITE.phoneHref}">${SITE.phoneDisplay}</a>.</p>`,
+  );
+  const text = `Thank you, ${order.customerName}! We've received your collection order #${order.number}.\nCollection: ${when}\nCollect from: ${SITE.addressLine}\n\n${itemsText(
+    order,
+  )}\n\nTotal: ${formatPrice(order.subtotalPence)}\n${SITE.paymentNotice}\n\nQuestions? Call ${SITE.phoneDisplay}.`;
+  return { subject: `Your Thai Courtyard order #${order.number} — collection ${order.collectionTime}`, html, text };
+}
+
+export function orderReadyEmail(order: OrderView) {
+  const html = shell(
+    `Your order #${order.number} is ready`,
+    `<p style="font-size:15px;line-height:1.6">Good news, ${e(order.customerName)} — your order is ready to collect from ${e(SITE.addressLine)}.</p>${notice}`,
+  );
+  return {
+    subject: `Your Thai Courtyard order #${order.number} is ready to collect`,
+    html,
+    text: `Good news, ${order.customerName} — your order #${order.number} is ready to collect from ${SITE.addressLine}.\n${SITE.paymentNotice}`,
+  };
+}
+
+export function bookingRestaurantEmail(b: BookingView) {
+  const when = `${formatDateLong(b.date)} at ${b.time}`;
+  const html = shell(
+    `New table booking request`,
+    `<table role="presentation" cellpadding="0" cellspacing="0">${row("When", `<strong>${e(when)}</strong>`)}${row("Guests", String(b.partySize))}${row(
+      "Name",
+      e(b.name),
+    )}${row("Telephone", e(b.phone))}${row("Email", b.email ? e(b.email) : "—")}${b.notes ? row("Notes", e(b.notes)) : ""}</table><p style="margin:20px 0 0"><a href="${SITE.url}/admin/bookings" style="display:inline-block;background:#c9a14a;color:#1d1b1a;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:999px">Confirm in admin</a></p>`,
+  );
+  const text = `NEW TABLE BOOKING REQUEST\nWhen: ${when}\nGuests: ${b.partySize}\nName: ${b.name}\nTelephone: ${b.phone}\nEmail: ${b.email ?? "-"}\n${
+    b.notes ? `Notes: ${b.notes}\n` : ""
+  }\nManage bookings: ${SITE.url}/admin/bookings`;
+  return { subject: `Booking request: ${b.partySize} guests · ${b.time} ${formatDateLong(b.date)} · ${b.name}`, html, text };
+}
+
+export function bookingCustomerEmail(b: BookingView, kind: "received" | "confirmed" | "declined") {
+  const when = `${formatDateLong(b.date)} at ${b.time}`;
+  const copy = {
+    received: {
+      subject: "We've received your booking request",
+      heading: "Thank you for your booking request",
+      body: `We've received your request for a table for <strong>${b.partySize}</strong> on <strong>${e(when)}</strong>. We'll be in touch shortly to confirm.`,
+    },
+    confirmed: {
+      subject: "Your table is confirmed",
+      heading: "Your table is confirmed",
+      body: `We look forward to welcoming you — table for <strong>${b.partySize}</strong> on <strong>${e(when)}</strong>.`,
+    },
+    declined: {
+      subject: "About your booking request",
+      heading: "Sorry, we can't confirm your booking",
+      body: `Unfortunately we're unable to accept your booking for <strong>${e(when)}</strong>. Please call us on ${SITE.phoneDisplay} and we'll do our best to find an alternative.`,
+    },
+  }[kind];
+  return {
+    subject: `Thai Courtyard — ${copy.subject}`,
+    html: shell(copy.heading, `<p style="font-size:15px;line-height:1.6">Hello ${e(b.name)},</p><p style="font-size:15px;line-height:1.6">${copy.body}</p>`),
+    text: `Hello ${b.name},\n\n${copy.body.replace(/<[^>]+>/g, "")}\n\nThai Courtyard · ${SITE.addressLine} · ${SITE.phoneDisplay}`,
+  };
+}
+
+export function contactRestaurantEmail(m: { name: string; email: string; phone: string | null; message: string }) {
+  const html = shell(
+    "New website enquiry",
+    `<table role="presentation" cellpadding="0" cellspacing="0">${row("Name", e(m.name))}${row("Email", e(m.email))}${row(
+      "Telephone",
+      m.phone ? e(m.phone) : "—",
+    )}</table><p style="white-space:pre-wrap;font-size:15px;line-height:1.6;background:#faf6ee;border-radius:10px;padding:14px">${e(m.message)}</p>`,
+  );
+  return {
+    subject: `Website enquiry from ${m.name}`,
+    html,
+    text: `Website enquiry\nName: ${m.name}\nEmail: ${m.email}\nTelephone: ${m.phone ?? "-"}\n\n${m.message}`,
+  };
+}
