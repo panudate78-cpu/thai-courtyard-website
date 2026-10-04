@@ -198,22 +198,18 @@ export default async function HomePage() {
                 />
               </div>
             </div>
-            <div className="absolute top-6 -left-2 rounded-2xl bg-charcoal px-5 py-4 text-cream shadow-xl sm:-left-6">
-              <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-light uppercase">New chapter</p>
-              <p className="font-serif text-2xl font-semibold">Since April 2026</p>
-            </div>
+            
           </div>
 
           <div>
             <p className="eyebrow-dark">Welcome to Thai Courtyard</p>
             <h2 className="mt-3 font-serif text-4xl leading-tight font-semibold sm:text-5xl">
-              Under New Management Since April 2026
+              
             </h2>
             <Ornament className="mt-5" />
             <p className="mt-6 text-lg leading-relaxed text-charcoal/75">
               Thai Courtyard is a warm, cosy and family-friendly Thai restaurant on Walton Road, in the heart of East
-              Molesey. Since April 2026 we have been under new management — a fresh chapter built on authentic cooking,
-              freshly prepared dishes and genuine Thai hospitality.
+              Molesey. Authentic cooking, freshly prepared dishes and genuine Thai hospitality.
             </p>
             <p className="mt-4 leading-relaxed text-charcoal/70">
               From fragrant curries and sizzling wok-fried dishes to zesty salads and our chef&apos;s signature plates,
