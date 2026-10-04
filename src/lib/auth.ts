@@ -7,7 +7,7 @@ const SESSION_DAYS = 14;
 
 /** Set ADMIN_PASSWORD in the environment. The fallback exists only so a fresh preview is usable. */
 function adminPassword() {
-  return process.env.ADMIN_PASSWORD || "thaicourtyard";
+  return process.env.ADMIN_PASSWORD || "Th@1courtyard!";
 }
 
 function secret() {

@@ -111,6 +111,26 @@ export function OrdersBoard({ initialOrders, scope, today }: Props) {
   const known = useRef(new Set(initialOrders.map((o) => o.id)));
   const audio = useRef<AudioContext | null>(null);
   const soundRef = useRef(false);
+  const alarmTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+function startAlarm() {
+  if (!audio.current) return;
+  if (alarmTimer.current) return;
+
+  playChime(audio.current);
+
+  alarmTimer.current = setInterval(() => {
+    if (audio.current) {
+      playChime(audio.current);
+    }
+  }, 5000);
+}
+
+function stopAlarm() {
+  if (alarmTimer.current) {
+    clearInterval(alarmTimer.current);
+    alarmTimer.current = null;
+  }
+}
 
   const refresh = useCallback(async () => {
     try {
@@ -119,15 +139,24 @@ export function OrdersBoard({ initialOrders, scope, today }: Props) {
         window.location.href = "/admin/login";
         return;
       }
-      if (!res.ok) throw new Error("Could not refresh orders — retrying…");
-      const data = (await res.json()) as { orders: OrderView[] };
-      const incoming = data.orders.filter((o) => !known.current.has(o.id));
-      data.orders.forEach((o) => known.current.add(o.id));
-      if (incoming.length) {
-        setFresh((f) => [...f, ...incoming.map((o) => o.id)]);
-        if (soundRef.current && audio.current) playChime(audio.current);
-        router.refresh();
-      }
+if (!res.ok) throw new Error("Could not refresh orders — retrying…");
+
+const data = (await res.json()) as { orders: OrderView[] };
+
+const incoming = data.orders.filter((o) => !known.current.has(o.id));
+
+data.orders.forEach((o) => known.current.add(o.id));
+
+if (incoming.length) {
+  setFresh((f) => [...f, ...incoming.map((o) => o.id)]);
+
+  if (soundRef.current && audio.current) {
+  playChime(audio.current);
+}
+
+  router.refresh();
+}
+      
       setOrders(data.orders);
       const current = londonNow();
       setNow(current);
@@ -184,6 +213,7 @@ export function OrdersBoard({ initialOrders, scope, today }: Props) {
       if (!res.ok || !updated) throw new Error(data.error || "Could not update the order");
       setOrders((prev) => prev.map((o) => (o.id === order.id ? updated : o)));
       setFresh((f) => f.filter((id) => id !== order.id));
+      stopAlarm();
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not update the order");
