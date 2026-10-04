@@ -10,7 +10,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "The story of Thai Courtyard, East Molesey — a cosy Thai restaurant under new management since April 2026, offering authentic cuisine, warm hospitality and freshly prepared dishes.",
+    "The story of Thai Courtyard, East Molesey — a cosy Thai restaurant offering authentic cuisine, warm hospitality and freshly prepared dishes.",
   alternates: { canonical: "/about" },
 };
 

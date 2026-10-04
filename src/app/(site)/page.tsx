@@ -124,8 +124,7 @@ export default async function HomePage() {
               Authentic Thai Cuisine
             </h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-cream/85 sm:text-lg">
-              Enjoy freshly prepared Thai favourites for dine-in or collection. Under new management since April 2026,
-              bringing warmth, flavour and genuine Thai hospitality to every visit.
+              Enjoy freshly prepared Thai favourites for dine-in or collection. Bringing warmth, flavour and genuine Thai hospitality to every visit.
             </p>
             <div className="mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
               <Link href="/order" className="btn btn-gold col-span-2 py-3.5 text-base sm:py-3 sm:text-sm">
