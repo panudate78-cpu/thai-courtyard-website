@@ -218,8 +218,12 @@ export function BasketPanel(props: Props) {
         </div>
         <div>
           <label htmlFor={fieldId("email")} className="label">
-            Email <span className="font-normal text-charcoal/50">(optional, for a copy of your order)</span>
-          </label>
+          Email Address <span className="text-red-600">*</span>
+        </label>
+
+          <p className="mt-1 text-sm text-charcoal/60">
+          Required for order confirmation and updates.
+          </p>
           <input
             id={fieldId("email")}
             name="email"
