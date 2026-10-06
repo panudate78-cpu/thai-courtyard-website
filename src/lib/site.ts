@@ -19,7 +19,7 @@ export const SITE = {
   fullName: "Thai Courtyard East Molesey",
   tagline: "Authentic Thai Cuisine in the Heart of East Molesey",
   description:
-    "Authentic Thai restaurant on Walton Road, East Molesey. Warm, cosy and family-friendly — under new management since April 2026. Dine in, book a table or order online for collection and pay when you collect.",
+    "Authentic Thai restaurant on Walton Road, East Molesey. Warm, cosy and family-friendly — Dine in, book a table or order online for collection and pay when you collect.",
   url: (process.env.NEXT_PUBLIC_SITE_URL || "https://www.thaicourtyardmolesey.co.uk").replace(/\/$/, ""),
   phoneDisplay: "020 8941 3595",
   phoneHref: "tel:+442089413595",
@@ -48,7 +48,7 @@ export const SITE = {
       : `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`),
   googleMapsEmbedUrl: `https://www.google.com/maps?q=${mapsQuery}&z=16&output=embed`,
   paymentNotice: "Payment will be taken in restaurant when you collect your order. We accept cash and card.",
-  newManagement: "Under New Management Since April 2026",
+  newManagement: "",
   hoursSummary: "Tuesday – Saturday, 12:00 – 21:00",
   hoursShort: "Tue – Sat · 12:00 – 21:00",
 } as const;

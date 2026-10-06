@@ -10,7 +10,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "The story of Thai Courtyard, East Molesey — a cosy Thai restaurant under new management since April 2026, offering authentic cuisine, warm hospitality and freshly prepared dishes.",
+    "The story of Thai Courtyard, East Molesey — a cosy Thai restaurant offering authentic cuisine, warm hospitality and freshly prepared dishes.",
   alternates: { canonical: "/about" },
 };
 
@@ -49,21 +49,20 @@ export default function AboutPage() {
       <PageHero
         eyebrow="Our story"
         title="About Thai Courtyard"
-        intro="A cosy Thai restaurant under new management since April 2026, offering authentic cuisine, warm hospitality and freshly prepared dishes."
+        intro="A cosy Thai restaurant offering authentic cuisine, warm hospitality and freshly prepared dishes."
         image={IMG.thaiSpread}
       />
 
       <section className="py-20 lg:py-28">
         <div className="container-x grid items-center gap-14 lg:grid-cols-2">
           <div>
-            <p className="eyebrow-dark">{SITE.newManagement}</p>
             <h2 className="mt-3 font-serif text-4xl leading-tight font-semibold sm:text-5xl">
               Traditional Thai hospitality, right here in East Molesey
             </h2>
             <Ornament className="mt-5" />
             <div className="mt-6 space-y-4 text-lg leading-relaxed text-charcoal/75">
               <p>
-                Thai Courtyard is a cosy Thai restaurant under new management since April 2026, offering authentic
+                Thai Courtyard is a cosy Thai restaurant offering authentic
                 cuisine, warm hospitality and freshly prepared dishes.
               </p>
               <p>
@@ -72,7 +71,7 @@ export default function AboutPage() {
                 neighbours become regulars, and every guest is welcomed like family.
               </p>
               <p>
-                Our new team took over with a simple promise: honour the classic recipes our guests love, cook every dish
+                We honour the classic recipes our guests love, cook every dish
                 fresh, and make each visit feel special — whether you are joining us for a quiet weekday lunch, a family
                 celebration or picking up dinner on your way home.
               </p>
