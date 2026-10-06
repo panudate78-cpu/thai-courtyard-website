@@ -165,19 +165,11 @@ export function BasketPanel(props: Props) {
                 <label htmlFor={fieldId("time")} className="sr-only">
                   Collection time
                 </label>
-                <select
-                  id={fieldId("time")}
-                  value={slot.time}
-                  onChange={(e) => onSlot({ date: slot.date, time: e.target.value })}
-                  className="input px-3"
-                >
-                  {(selectedDay?.times ?? []).map((t, i) => (
-                    <option key={t} value={t}>
-                      {t}
-                      {i === 0 && selectedDay === days[0] && selectedDay?.label === "Today" ? " (earliest)" : ""}
-                    </option>
-                  ))}
-                </select>
+             <div className="rounded-xl border border-black/10 bg-black/5 p-3 text-sm">
+  We aim to have collection orders ready within approximately 30 minutes.
+  If there is a significant delay we will contact you using the telephone number provided.
+</div>
+
               </div>
             </div>
           )}
