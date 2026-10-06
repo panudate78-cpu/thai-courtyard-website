@@ -128,9 +128,9 @@ export function BasketPanel(props: Props) {
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <fieldset>
           <legend className="mb-2 flex items-center gap-2 text-sm font-semibold text-charcoal/85">
-            <Clock className="h-4 w-4 text-gold-deep" aria-hidden="true" />
-            Collection time
-          </legend>
+  <Clock className="h-4 w-4 text-gold-deep" aria-hidden="true" />
+  Collection Orders
+</legend>
           {days.length === 0 ? (
             <p className="rounded-xl bg-cream-dark p-3 text-sm text-charcoal/70">
               No collection times are available right now. We&apos;re open {SITE.hoursSummary} — please call{" "}
@@ -140,30 +140,11 @@ export function BasketPanel(props: Props) {
               .
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label htmlFor={fieldId("date")} className="sr-only">
-                  Collection day
-                </label>
-                <select
-                  id={fieldId("date")}
-                  value={slot.date}
-                  onChange={(e) => {
-                    const day = days.find((d) => d.date === e.target.value);
-                    onSlot({ date: e.target.value, time: day?.times[0] ?? "" });
-                  }}
-                  className="input px-3"
-                >
-                  {days.map((d) => (
-                    <option key={d.date} value={d.date}>
-                      {d.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="space-y-2">
+              
               <div>
                 <label htmlFor={fieldId("time")} className="sr-only">
-                  Collection time
+                  Collection Orders
                 </label>
              <div className="rounded-xl border border-black/10 bg-black/5 p-3 text-sm">
   We aim to have collection orders ready within approximately 30 minutes.
