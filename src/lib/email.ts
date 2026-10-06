@@ -141,16 +141,42 @@ export function orderRestaurantEmail(order: OrderView) {
 
 export function orderCustomerEmail(order: OrderView) {
   const when = `${formatDateLong(order.collectionDate)} at ${order.collectionTime}`;
-  const html = shell(
-    `Thank you, ${e(order.customerName)} — we've received your order`,
-    `<p style="font-size:15px;line-height:1.6;margin:0 0 12px">Your collection order <strong>#${order.number}</strong> has been sent to our kitchen.</p><table role="presentation" cellpadding="0" cellspacing="0">${row(
-      "Collection time",
-      `<strong>${e(when)}</strong>`,
-    )}${row("Collect from", e(SITE.addressLine))}</table>${itemsTable(order)}${notice}<p style="font-size:13px;color:#6f6a64;margin:18px 0 0">Need to change something? Call us on <a href="${SITE.phoneHref}">${SITE.phoneDisplay}</a>.</p>`,
-  );
-  const text = `Thank you, ${order.customerName}! We've received your collection order #${order.number}.\nCollection: ${when}\nCollect from: ${SITE.addressLine}\n\n${itemsText(
-    order,
-  )}\n\nTotal: ${formatPrice(order.subtotalPence)}\n${SITE.paymentNotice}\n\nQuestions? Call ${SITE.phoneDisplay}.`;
+const html = shell(
+`Thank you, ${e(order.customerName)} — we've received your order`,
+`<p style="font-size:15px;line-height:1.6;margin:0 0 12px">Your collection order <strong>#${order.number}</strong> has been sent to our kitchen.</p>
+ 
+<p style="font-size:15px;line-height:1.6;margin:0 0 12px">We aim to have collection orders ready within approximately 30 minutes.</p>
+ 
+<p style="font-size:15px;line-height:1.6;margin:0 0 12px">During busy periods preparation may take a little longer. If there is a significant delay, a member of our team will contact you using the telephone number provided.</p>
+ 
+<table role="presentation" cellpadding="0" cellspacing="0">
+${row(
+"Collection time",
+`<strong>${e(when)}</strong>`,
+)}
+${row("Collect from", e(SITE.addressLine))}
+</table>
+${itemsTable(order)}
+${notice}
+<p style="font-size:13px;color:#6f6a64;margin:18px 0 0">
+Need to change something? Call us on
+<a href="${SITE.phoneHref}">${SITE.phoneDisplay}</a>.</p>`,
+  );  
+const text = `Thank you, ${order.customerName}! We've received your collection order #${order.number}.
+
+We aim to have collection orders ready within approximately 30 minutes.
+
+If there is a significant delay, a member of our team will contact you using the telephone number provided.
+
+Collection: ${when}
+Collect from: ${SITE.addressLine}
+
+${itemsText(order)}
+
+Total: ${formatPrice(order.subtotalPence)}
+${SITE.paymentNotice}
+
+Questions? Call ${SITE.phoneDisplay}.`;
   return { subject: `Your Thai Courtyard order #${order.number} — collection ${order.collectionTime}`, html, text };
 }
 
