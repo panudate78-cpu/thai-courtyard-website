@@ -306,10 +306,16 @@ if (incoming.length) {
         </p>
       ) : null}
       {fresh.length > 0 ? (
-        <p role="status" className="rounded-xl bg-amber-100 p-3 text-sm font-semibold text-amber-900">
-          {fresh.length} new order{fresh.length > 1 ? "s" : ""} received — highlighted below.
-        </p>
-      ) : null}
+  <div
+    role="status"
+    className="animate-pulse rounded-xl border-4 border-red-600 bg-red-600 p-4 text-center text-xl font-bold text-white shadow-lg"
+  >
+    🚨 NEW ORDER RECEIVED 🚨
+    <div className="mt-1 text-sm font-medium">
+      {fresh.length} new order{fresh.length > 1 ? "s" : ""}
+    </div>
+  </div>
+) : null}
 
       {filtered.length === 0 ? (
         <div className="adm-card flex flex-col items-center p-10 text-center text-black/50">
@@ -331,7 +337,7 @@ if (incoming.length) {
             return (
               <article
                 key={o.id}
-                className={`adm-card flex flex-col p-5 ${fresh.includes(o.id) ? "ring-2 ring-amber-400" : ""} ${isActive ? "" : "opacity-80"}`}
+                className={`adm-card flex flex-col p-5 ${fresh.includes(o.id) ? "ring-4 ring-red-500 animate-pulse" : ""} ${isActive ? "" : "opacity-80"}`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
