@@ -51,21 +51,38 @@ const TABS: { id: Tab; label: string }[] = [
 
 function playChime(ctx: AudioContext) {
   const now = ctx.currentTime;
-  [880, 1108.73, 1318.51].forEach((frequency, i) => {
-    const offset = i * 0.22;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.value = frequency;
-    gain.gain.setValueAtTime(0.0001, now + offset);
-    gain.gain.exponentialRampToValueAtTime(0.35, now + offset + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.35);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now + offset);
-    osc.stop(now + offset + 0.4);
-  });
+
+  [880, 1108.73, 1318.51, 880, 1108.73, 1318.51].forEach(
+    (frequency, i) => {
+      const offset = i * 0.7;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.value = frequency;
+
+ gain.gain.setValueAtTime(0.0001, now + offset);
+ 
+gain.gain.exponentialRampToValueAtTime(
+1,
+now + offset + 0.03
+);
+ 
+gain.gain.exponentialRampToValueAtTime(
+0.0001,
+now + offset + 1.0
+);
+ 
+osc.connect(gain);
+gain.connect(ctx.destination);
+ 
+osc.start(now + offset);
+osc.stop(now + offset + 1.1);
+    }
+  );
 }
+
 
 function printTicket(order: OrderView) {
   const w = window.open("", "_blank", "width=420,height=720");
