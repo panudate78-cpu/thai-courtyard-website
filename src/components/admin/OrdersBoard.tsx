@@ -305,7 +305,7 @@ if (incoming.length) {
           {error}
         </p>
       ) : null}
-      {fresh.length > 0 ? (
+      {true ? (
   <div
     role="status"
     className="animate-pulse rounded-xl border-4 border-red-600 bg-red-600 p-4 text-center text-xl font-bold text-white shadow-lg"
