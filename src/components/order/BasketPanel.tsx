@@ -6,8 +6,9 @@ import { PaymentNotice } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
 import type { SlotDay } from "@/lib/hours";
 import { SITE } from "@/lib/site";
+const openNow = isRestaurantOpenNow();
 import type { BasketLine } from "./basket";
-
+import { isRestaurantOpenNow } from "@/lib/opening-hours";
 export type CheckoutDetails = { name: string; phone: string; email: string; instructions: string; company: string };
 export type Slot = { date: string; time: string };
 
@@ -131,29 +132,40 @@ export function BasketPanel(props: Props) {
   <Clock className="h-4 w-4 text-gold-deep" aria-hidden="true" />
   Collection Orders
 </legend>
-          {days.length === 0 ? (
-            <p className="rounded-xl bg-cream-dark p-3 text-sm text-charcoal/70">
-              No collection times are available right now. We&apos;re open {SITE.hoursSummary} — please call{" "}
-              <a href={SITE.phoneHref} className="font-semibold underline">
-                {SITE.phoneDisplay}
-              </a>
-              .
-            </p>
-          ) : (
-            <div className="space-y-2">
-              
-              <div>
-                <label htmlFor={fieldId("time")} className="sr-only">
-                  Collection Orders
-                </label>
-             <div className="rounded-xl border border-black/10 bg-black/5 p-3 text-sm">
-  We aim to have collection orders ready within approximately 30 minutes.
-  If there is a significant delay we will contact you using the telephone number provided.
-</div>
+          {!openNow ? (
+  <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm">
+    <p className="font-semibold text-red-800">
+      🔴 Online Ordering Closed
+    </p>
 
-              </div>
-            </div>
-          )}
+    <p className="mt-2 text-red-700">
+      We are currently closed and unable to accept online orders.
+    </p>
+
+    <p className="mt-2 text-red-700">
+      Opening Hours: {SITE.hoursSummary}
+    </p>
+  </div>
+) : (
+  <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm">
+    <p className="font-semibold text-green-800">
+      🟢 Online Ordering Open
+    </p>
+
+    <p className="mt-2 text-green-700">
+      We are currently accepting collection orders.
+    </p>
+
+    <p className="mt-2 text-green-700">
+      We aim to have collection orders ready within approximately 30 minutes.
+      If there is a significant delay, a member of our team will contact you using the telephone number provided.
+    </p>
+
+    <p className="mt-2 text-green-700">
+      Opening Hours: {SITE.hoursSummary}
+    </p>
+  </div>
+)}
         </fieldset>
 
         <div>
