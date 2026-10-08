@@ -126,6 +126,9 @@ export default async function HomePage() {
             <p className="mt-5 max-w-xl text-base leading-relaxed text-cream/85 sm:text-lg">
               Enjoy freshly prepared Thai favourites for dine-in or collection. Bringing warmth, flavour and genuine Thai hospitality to every visit.
             </p>
+            <p className="mt-4 max-w-xl rounded-xl border border-gold/30 bg-charcoal/50 px-4 py-3 text-sm text-cream/90">
+            🍷 Bring Your Own Alcohol: Thai Courtyard does not currently hold an alcohol licence. Guests are welcome to bring their own alcoholic beverages. Corkage charges apply. Please ask a member of staff for details.
+            </p>
             <div className="mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
               <Link href="/order" className="btn btn-gold col-span-2 py-3.5 text-base sm:py-3 sm:text-sm">
                 <ShoppingBag aria-hidden="true" />

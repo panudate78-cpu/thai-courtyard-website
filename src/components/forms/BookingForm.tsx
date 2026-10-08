@@ -113,7 +113,7 @@ export function BookingForm({ today, closedDates }: Props) {
             Guests *
           </label>
           <select id="booking-guests" value={form.partySize} onChange={(e) => update({ partySize: e.target.value })} className="input">
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+            {Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>
                 {n} {n === 1 ? "guest" : "guests"}
               </option>
@@ -160,12 +160,13 @@ export function BookingForm({ today, closedDates }: Props) {
       </div>
       <div>
         <label htmlFor="booking-email" className="label">
-          Email <span className="font-normal text-charcoal/50">(optional)</span>
+        Email <span aria-hidden="true">*</span>
         </label>
         <input
           id="booking-email"
           type="email"
           autoComplete="email"
+          required
           maxLength={200}
           value={form.email}
           onChange={(e) => update({ email: e.target.value })}
