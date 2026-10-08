@@ -85,7 +85,7 @@ export default async function MenuPage() {
       />
       <PageHero
         eyebrow="Our menu"
-        title="The Thai Courtyard Menu"
+        title="Thai Courtyard Menu"
         intro="Authentic Thai dishes, freshly prepared to order. Many dishes can be made with your choice of protein and spice level."
         image={IMG.thaiSpread}
       >
