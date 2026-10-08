@@ -45,12 +45,29 @@ export default async function BookPage() {
             <OpeningHours className="mt-3" />
           </div>
           <div className="card p-6">
+            <h2 className="font-serif text-2xl font-semibold">
+            🍷 Bring Your Own Alcohol
+            </h2>
+
+            <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
+              Thai Courtyard does not currently hold an alcohol licence.
+            </p>
+
+            <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
+              Guests are welcome to bring their own alcoholic beverages to enjoy with their meal. Corkage charges apply.
+            </p>
+
+            <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
+            Please contact us or speak to a member of staff for details.
+            </p>
+            </div>
+          <div className="card p-6">
             <div className="flex items-center gap-3">
               <Users className="h-6 w-6 text-gold-deep" aria-hidden="true" />
               <h2 className="font-serif text-2xl font-semibold">Same day or large groups?</h2>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
-              For bookings today, parties of more than 12, or special celebrations, please give us a call and we&apos;ll
+              For bookings today, parties of more than 8, or special celebrations, please give us a call and we&apos;ll
               do our very best to look after you.
             </p>
             <a href={SITE.phoneHref} className="btn btn-dark mt-5 w-full">
