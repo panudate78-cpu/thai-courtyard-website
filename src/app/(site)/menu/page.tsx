@@ -100,7 +100,7 @@ export default async function MenuPage() {
           </Link>
         </div>
       </PageHero>
-
+        
       <nav
         aria-label="Menu sections"
         className="sticky top-16 z-20 border-b border-sand bg-cream/95 backdrop-blur lg:top-20"
@@ -122,7 +122,44 @@ export default async function MenuPage() {
           nuts, gluten, shellfish and other allergens. Please tell us about any allergies when ordering.
         </p>
       </section>
+      <section className="container-x py-8">
+  <div className="rounded-2xl border border-gold/30 bg-cream-dark p-8">
+    <p className="eyebrow">Express Lunch</p>
 
+    <h2 className="mt-2 font-serif text-4xl font-semibold">
+      Express Lunch Menu
+    </h2>
+
+    <p className="mt-3 text-charcoal/75">
+      Available Tuesday to Saturday • 12:00pm – 3:00pm
+    </p>
+
+    <p className="mt-4 text-charcoal/75">
+      Choice of select curries, stir-fries, noodle or rice dishes with complimentary
+      prawn crackers (2 pieces) and a soft drink. *See menu in store for more details.*
+    </p>
+
+    <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      <div className="rounded-xl bg-white p-4">
+        <strong>Vegetable or Tofu</strong>
+        <br />
+        £9.95
+      </div>
+
+      <div className="rounded-xl bg-white p-4">
+        <strong>Chicken or Pork</strong>
+        <br />
+        £10.50
+      </div>
+
+      <div className="rounded-xl bg-white p-4">
+        <strong>Beef or King Prawns</strong>
+        <br />
+        £11.50
+      </div>
+    </div>
+  </div>
+</section>
       {menu.map((category, index) => (
         <Fragment key={category.id}>
           <section id={`section-${category.id}`} aria-labelledby={`heading-${category.id}`} className="scroll-mt-36 py-12 lg:py-16">
