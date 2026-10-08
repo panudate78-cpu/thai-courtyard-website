@@ -118,8 +118,10 @@ export default async function MenuPage() {
         <DietaryLegend />
         <p className="mx-auto mt-5 flex max-w-3xl items-start justify-center gap-2 text-center text-xs leading-relaxed text-charcoal/60">
           <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          Dietary indicators are a guide only. Some dishes contain fish sauce or oyster sauce, and our kitchen handles
-          nuts, gluten, shellfish and other allergens. Please tell us about any allergies when ordering.
+          Dietary indicators are provided as a guide only.
+Some dishes may contain fish sauce, oyster sauce, nuts, gluten, shellfish, sesame, soya, eggs, milk and other allergens.
+Our kitchen handles nuts, gluten, shellfish and other allergens, so we cannot guarantee that any dish is completely allergen free.
+Please inform us of any allergies or dietary requirements before ordering and a member of our team will be happy to advise.
         </p>
       </section>
       <section className="container-x py-8">
@@ -131,7 +133,7 @@ export default async function MenuPage() {
     </h2>
 
     <p className="mt-3 text-charcoal/75">
-      Available Tuesday to Saturday • 12:00pm – 3:00pm
+      Available Tuesday to Saturday • 12:00pm – 3:00pm 
     </p>
 
     <p className="mt-4 text-charcoal/75">
