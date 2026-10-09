@@ -304,6 +304,9 @@ if (incoming.length) {
   return true;
 });
 const historyFiltered = filtered.filter((o) => {
+  console.log("orders", orders.length);
+console.log("filtered", filtered.length);
+console.log("historyFiltered", historyFiltered.length);
   const created = new Date(o.createdAt);
   const now = new Date();
 
