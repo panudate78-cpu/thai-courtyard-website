@@ -15,7 +15,7 @@ export default async function AdminOrdersPage() {
           Collection orders (latest 250). New orders appear automatically — enable sound to hear an alert.
         </p>
       </header>
-      <OrdersBoard initialOrders={orders} scope="all" today={londonNow().date} />
+      <OrdersBoard initialOrders={orders} scope="history" today={londonNow().date} />
     </div>
   );
 }
