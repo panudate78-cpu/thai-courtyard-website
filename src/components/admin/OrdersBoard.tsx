@@ -38,8 +38,7 @@ const EMAIL_STATUS: Record<string, string> = {
 
 const ACTIVE: OrderStatus[] = ["new", "accepted", "ready"];
 
-type Tab = "active" | "all" | "history" | OrderStatus;
-
+type Tab = "active" | "all" | OrderStatus;
 const TABS: { id: Tab; label: string }[] = [
   { id: "active", label: "Active" },
   { id: "new", label: "New" },
@@ -47,7 +46,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "ready", label: "Ready" },
   { id: "collected", label: "Collected" },
   { id: "cancelled", label: "Cancelled" },
-  { id: "history", label: "History" },
+  { id: "all", label: "All" },
 ];
 
 function playChime(ctx: AudioContext) {
@@ -113,16 +112,12 @@ function printTicket(order: OrderView) {
   w.document.close();
 }
 
-type Props = { initialOrders: OrderView[]; scope: "live" | "history"; today: string };
+type Props = { initialOrders: OrderView[]; scope: "live" | "all"; today: string };
 
 export function OrdersBoard({ initialOrders, scope, today }: Props) {
   const router = useRouter();
   const [orders, setOrders] = useState(initialOrders);
-  const [tab, setTab] = useState<Tab>(scope === "live" ? "active" : "history");
-
-const [historyRange, setHistoryRange] = useState<
-  "today" | "yesterday" | "week" | "month" | "year" | "all"
->("today");
+  const [tab, setTab] = useState<Tab>(scope === "live" ? "active" : "all");
   const [query, setQuery] = useState("");
   const [soundOn, setSoundOn] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -245,113 +240,23 @@ if (incoming.length) {
   }
 
   const counts = useMemo(() => {
-    const result: Record<Tab, number> = {
-  active: 0,
-  history: 0,
-  all: orders.length,
-  new: 0,
-  accepted: 0,
-  ready: 0,
-  collected: 0,
-  cancelled: 0
-};
+    const result: Record<Tab, number> = { active: 0, all: orders.length, new: 0, accepted: 0, ready: 0, collected: 0, cancelled: 0 };
     for (const o of orders) {
-  result[o.status] += 1;
-
-  if (ACTIVE.includes(o.status)) {
-    result.active += 1;
-  }
-
-  if (
-    o.status === "collected" ||
-    o.status === "cancelled"
-  ) {
-    result.history += 1;
-  }
-}
-``
+      result[o.status] += 1;
+      if (ACTIVE.includes(o.status)) result.active += 1;
+    }
     return result;
   }, [orders]);
 
   const todayDate = now?.date ?? today;
   const q = query.trim().toLowerCase();
   const filtered = orders.filter((o) => {
-  if (tab === "active" && !ACTIVE.includes(o.status)) return false;
+    if (tab === "active" && !ACTIVE.includes(o.status)) return false;
+    if (tab !== "active" && tab !== "all" && o.status !== tab) return false;
+    if (q && !`${o.number} ${o.customerName} ${o.phone} ${o.email ?? ""}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
 
-  if (
-    tab === "history" &&
-    o.status !== "collected" &&
-    o.status !== "cancelled"
-  )
-    return false;
-
-  if (
-    tab !== "active" &&
-    tab !== "all" &&
-    tab !== "history" &&
-    o.status !== tab
-  )
-    return false;
-
-  if (
-    q &&
-    !`${o.number} ${o.customerName} ${o.phone} ${o.email ?? ""}`
-      .toLowerCase()
-      .includes(q)
-  )
-    return false;
-
-  return true;
-});
-const historyFiltered = filtered.filter((o) => {
-  const created = new Date(o.createdAt);
-  const now = new Date();
-
-  if (historyRange === "all") return true;
-
-  const diffDays = Math.floor(
-    (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  if (historyRange === "today") {
-    return created.toDateString() === now.toDateString();
-  }
-
-  if (historyRange === "yesterday") {
-    return diffDays === 1;
-  }
-
-  if (historyRange === "week") {
-    return diffDays <= 7;
-  }
-
-  if (historyRange === "month") {
-    return diffDays <= 30;
-  }
-
-  if (historyRange === "year") {
-    return created.getFullYear() === now.getFullYear();
-  }
-
-  return true;
-});
-const historyOrders = historyFiltered.length;
-
-const collectedOrders = historyFiltered.filter(
-  (o) => o.status === "collected"
-).length;
-
-const cancelledOrders = historyFiltered.filter(
-  (o) => o.status === "cancelled"
-).length;
-
-const revenuePence = historyFiltered
-  .filter((o) => o.status === "collected")
-  .reduce((sum, o) => sum + o.subtotalPence, 0);
-  const averageOrderPence =
-  collectedOrders > 0
-    ? Math.round(revenuePence / collectedOrders)
-    : 0;
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -411,122 +316,7 @@ const revenuePence = historyFiltered
     </div>
   </div>
 ) : null}
-{tab === "history" ? (
-  <div className="mb-4 rounded-xl border border-sand bg-white p-4">
 
-    <div className="mb-4 flex flex-wrap gap-2">
-      <button
-        type="button"
-        onClick={() => setHistoryRange("today")}
-        className={`rounded-full px-3 py-1 text-sm ${
-          historyRange === "today"
-            ? "bg-charcoal text-white"
-            : "bg-sand text-charcoal"
-        }`}
-      >
-        Today
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setHistoryRange("yesterday")}
-        className={`rounded-full px-3 py-1 text-sm ${
-          historyRange === "yesterday"
-            ? "bg-charcoal text-white"
-            : "bg-sand text-charcoal"
-        }`}
-      >
-        Yesterday
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setHistoryRange("week")}
-        className={`rounded-full px-3 py-1 text-sm ${
-          historyRange === "week"
-            ? "bg-charcoal text-white"
-            : "bg-sand text-charcoal"
-        }`}
-      >
-        7 Days
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setHistoryRange("month")}
-        className={`rounded-full px-3 py-1 text-sm ${
-          historyRange === "month"
-            ? "bg-charcoal text-white"
-            : "bg-sand text-charcoal"
-        }`}
-      >
-        30 Days
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setHistoryRange("year")}
-        className={`rounded-full px-3 py-1 text-sm ${
-          historyRange === "year"
-            ? "bg-charcoal text-white"
-            : "bg-sand text-charcoal"
-        }`}
-      >
-        Year
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setHistoryRange("all")}
-        className={`rounded-full px-3 py-1 text-sm ${
-          historyRange === "all"
-            ? "bg-charcoal text-white"
-            : "bg-sand text-charcoal"
-        }`}
-      >
-        All Time
-      </button>
-    </div>
-
-    <div className="grid gap-4 sm:grid-cols-4">
-      <div>
-        <p className="text-xs uppercase text-charcoal/60">
-          Orders
-        </p>
-        <p className="text-2xl font-bold">
-          {historyOrders}
-        </p>
-      </div>
-
-      <div>
-        <p className="text-xs uppercase text-charcoal/60">
-          Collected
-        </p>
-        <p className="text-2xl font-bold text-emerald-600">
-          {collectedOrders}
-        </p>
-      </div>
-
-      <div>
-        <p className="text-xs uppercase text-charcoal/60">
-          Cancelled
-        </p>
-        <p className="text-2xl font-bold text-red-600">
-          {cancelledOrders}
-        </p>
-      </div>
-
-      <div>
-        <p className="text-xs uppercase text-charcoal/60">
-          Revenue
-        </p>
-        <p className="text-2xl font-bold">
-          £{(revenuePence / 100).toFixed(2)}
-        </p>
-      </div>
-    </div>
-  </div>
-) : null}
       {filtered.length === 0 ? (
         <div className="adm-card flex flex-col items-center p-10 text-center text-black/50">
           <Inbox className="h-10 w-10" aria-hidden="true" />
@@ -535,7 +325,7 @@ const revenuePence = historyFiltered
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-          {(tab === "history" ? historyFiltered : filtered).map((o) => {
+          {filtered.map((o) => {
             const style = STATUS_STYLE[o.status];
             const placed = londonDateTime(o.createdAt);
             const isToday = o.collectionDate === todayDate;
