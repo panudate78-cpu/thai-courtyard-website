@@ -46,7 +46,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "ready", label: "Ready" },
   { id: "collected", label: "Collected" },
   { id: "cancelled", label: "Cancelled" },
-  { id: "all", label: "All" },
+  { id: "all", label: "History" },
 ];
 
 function playChime(ctx: AudioContext) {
@@ -251,12 +251,41 @@ if (incoming.length) {
   const todayDate = now?.date ?? today;
   const q = query.trim().toLowerCase();
   const filtered = orders.filter((o) => {
-    if (tab === "active" && !ACTIVE.includes(o.status)) return false;
-    if (tab !== "active" && tab !== "all" && o.status !== tab) return false;
-    if (q && !`${o.number} ${o.customerName} ${o.phone} ${o.email ?? ""}`.toLowerCase().includes(q)) return false;
-    return true;
-  });
+  if (tab === "active" && !ACTIVE.includes(o.status)) return false;
 
+  if (
+    tab === "all" &&
+    o.status !== "collected" &&
+    o.status !== "cancelled"
+  )
+    return false;
+
+  if (tab !== "active" && tab !== "all" && o.status !== tab)
+    return false;
+
+  if (
+    q &&
+    !`${o.number} ${o.customerName} ${o.phone} ${o.email ?? ""}`
+      .toLowerCase()
+      .includes(q)
+  )
+    return false;
+
+  return true;
+});
+const historyOrders = filtered.length;
+
+const collectedOrders = filtered.filter(
+  (o) => o.status === "collected"
+).length;
+
+const cancelledOrders = filtered.filter(
+  (o) => o.status === "cancelled"
+).length;
+
+const revenuePence = filtered
+  .filter((o) => o.status === "collected")
+  .reduce((sum, o) => sum + o.subtotalPence, 0);
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -316,7 +345,47 @@ if (incoming.length) {
     </div>
   </div>
 ) : null}
+{tab === "all" ? (
+  <div className="mb-4 rounded-xl border border-sand bg-white p-4">
+    <div className="grid gap-4 sm:grid-cols-4">
+      <div>
+        <p className="text-xs uppercase text-charcoal/60">
+          Orders
+        </p>
+        <p className="text-2xl font-bold">
+          {historyOrders}
+        </p>
+      </div>
 
+      <div>
+        <p className="text-xs uppercase text-charcoal/60">
+          Collected
+        </p>
+        <p className="text-2xl font-bold text-emerald-600">
+          {collectedOrders}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-xs uppercase text-charcoal/60">
+          Cancelled
+        </p>
+        <p className="text-2xl font-bold text-red-600">
+          {cancelledOrders}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-xs uppercase text-charcoal/60">
+          Revenue
+        </p>
+        <p className="text-2xl font-bold">
+          £{(revenuePence / 100).toFixed(2)}
+        </p>
+      </div>
+    </div>
+  </div>
+) : null}
       {filtered.length === 0 ? (
         <div className="adm-card flex flex-col items-center p-10 text-center text-black/50">
           <Inbox className="h-10 w-10" aria-hidden="true" />
