@@ -38,7 +38,8 @@ const EMAIL_STATUS: Record<string, string> = {
 
 const ACTIVE: OrderStatus[] = ["new", "accepted", "ready"];
 
-type Tab = "active" | "all" | OrderStatus;
+type Tab = "active" | "all" | "history" | OrderStatus;
+
 const TABS: { id: Tab; label: string }[] = [
   { id: "active", label: "Active" },
   { id: "new", label: "New" },
@@ -46,7 +47,8 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "ready", label: "Ready" },
   { id: "collected", label: "Collected" },
   { id: "cancelled", label: "Cancelled" },
-  { id: "all", label: "History" },
+  { id: "history", label: "History" },
+  { id: "all", label: "All" },
 ];
 
 function playChime(ctx: AudioContext) {
@@ -240,11 +242,31 @@ if (incoming.length) {
   }
 
   const counts = useMemo(() => {
-    const result: Record<Tab, number> = { active: 0, all: orders.length, new: 0, accepted: 0, ready: 0, collected: 0, cancelled: 0 };
+    const result: Record<Tab, number> = {
+  active: 0,
+  history: 0,
+  all: orders.length,
+  new: 0,
+  accepted: 0,
+  ready: 0,
+  collected: 0,
+  cancelled: 0
+};
     for (const o of orders) {
-      result[o.status] += 1;
-      if (ACTIVE.includes(o.status)) result.active += 1;
-    }
+  result[o.status] += 1;
+
+  if (ACTIVE.includes(o.status)) {
+    result.active += 1;
+  }
+
+  if (
+    o.status === "collected" ||
+    o.status === "cancelled"
+  ) {
+    result.history += 1;
+  }
+}
+``
     return result;
   }, [orders]);
 
@@ -254,13 +276,18 @@ if (incoming.length) {
   if (tab === "active" && !ACTIVE.includes(o.status)) return false;
 
   if (
-    tab === "all" &&
+    tab === "history" &&
     o.status !== "collected" &&
     o.status !== "cancelled"
   )
     return false;
 
-  if (tab !== "active" && tab !== "all" && o.status !== tab)
+  if (
+    tab !== "active" &&
+    tab !== "all" &&
+    tab !== "history" &&
+    o.status !== tab
+  )
     return false;
 
   if (
@@ -286,6 +313,10 @@ const cancelledOrders = filtered.filter(
 const revenuePence = filtered
   .filter((o) => o.status === "collected")
   .reduce((sum, o) => sum + o.subtotalPence, 0);
+  const averageOrderPence =
+  collectedOrders > 0
+    ? Math.round(revenuePence / collectedOrders)
+    : 0;
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -345,7 +376,7 @@ const revenuePence = filtered
     </div>
   </div>
 ) : null}
-{tab === "all" ? (
+{tab === "history" ? (
   <div className="mb-4 rounded-xl border border-sand bg-white p-4">
     <div className="grid gap-4 sm:grid-cols-4">
       <div>
