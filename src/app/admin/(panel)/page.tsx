@@ -82,7 +82,7 @@ export default async function AdminDashboardPage() {
 
       <section aria-labelledby="live-orders">
         <h2 id="live-orders" className="mb-3 text-xl font-semibold">
-  LIVE ORDERS TEST 840fbe4
+  Live Orders
 </h2>
         <OrdersBoard initialOrders={orders} scope="live" today={today} />
       </section>
