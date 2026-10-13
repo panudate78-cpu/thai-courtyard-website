@@ -282,14 +282,22 @@ export async function getGloriaFoodCustomers() {
   } catch (error) {
     console.error("GloriaFood query error:", error);
     return [];
+    
   }
 }
 
 
 export async function getCombinedCustomerStats() {
   const liveCustomers = await getCustomerStats();
-  const gloriaCustomers = await getGloriaFoodCustomers();
 
+  let gloriaCustomers: any[] = [];
+
+  try {
+    gloriaCustomers = await getGloriaFoodCustomers();
+  } catch {
+    gloriaCustomers = [];
+  }
+console.log("Gloria customers:", gloriaCustomers.length);
   const combined = new Map();
 
   // Add GloriaFood customers first

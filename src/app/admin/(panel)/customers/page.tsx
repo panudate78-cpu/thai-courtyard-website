@@ -1,8 +1,5 @@
      import Link from "next/link";
-import {
-  getCombinedCustomerStats,
-  getGloriaFoodCustomers,
-} from "@/lib/orders";
+import { getCustomerStats } from "@/lib/orders";
 function getCustomerTier(orderCount: number) {
   if (orderCount >= 50) return "👑 VIP";
   if (orderCount >= 20) return "⭐ Gold";
@@ -11,14 +8,8 @@ function getCustomerTier(orderCount: number) {
 }
 
 export default async function CustomersPage() {
-  const customers = await getCombinedCustomerStats();
-  let gloriaCustomers = [];
+  const customers = await getCustomerStats();
 
-try {
-  gloriaCustomers = await getGloriaFoodCustomers();
-} catch {
-  gloriaCustomers = [];
-}
 
 
   const returningCustomers = customers.filter(
@@ -93,9 +84,7 @@ try {
     Historic Customers
   </p>
 
-  <p className="mt-2 text-4xl font-bold text-amber-300">
-    {gloriaCustomers.length}
-  </p>
+ 
 </div>
       </div>
 
