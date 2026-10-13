@@ -269,3 +269,10 @@ export async function getCustomerCount() {
 
   return uniqueCustomers.size;
 }
+export async function getCustomerByPhone(phone: string) {
+  const customers = await getCustomerStats();
+
+  return customers.find(
+    (customer) => customer.phone === phone
+  );
+}
