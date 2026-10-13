@@ -1,3 +1,4 @@
+     import Link from "next/link";
 import { getCustomerStats } from "@/lib/orders";
 function getCustomerTier(orderCount: number) {
   if (orderCount >= 50) return "👑 VIP";
@@ -103,9 +104,16 @@ export default async function CustomersPage() {
             key={customer.phone}
             className="border-b border-amber-500/10"
           >
-            <td className="py-3 text-amber-100">
-              {customer.name}
-            </td>
+       
+            
+           <td className="py-3">
+  <Link
+    href={`/admin/customers/${encodeURIComponent(customer.phone)}`}
+    className="text-amber-100 hover:text-amber-300"
+  >
+    {customer.name}
+  </Link>
+</td>
 
             <td className="py-3 text-amber-100">
               {customer.phone}
