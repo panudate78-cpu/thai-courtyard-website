@@ -1,5 +1,8 @@
      import Link from "next/link";
-import { getCustomerStats } from "@/lib/orders";
+import {
+  getCustomerStats,
+  getGloriaFoodCustomers,
+} from "@/lib/orders";
 function getCustomerTier(orderCount: number) {
   if (orderCount >= 50) return "👑 VIP";
   if (orderCount >= 20) return "⭐ Gold";
@@ -9,6 +12,8 @@ function getCustomerTier(orderCount: number) {
 
 export default async function CustomersPage() {
   const customers = await getCustomerStats();
+  const gloriaCustomers = await getGloriaFoodCustomers();
+
 
   const returningCustomers = customers.filter(
     (customer) => customer.orders > 1
@@ -46,7 +51,7 @@ export default async function CustomersPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
           <p className="text-sm text-amber-100/70">Customers</p>
           <p className="mt-2 text-4xl font-bold text-amber-300">
@@ -77,7 +82,15 @@ export default async function CustomersPage() {
     {topCustomer?.name ?? "-"}
   </p>
 </div>
+<div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
+  <p className="text-sm text-amber-100/70">
+    Historic Customers
+  </p>
 
+  <p className="mt-2 text-4xl font-bold text-amber-300">
+    {gloriaCustomers.length}
+  </p>
+</div>
       </div>
 
       <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
