@@ -136,7 +136,9 @@ export default async function CustomersPage() {
             </td>
             
             <td className="py-3 text-amber-100">
-  {customer.lastOrder}
+  {customer.lastOrder instanceof Date
+    ? customer.lastOrder.toLocaleDateString("en-GB")
+    : String(customer.lastOrder)}
 </td>
 <td className="py-3 text-amber-100">
   {getCustomerTier(customer.orders)}
