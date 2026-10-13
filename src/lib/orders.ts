@@ -285,3 +285,42 @@ export async function getGloriaFoodCustomers() {
     .select()
     .from(gloriaFoodCustomers);
 }
+export async function getCombinedCustomerStats() {
+  const liveCustomers = await getCustomerStats();
+  const gloriaCustomers = await getGloriaFoodCustomers();
+
+  const combined = new Map();
+
+  // Add GloriaFood customers first
+  for (const customer of gloriaCustomers) {
+    const phone = normalisePhone(customer.phone ?? "");
+
+    combined.set(phone, {
+      name: `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim(),
+      phone,
+      email: customer.email,
+      orders: customer.totalOrders ?? 0,
+      spend: Number(customer.totalSpent ?? 0) * 100,
+      lastOrder: customer.lastOrderDate,
+      source: "gloriafood",
+    });
+  }
+
+  // Merge live customers
+  for (const customer of liveCustomers) {
+    const phone = normalisePhone(customer.phone);
+
+    if (combined.has(phone)) {
+      const existing = combined.get(phone);
+
+      existing.orders += customer.orders;
+      existing.spend += customer.spend;
+    } else {
+      combined.set(phone, customer);
+    }
+  }
+
+  return Array.from(combined.values()).sort(
+    (a, b) => b.spend - a.spend
+  );
+}
