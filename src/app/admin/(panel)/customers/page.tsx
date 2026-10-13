@@ -1,4 +1,10 @@
 import { getCustomerStats } from "@/lib/orders";
+function getCustomerTier(orderCount: number) {
+  if (orderCount >= 50) return "👑 VIP";
+  if (orderCount >= 20) return "⭐ Gold";
+  if (orderCount >= 5) return "🟢 Regular";
+  return "Customer";
+}
 
 export default async function CustomersPage() {
   const customers = await getCustomerStats();
@@ -75,7 +81,7 @@ export default async function CustomersPage() {
 
       <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
   <h2 className="mb-4 text-lg font-semibold text-amber-200">
-    Customer List
+    Customer List ({customers.length})
   </h2>
 
   <div className="overflow-x-auto">
@@ -86,6 +92,8 @@ export default async function CustomersPage() {
           <th className="pb-2">Phone</th>
           <th className="pb-2">Orders</th>
           <th className="pb-2">Spend</th>
+          <th className="pb-2">Last Order</th>
+          <th className="pb-2">Tier</th>
         </tr>
       </thead>
 
@@ -110,6 +118,13 @@ export default async function CustomersPage() {
             <td className="py-3 text-amber-100">
               £{(customer.spend / 100).toFixed(2)}
             </td>
+            
+            <td className="py-3 text-amber-100">
+  {new Date(customer.lastOrder).toLocaleDateString("en-GB")}
+</td>
+<td className="py-3 text-amber-100">
+  {getCustomerTier(customer.orders)}
+</td>
           </tr>
         ))}
       </tbody>
