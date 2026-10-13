@@ -84,6 +84,22 @@ export const orders = pgTable(
     index("orders_collection_idx").on(t.collectionDate, t.collectionTime),
   ],
 );
+export const gloriaFoodCustomers = pgTable(
+  "gloriafoodsexport",
+  {
+    clientId: integer("client_id"),
+    firstName: text("first_name"),
+    lastName: text("last_name"),
+    email: text("email"),
+    phone: text("phone"),
+    marketingConsent: text("marketing_consent"),
+    consentType: text("consent_type"),
+    totalOrders: integer("total_orders"),
+    totalSpent: text("total_spent"),
+    lastOrderDate: text("last_order_date_(yyyy-mm-dd)"),
+    lastOrder: text("last_order"),
+  }
+);
 
 export const orderItems = pgTable(
   "order_items",
