@@ -2,7 +2,11 @@ import crypto from "node:crypto";
 import { asc, desc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureDatabase } from "@/db/bootstrap";
-import { orderItems, orders } from "@/db/schema";
+import {
+  orderItems,
+  orders,
+  gloriaFoodCustomers,
+} from "@/db/schema";
 import {
   orderCustomerEmail,
   orderReadyEmail,
