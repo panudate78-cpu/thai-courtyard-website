@@ -217,7 +217,8 @@ function normalisePhone(phone: string) {
     .trim()
     .replace(/\s+/g, "")
     .replace(/[()-]/g, "")
-    .replace(/^\+44/, "0");
+    .replace(/^\+44/, "0")
+    .replace(/^44/, "0");
 }
 
 export async function getCustomerStats() {
@@ -273,18 +274,18 @@ export async function getCustomerCount() {
 
   return uniqueCustomers.size;
 }
-export async function getCustomerByPhone(phone: string) {
-  const customers = await getCustomerStats();
+export async function getGloriaFoodCustomers() {  
+  try {
+    return await db
+      .select()
+      .from(gloriaFoodCustomers);
+  } catch (error) {
+    console.error("GloriaFood query error:", error);
+    return [];
+  }
+}
 
-  return customers.find(
-    (customer) => customer.phone === phone
-  );
-}
-export async function getGloriaFoodCustomers() {
-  return await db
-    .select()
-    .from(gloriaFoodCustomers);
-}
+
 export async function getCombinedCustomerStats() {
   const liveCustomers = await getCustomerStats();
   const gloriaCustomers = await getGloriaFoodCustomers();
@@ -322,5 +323,12 @@ export async function getCombinedCustomerStats() {
 
   return Array.from(combined.values()).sort(
     (a, b) => b.spend - a.spend
+  );
+}
+export async function getCustomerByPhone(phone: string) {
+  const customers = await getCombinedCustomerStats();
+
+  return customers.find(
+    (customer) => customer.phone === phone
   );
 }
