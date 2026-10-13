@@ -208,10 +208,64 @@ export async function listOrders({ scope, limit = 250 }: { scope: "live" | "all"
   const rows = await db.select().from(orders).orderBy(desc(orders.createdAt)).limit(limit);
   return withItems(rows);
 }
+function normalisePhone(phone: string) {
+  return phone
+    .trim()
+    .replace(/\s+/g, "")
+    .replace(/[()-]/g, "")
+    .replace(/^\+44/, "0");
+}
+
+export async function getCustomerStats() {
+  const rows = await db
+    .select()
+    .from(orders);
+
+  const customers = new Map();
+
+  for (const order of rows) {
+    const key = normalisePhone(order.phone);
+
+    if (!customers.has(key)) {
+      customers.set(key, {
+        name: order.customerName,
+        phone: normalisePhone(order.phone),
+        email: order.email,
+        orders: 0,
+        spend: 0,
+        lastOrder: order.createdAt,
+      });
+    }
+
+    const customer = customers.get(key);
+
+    customer.orders += 1;
+    customer.spend += order.subtotalPence;
+
+    if (order.createdAt > customer.lastOrder) {
+      customer.lastOrder = order.createdAt;
+    }
+  }
+
+  return Array.from(customers.values()).sort(
+    (a, b) => b.spend - a.spend
+  );
+}
 
 export async function updateOrderStatus(id: number, status: OrderStatus) {
   await ensureDatabase();
   const rows = await db.update(orders).set({ status, updatedAt: new Date() }).where(eq(orders.id, id)).returning();
   const [view] = await withItems(rows);
   return view ?? null;
+}
+export async function getCustomerCount() {
+  await ensureDatabase();
+
+  const rows = await db.select().from(orders);
+
+  const uniqueCustomers = new Set(
+    rows.map((o) => o.phone)
+  );
+
+  return uniqueCustomers.size;
 }

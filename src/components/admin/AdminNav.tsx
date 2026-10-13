@@ -8,6 +8,7 @@ import {
   CalendarDays,
   ExternalLink,
   LayoutDashboard,
+  Users,
   LogOut,
   Mail,
   Menu,
@@ -26,13 +27,16 @@ export function AdminNav({ counts }: { counts: Counts }) {
   const [open, setOpen] = useState(false);
 
   const links = [
-    { href: "/admin", label: "Dashboard", icon: LayoutDashboard, badge: 0 },
-    { href: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: counts.newOrders },
-    { href: "/admin/menu", label: "Menu & prices", icon: UtensilsCrossed, badge: 0 },
-    { href: "/admin/bookings", label: "Bookings", icon: CalendarDays, badge: counts.pendingBookings },
-    { href: "/admin/messages", label: "Messages", icon: Mail, badge: counts.unreadMessages },
-    { href: "/admin/settings", label: "Settings", icon: SettingsIcon, badge: 0 },
-  ];
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, badge: 0 },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: counts.newOrders },
+
+  { href: "/admin/customers", label: "Customers", icon: Users, badge: 0 },
+
+  { href: "/admin/menu", label: "Menu & prices", icon: UtensilsCrossed, badge: 0 },
+  { href: "/admin/bookings", label: "Bookings", icon: CalendarDays, badge: counts.pendingBookings },
+  { href: "/admin/messages", label: "Messages", icon: Mail, badge: counts.unreadMessages },
+  { href: "/admin/settings", label: "Settings", icon: SettingsIcon, badge: 0 },
+];
 
   const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
 
