@@ -1,6 +1,6 @@
      import Link from "next/link";
 import {
-  getCustomerStats,
+  getCombinedCustomerStats,
   getGloriaFoodCustomers,
 } from "@/lib/orders";
 function getCustomerTier(orderCount: number) {
@@ -11,7 +11,7 @@ function getCustomerTier(orderCount: number) {
 }
 
 export default async function CustomersPage() {
-  const customers = await getCustomerStats();
+  const customers = await getCombinedCustomerStats();
   const gloriaCustomers = await getGloriaFoodCustomers();
 
 
