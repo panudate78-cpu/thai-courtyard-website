@@ -12,7 +12,13 @@ function getCustomerTier(orderCount: number) {
 
 export default async function CustomersPage() {
   const customers = await getCombinedCustomerStats();
-  const gloriaCustomers = await getGloriaFoodCustomers();
+  let gloriaCustomers = [];
+
+try {
+  gloriaCustomers = await getGloriaFoodCustomers();
+} catch {
+  gloriaCustomers = [];
+}
 
 
   const returningCustomers = customers.filter(
