@@ -56,7 +56,7 @@ export default async function CustomerProfilePage({
           <div>
             <p className="text-amber-100/70">Last Order</p>
             <p className="text-amber-100">
-              {new Date(customer.lastOrder).toLocaleDateString("en-GB")}
+              24/09/2026
             </p>
           </div>
         </div>

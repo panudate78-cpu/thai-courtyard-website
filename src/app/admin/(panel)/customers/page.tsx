@@ -1,5 +1,5 @@
      import Link from "next/link";
-import { getCustomerStats } from "@/lib/orders";
+import { getCustomers } from "@/lib/orders";
 function getCustomerTier(orderCount: number) {
   if (orderCount >= 50) return "👑 VIP";
   if (orderCount >= 20) return "⭐ Gold";
@@ -8,20 +8,18 @@ function getCustomerTier(orderCount: number) {
 }
 
 export default async function CustomersPage() {
-  const customers = await getCustomerStats();
-
+  const customers = await getCustomers();
 
 
   const returningCustomers = customers.filter(
-    (customer) => customer.orders > 1
-  ).length;
+  (customer) => (customer.orders ?? 0) > 1
+).length;
 
   const lifetimeRevenue = customers.reduce(
-    (total, customer) => total + customer.spend,
-    0
-  );
-
-  const topCustomer = customers[0];
+  (total, customer) => total + Number(customer.spend ?? 0),
+  0
+);
+const topCustomer = customers[0];
 
   return (
     <div className="space-y-6">
@@ -109,14 +107,14 @@ export default async function CustomersPage() {
       <tbody>
         {customers.map((customer) => (
           <tr
-            key={customer.phone}
+            key={customer.phone ?? customer.id}
             className="border-b border-amber-500/10"
           >
        
             
            <td className="py-3">
   <Link
-    href={`/admin/customers/${encodeURIComponent(customer.phone)}`}
+    href={`/admin/customers/${encodeURIComponent(customer.phone ?? "")}`}
     className="text-amber-100 hover:text-amber-300"
   >
     {customer.name}
@@ -132,16 +130,14 @@ export default async function CustomersPage() {
             </td>
 
             <td className="py-3 text-amber-100">
-              £{(customer.spend / 100).toFixed(2)}
+              £{Number(customer.spend ?? 0).toFixed(2)}
             </td>
             
             <td className="py-3 text-amber-100">
-  {customer.lastOrder instanceof Date
-    ? customer.lastOrder.toLocaleDateString("en-GB")
-    : String(customer.lastOrder)}
+  {customer.lastOrderDate ?? "-"}
 </td>
 <td className="py-3 text-amber-100">
-  {getCustomerTier(customer.orders)}
+  {getCustomerTier(customer.orders ?? 0)}
 </td>
           </tr>
         ))}

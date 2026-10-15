@@ -3,6 +3,7 @@ import { asc, desc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureDatabase } from "@/db/bootstrap";
 import {
+  customers,
   orderItems,
   orders,
   gloriaFoodCustomers,
@@ -339,4 +340,9 @@ export async function getCustomerByPhone(phone: string) {
   return customers.find(
     (customer) => customer.phone === phone
   );
+}
+export async function getCustomers() {
+  return await db
+    .select()
+    .from(customers);
 }

@@ -1,5 +1,15 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  jsonb,
+  numeric,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import type { OrderOption } from "../lib/types";
 
 export const menuCategories = pgTable("menu_categories", {
@@ -84,6 +94,21 @@ export const orders = pgTable(
     index("orders_collection_idx").on(t.collectionDate, t.collectionTime),
   ],
 );
+export const customers = pgTable(
+  "customers",
+  {
+    id: serial("id").primaryKey(),
+    name: text("name"),
+    phone: text("phone"),
+    email: text("email"),
+    orders: integer("orders"),
+    spend: numeric("spend"),
+    lastOrderDate: text("last_order_date"),
+    marketingConsent: text("marketing_consent"),
+    source: text("source"),
+  }
+);
+
 export const gloriaFoodCustomers = pgTable(
   "gloriafoodsexport",
   {
