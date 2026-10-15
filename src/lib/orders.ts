@@ -405,6 +405,13 @@ export async function getCustomerByPhone(phone: string) {
     (customer) => customer.phone === phone
   );
 }
+export async function getCustomerById(id: number) {
+  const customers = await getCombinedCustomerStats();
+
+  return customers.find(
+    (customer) => customer.id === id
+  );
+}
 export async function getCustomers() {
   return await db
     .select()

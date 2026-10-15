@@ -1,14 +1,12 @@
-import { getCustomerByPhone } from "@/lib/orders";
+import { getCustomerById } from "@/lib/orders";
 
-export default async function CustomerProfilePage({
+export default async function CustomerDetailPage({
   params,
 }: {
-  params: Promise<{ phone: string }>;
+  params: { id: string };
 }) {
-  const { phone } = await params;
-
-  const customer = await getCustomerByPhone(
-    decodeURIComponent(phone)
+  const customer = await getCustomerById(
+    Number(params.id)
   );
 
   if (!customer) {
