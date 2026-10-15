@@ -1,14 +1,35 @@
      import Link from "next/link";
 import { getCustomers } from "@/lib/orders";
 function getCustomerTier(orderCount: number) {
-  if (orderCount >= 50) return "👑 VIP";
-  if (orderCount >= 20) return "⭐ Gold";
+  function displayPhone(phone: string | null) {
+  if (!phone) return "-";
+
+  if (phone.startsWith("44")) {
+    return "0" + phone.slice(2);
+  }
+
+  return phone;
+}
+  if (orderCount >= 25) return "👑 VIP";
+  if (orderCount >= 10) return "⭐ Gold";
   if (orderCount >= 5) return "🟢 Regular";
   return "Customer";
 }
+function displayPhone(phone: string | null) {
+  if (!phone) return "-";
+
+  if (phone.startsWith("44")) {
+    return "0" + phone.slice(2);
+  }
+
+  return phone;
+}
 
 export default async function CustomersPage() {
-  const customers = await getCustomers();
+  const customers = (await getCustomers()).sort(
+  (a, b) => (b.orders ?? 0) - (a.orders ?? 0)
+);
+
 
 
   const returningCustomers = customers.filter(
@@ -122,7 +143,7 @@ const topCustomer = [...customers].sort(
 </td>
 
             <td className="py-3 text-amber-100">
-              {customer.phone}
+            {displayPhone(customer.phone)}
             </td>
 
             <td className="py-3 text-amber-100">
