@@ -356,7 +356,9 @@ if (incoming.length) {
                   {isActive && dueText ? <span className="font-normal text-black/55">· {dueText}</span> : null}
                 </p>
                 <div className="mt-3 text-sm">
-                  <p className="font-semibold">{o.customerName}</p>
+                  <p className="font-semibold">
+                  {o.customerName} (DEBUG)
+                  </p>
                   {o.customerStatus ? (
                   <p className="mt-1 text-xs font-semibold text-emerald-700">
                   {o.customerStatus}
