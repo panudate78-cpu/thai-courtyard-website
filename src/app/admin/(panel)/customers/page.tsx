@@ -141,7 +141,7 @@ const topCustomer = [...customers].sort(
             
            <td className="py-3">
   <Link
-    href={`/admin/customers/${encodeURIComponent(customer.phone ?? "")}`}
+    href={`/admin/customers/TEST`}
     className="text-amber-100 hover:text-amber-300"
   >
     {customer.name}
