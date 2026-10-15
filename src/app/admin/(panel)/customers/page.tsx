@@ -19,7 +19,9 @@ export default async function CustomersPage() {
   (total, customer) => total + Number(customer.spend ?? 0),
   0
 );
-const topCustomer = customers[0];
+const topCustomer = [...customers].sort(
+  (a, b) => Number(b.spend ?? 0) - Number(a.spend ?? 0)
+)[0];
 
   return (
     <div className="space-y-6">
@@ -46,7 +48,7 @@ const topCustomer = customers[0];
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
           <p className="text-sm text-amber-100/70">Customers</p>
           <p className="mt-2 text-4xl font-bold text-amber-300">
@@ -65,7 +67,7 @@ const topCustomer = customers[0];
         <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
           <p className="text-sm text-amber-100/70">Lifetime Revenue</p>
           <p className="mt-2 text-4xl font-bold text-amber-300">
-  £{(lifetimeRevenue / 100).toFixed(2)}
+  £{lifetimeRevenue.toFixed(2)}
 </p>
         </div>
         <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
@@ -78,9 +80,7 @@ const topCustomer = customers[0];
   </p>
 </div>
 <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
-  <p className="text-sm text-amber-100/70">
-    Historic Customers
-  </p>
+  
 
  
 </div>
