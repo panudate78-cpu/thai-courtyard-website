@@ -47,29 +47,36 @@ function toStatus(value: string): OrderStatus {
   return (ORDER_STATUSES as readonly string[]).includes(value) ? (value as OrderStatus) : "new";
 }
 
-function toView(o: OrderRow, items: OrderItemRow[]): OrderView {
-  return {
-    id: o.id,
-    number: orderNumber(o.id),
-    publicId: o.publicId,
-    customerName: o.customerName,
-    phone: o.phone,
-    email: o.email,
-    instructions: o.instructions,
-    collectionDate: o.collectionDate,
-    collectionTime: o.collectionTime,
-    subtotalPence: o.subtotalPence,
-    itemCount: o.itemCount,
-    status: toStatus(o.status),
-    emailStatus: o.emailStatus,
-    createdAt: o.createdAt.toISOString(),
-    items: items.map((i) => ({
-      id: i.id,
-      name: i.name,
-      quantity: i.quantity,
-      unitPricePence: i.unitPricePence,
-      lineTotalPence: i.lineTotalPence,
-      options: Array.isArray(i.options) ? i.options : [],
+function toView(
+  o: OrderRow,
+  items: OrderItemRow[],
+  customerStatus?: string,
+): OrderView {
+return {
+  id: o.id,
+  number: orderNumber(o.id),
+  publicId: o.publicId,
+  customerName: o.customerName,
+  phone: o.phone,
+  email: o.email,
+  instructions: o.instructions,
+  collectionDate: o.collectionDate,
+  collectionTime: o.collectionTime,
+  subtotalPence: o.subtotalPence,
+  itemCount: o.itemCount,
+  status: toStatus(o.status),
+  emailStatus: o.emailStatus,
+  createdAt: o.createdAt.toISOString(),
+
+  customerStatus,
+
+  items: items.map((i) => ({
+    id: i.id,
+    name: i.name,
+    quantity: i.quantity,
+    unitPricePence: i.unitPricePence,
+    lineTotalPence: i.lineTotalPence,
+    options: Array.isArray(i.options) ? i.options : [],
     })),
   };
 }
@@ -92,7 +99,31 @@ async function withItems(rows: OrderRow[]): Promise<OrderView[]> {
     list.push(item);
     byOrder.set(item.orderId, list);
   }
-  return rows.map((r) => toView(r, byOrder.get(r.id) ?? []));
+  const customerRows = await db
+  .select()
+  .from(customers);
+
+return rows.map((r) => {
+  const customer = customerRows.find(
+    (c) => c.phone === r.phone
+  );
+
+  let customerStatus = "🆕 NEW CUSTOMER";
+
+  if (customer?.orders && customer.orders >= 25) {
+    customerStatus = "👑 VIP CUSTOMER";
+  } else if (customer?.orders && customer.orders >= 10) {
+    customerStatus = "⭐ GOLD CUSTOMER";
+  } else if (customer?.orders && customer.orders >= 2) {
+    customerStatus = "🟢 RETURNING CUSTOMER";
+  }
+
+  return toView(
+    r,
+    byOrder.get(r.id) ?? [],
+    customerStatus
+  );
+});
 }
 
 /** Validates the basket against the live menu (server-side pricing) and stores the order. */
