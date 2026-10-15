@@ -34,7 +34,7 @@ export default async function CustomersPage() {
   (a, b) => (b.orders ?? 0) - (a.orders ?? 0)
 );
 
-  const revenue = 9999;
+  const revenue = await getRevenue("lastMonth");
 
 
   const returningCustomers = customers.filter(
@@ -91,7 +91,7 @@ const topCustomer = [...customers].sort(
         </div>
 
         <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
-          <p className="text-sm text-amber-100/70">Revenue (MTD)</p>
+          <p className="text-sm text-amber-100/70">Revenue (LAST MONTH TEST)</p>
           <p className="mt-2 text-4xl font-bold text-amber-300">
   £{revenue.toFixed(2)}
 
