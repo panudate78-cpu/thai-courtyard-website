@@ -357,7 +357,7 @@ if (incoming.length) {
                 </p>
                 <div className="mt-3 text-sm">
                   <p className="font-semibold">
-                  {o.customerName} (DEBUG)
+                  {o.customerName}
                   </p>
                   {o.customerStatus ? (
                   <p className="mt-1 text-xs font-semibold text-emerald-700">
