@@ -395,3 +395,28 @@ export async function findCustomerByPhone(phone: string) {
 
   return results[0] ?? null;
 }
+export async function getMonthToDateRevenue() {
+  const rows = await db
+    .select()
+    .from(orders);
+
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const total = rows
+    .filter((order) => {
+      const date = new Date(order.createdAt);
+
+      return (
+        date.getMonth() === currentMonth &&
+        date.getFullYear() === currentYear
+      );
+    })
+    .reduce(
+      (sum, order) => sum + order.subtotalPence,
+      0
+    );
+
+  return total / 100;
+}

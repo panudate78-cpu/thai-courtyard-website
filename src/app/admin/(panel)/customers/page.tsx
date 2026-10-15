@@ -1,6 +1,16 @@
-     import Link from "next/link";
-import { getCustomers } from "@/lib/orders";
+import Link from "next/link";
+import {
+  getCustomers,
+  getMonthToDateRevenue,
+} from "@/lib/orders";
+
 function getCustomerTier(orderCount: number) {
+  if (orderCount >= 25) return "👑 VIP";
+  if (orderCount >= 10) return "⭐ Gold";
+  if (orderCount >= 3) return "🟢 Regular";
+  return "Customer";
+}
+
 function displayPhone(phone: string | null) {
   if (!phone) return "-";
 
@@ -14,29 +24,17 @@ function displayPhone(phone: string | null) {
     return "0" + cleaned.slice(2);
   }
 
-  return phone;
-}
-  if (orderCount >= 25) return "👑 VIP";
-  if (orderCount >= 10) return "⭐ Gold";
-  if (orderCount >= 3) return "🟢 Regular";
-  return "Customer";
-}
-function displayPhone(phone: string | null) {
-  if (!phone) return "-";
-
-  if (phone.startsWith("44")) {
-    return "0" + phone.slice(2);
-  }
-
-  return phone;
+  return cleaned;
 }
 
 export default async function CustomersPage() {
   const customers = (await getCustomers()).sort(
+    
   (a, b) => (b.orders ?? 0) - (a.orders ?? 0)
 );
 
-
+  const monthToDateRevenue =
+    await getMonthToDateRevenue();
 
   const returningCustomers = customers.filter(
   (customer) => (customer.orders ?? 0) > 1
@@ -92,9 +90,10 @@ const topCustomer = [...customers].sort(
         </div>
 
         <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
-          <p className="text-sm text-amber-100/70">Lifetime Revenue</p>
+          <p className="text-sm text-amber-100/70">Revenue (MTD)</p>
           <p className="mt-2 text-4xl font-bold text-amber-300">
-  £{lifetimeRevenue.toFixed(2)}
+  £{monthToDateRevenue.toFixed(2)}
+
 </p>
         </div>
         <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
