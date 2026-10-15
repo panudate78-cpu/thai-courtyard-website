@@ -34,8 +34,8 @@ export default async function CustomersPage() {
   (a, b) => (b.orders ?? 0) - (a.orders ?? 0)
 );
 
-  const revenue = await getRevenue("lastMonth");
-
+  const revenue =
+  await getRevenue("month");
 
   const returningCustomers = customers.filter(
   (customer) => (customer.orders ?? 0) > 1
