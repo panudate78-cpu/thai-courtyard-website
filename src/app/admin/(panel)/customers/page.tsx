@@ -141,7 +141,8 @@ const topCustomer = [...customers].sort(
             
            <td className="py-3">
   <Link
-    href={`/admin/customers/TEST`}
+    href={`/admin/customers/${customer.id}`}
+
     className="text-amber-100 hover:text-amber-300"
   >
     {customer.name} ({customer.id})
