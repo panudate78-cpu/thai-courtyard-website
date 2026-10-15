@@ -406,11 +406,18 @@ export async function getCustomerByPhone(phone: string) {
   );
 }
 export async function getCustomerById(id: number) {
-  const customers = await getCombinedCustomerStats();
+const customers = await getCombinedCustomerStats();
 
-  return customers.find(
-    (customer) => customer.id === id
-  );
+console.log(
+  "Looking for:",
+  id,
+  "Found:",
+  customers.find(c => c.id === id)
+);
+
+return customers.find(
+  (customer) => customer.id === id
+);
 }
 export async function getCustomers() {
   return await db
