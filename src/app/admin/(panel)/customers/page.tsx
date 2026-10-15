@@ -160,7 +160,9 @@ const topCustomer = [...customers].sort(
             </td>
             
             <td className="py-3 text-amber-100">
-  {customer.lastOrderDate ?? "-"}
+  {customer.lastOrderDate?.includes("/")
+  ? customer.lastOrderDate
+  : new Date(customer.lastOrderDate ?? "").toLocaleDateString("en-GB")}
 </td>
 <td className="py-3 text-amber-100">
   {getCustomerTier(customer.orders ?? 0)}
