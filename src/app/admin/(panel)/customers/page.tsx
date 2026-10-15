@@ -1,18 +1,24 @@
      import Link from "next/link";
 import { getCustomers } from "@/lib/orders";
 function getCustomerTier(orderCount: number) {
-  function displayPhone(phone: string | null) {
+function displayPhone(phone: string | null) {
   if (!phone) return "-";
 
-  if (phone.startsWith("44")) {
-    return "0" + phone.slice(2);
+  const cleaned = phone.replace(/\s+/g, "");
+
+  if (cleaned.startsWith("+44")) {
+    return "0" + cleaned.slice(3);
+  }
+
+  if (cleaned.startsWith("44")) {
+    return "0" + cleaned.slice(2);
   }
 
   return phone;
 }
   if (orderCount >= 25) return "👑 VIP";
   if (orderCount >= 10) return "⭐ Gold";
-  if (orderCount >= 5) return "🟢 Regular";
+  if (orderCount >= 3) return "🟢 Regular";
   return "Customer";
 }
 function displayPhone(phone: string | null) {
@@ -47,7 +53,7 @@ const topCustomer = [...customers].sort(
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-semibold text-amber-400">
-        Customers
+        
       </h1>
 
       <div className="rounded-xl border border-amber-500/30 bg-[#1a1714] p-6">

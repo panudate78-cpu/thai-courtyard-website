@@ -104,7 +104,13 @@ export async function createOrder(input: OrderInput): Promise<{ order: OrderView
   if (!isValidCollectionSlot(input.collectionDate, input.collectionTime, toSlotConfig(settings))) {
     throw new OrderError("Sorry, that collection time is no longer available. Please choose another time.");
   }
+const existingCustomer = await findCustomerByPhone(
+  normalisePhone(input.phone)
+);
 
+
+
+console.log("Customer found:", existingCustomer);
   const menu = await getMenu();
   const itemMap = new Map<number, MenuItem>();
   for (const c of menu) for (const i of c.items) itemMap.set(i.id, i);
@@ -149,30 +155,57 @@ export async function createOrder(input: OrderInput): Promise<{ order: OrderView
   const publicId = crypto.randomBytes(12).toString("base64url");
 
   const order = await db.transaction(async (tx) => {
-    const [row] = await tx
-      .insert(orders)
-      .values({
-        publicId,
-        customerName: input.name,
-        phone: input.phone,
+  const [row] = await tx
+    .insert(orders)
+    .values({
+      publicId,
+      customerName: input.name,
+      phone: input.phone,
+      email: input.email,
+      instructions: input.instructions,
+      collectionDate: input.collectionDate,
+      collectionTime: input.collectionTime,
+      subtotalPence,
+      itemCount,
+    })
+    .returning();
+
+  const itemRows = await tx
+    .insert(orderItems)
+    .values(lines.map((l) => ({ ...l, orderId: row.id })))
+    .returning();
+
+  if (existingCustomer) {
+    await tx
+      .update(customers)
+      .set({
+        orders: (existingCustomer.orders ?? 0) + 1,
+        spend: String(
+          Number(existingCustomer.spend ?? 0) +
+          subtotalPence / 100
+        ),
+        lastOrderDate: input.collectionDate,
         email: input.email,
-        instructions: input.instructions,
-        collectionDate: input.collectionDate,
-        collectionTime: input.collectionTime,
-        subtotalPence,
-        itemCount,
+        name: input.name,
       })
-      .returning();
-    const itemRows = await tx
-      .insert(orderItems)
-      .values(lines.map((l) => ({ ...l, orderId: row.id })))
-      .returning();
-    return toView(row, itemRows);
-  });
+      .where(eq(customers.id, existingCustomer.id));
+  } else {
+    await tx.insert(customers).values({
+      name: input.name,
+      phone: normalisePhone(input.phone),
+      email: input.email,
+      orders: 1,
+      spend: String(subtotalPence / 100),
+      lastOrderDate: input.collectionDate,
+      source: "thai-courtyard",
+    });
+  }
 
-  return { order, settings };
+  return toView(row, itemRows);
+});
+
+return { order, settings };
 }
-
 export async function sendOrderNotifications(order: OrderView, settings: Settings) {
   const to = restaurantEmail(settings);
   const restaurantMail = orderRestaurantEmail(order);
@@ -345,4 +378,20 @@ export async function getCustomers() {
   return await db
     .select()
     .from(customers);
+}
+
+export async function findCustomerByPhone(phone: string) {
+  const results = await db
+    .select()
+    .from(customers)
+    .where(
+  or(
+    eq(customers.phone, phone),
+    eq(customers.phone, phone.replace(/^0/, "44")),
+    eq(customers.phone, phone.replace(/^0/, "+44"))
+  )
+)
+    .limit(1);
+
+  return results[0] ?? null;
 }
