@@ -1,8 +1,9 @@
 import Link from "next/link";
 import {
   getCustomers,
-  getMonthToDateRevenue,
+  getRevenue,
 } from "@/lib/orders";
+
 
 function getCustomerTier(orderCount: number) {
   if (orderCount >= 25) return "👑 VIP";
@@ -33,8 +34,8 @@ export default async function CustomersPage() {
   (a, b) => (b.orders ?? 0) - (a.orders ?? 0)
 );
 
-  const monthToDateRevenue =
-    await getMonthToDateRevenue();
+  const revenue =
+  await getRevenue("month");
 
   const returningCustomers = customers.filter(
   (customer) => (customer.orders ?? 0) > 1
@@ -92,7 +93,7 @@ const topCustomer = [...customers].sort(
         <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">
           <p className="text-sm text-amber-100/70">Revenue (MTD)</p>
           <p className="mt-2 text-4xl font-bold text-amber-300">
-  £{monthToDateRevenue.toFixed(2)}
+  £{revenue.toFixed(2)}
 
 </p>
         </div>
