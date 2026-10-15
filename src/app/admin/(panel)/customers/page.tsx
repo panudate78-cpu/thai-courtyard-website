@@ -145,7 +145,7 @@ const topCustomer = [...customers].sort(
 
     className="text-amber-100 hover:text-amber-300"
   >
-    {customer.name} ({customer.id})
+    {customer.name} ({customer.id}) XYZ123
   </Link>
 </td>
 
