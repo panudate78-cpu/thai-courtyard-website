@@ -424,10 +424,19 @@ export async function getRevenue(period: string) {
     }
   });
 
-  return (
-    filtered.reduce(
-      (sum, order) => sum + order.subtotalPence,
-      0
-    ) / 100
-  );
-}
+ const total =
+  filtered.reduce(
+    (sum, order) => sum + order.subtotalPence,
+    0
+  ) / 100;
+
+console.log(
+  "Period:",
+  period,
+  "Orders found:",
+  filtered.length,
+  "Revenue:",
+  total
+);
+
+return total;}
