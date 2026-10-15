@@ -357,7 +357,17 @@ if (incoming.length) {
                 </p>
                 <div className="mt-3 text-sm">
                   <p className="font-semibold">{o.customerName}</p>
+                  {o.customerStatus ? (
+                  <p className="mt-1 text-xs font-semibold text-emerald-700">
+                  {o.customerStatus}
+                  </p>
+                  ) : null}
                   <p className="mt-0.5 flex flex-wrap gap-x-4 gap-y-1 text-black/65">
+                  {o.customerStatus ? (
+                  <p className="mt-2 text-xs font-semibold text-emerald-700">
+                  {o.customerStatus}
+                  </p>
+                  ) : null}
                     <a href={`tel:${o.phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-1 hover:underline">
                       <Phone className="h-3.5 w-3.5" aria-hidden="true" />
                       {o.phone}

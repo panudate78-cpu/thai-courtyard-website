@@ -81,7 +81,10 @@ export type OrderView = {
   emailStatus: string;
   createdAt: string;
   items: OrderLineView[];
+
+  customerStatus?: string;
 };
+
 
 export const BOOKING_STATUSES = ["pending", "confirmed", "declined", "cancelled"] as const;
 export type BookingStatus = (typeof BOOKING_STATUSES)[number];
