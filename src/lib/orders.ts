@@ -104,9 +104,19 @@ async function withItems(rows: OrderRow[]): Promise<OrderView[]> {
   .from(customers);
 
 return rows.map((r) => {
-  const customer = customerRows.find(
-    (c) => c.phone === r.phone
-  );
+  console.log("ORDER PHONE:", r.phone);
+
+const customer = customerRows.find((c) => {
+  if (
+    c.phone === r.phone
+  ) {
+    console.log("MATCH FOUND:", c.phone);
+    return true;
+  }
+  return false;
+});
+
+console.log("CUSTOMER:", customer);
 console.log("ORDER PHONE:", r.phone);
 console.log(
   "CUSTOMER PHONES:",
