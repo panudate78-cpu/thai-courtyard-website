@@ -140,7 +140,8 @@ export function isValidCollectionSlot(
   cfg: SlotConfig,
   graceMinutes = 10
 ) {
-  return true;
+  if (!/^\d{2}:\d{2}$/.test(time)) return false;
+  return getSlotsForDate(date, cfg, londonNow(), graceMinutes).includes(time);
 }
 
 /** Table booking times: every 30 minutes from opening until an hour before closing. */
