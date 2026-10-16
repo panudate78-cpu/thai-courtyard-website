@@ -107,7 +107,11 @@ return rows.map((r) => {
   const customer = customerRows.find(
     (c) => c.phone === r.phone
   );
-
+console.log("ORDER PHONE:", r.phone);
+console.log(
+  "CUSTOMER PHONES:",
+  customerRows.slice(0, 5).map(c => c.phone)
+);
   let customerStatus = "🆕 NEW CUSTOMER";
 
   if (customer?.orders && customer.orders >= 25) {
