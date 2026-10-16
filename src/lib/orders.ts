@@ -106,15 +106,11 @@ async function withItems(rows: OrderRow[]): Promise<OrderView[]> {
 return rows.map((r) => {
   console.log("ORDER PHONE:", r.phone);
 
-const customer = customerRows.find((c) => {
-  if (
-    c.phone === r.phone
-  ) {
-    console.log("MATCH FOUND:", c.phone);
-    return true;
-  }
-  return false;
-});
+const customer = customerRows.find(
+  (c) =>
+    normalisePhone(c.phone ?? "") ===
+    normalisePhone(r.phone ?? "")
+);
 
 console.log("CUSTOMER:", customer);
 console.log("ORDER PHONE:", r.phone);
@@ -122,15 +118,15 @@ console.log(
   "CUSTOMER PHONES:",
   customerRows.slice(0, 5).map(c => c.phone)
 );
-  let customerStatus = "🆕 NEW CUSTOMER";
+let customerStatus = "🆕 NEW CUSTOMER";
 
-  if (customer?.orders && customer.orders >= 25) {
-    customerStatus = "👑 VIP CUSTOMER";
-  } else if (customer?.orders && customer.orders >= 10) {
-    customerStatus = "⭐ GOLD CUSTOMER";
-  } else if (customer?.orders && customer.orders >= 2) {
-    customerStatus = "🟢 RETURNING CUSTOMER";
-  }
+if (customer?.orders && customer.orders >= 25) {
+  customerStatus = "👑 VIP CUSTOMER";
+} else if (customer?.orders && customer.orders >= 10) {
+  customerStatus = "⭐ GOLD CUSTOMER";
+} else if (customer?.orders && customer.orders >= 2) {
+  customerStatus = "🟢 RETURNING CUSTOMER";
+}
 
   return toView(
     r,
