@@ -119,7 +119,11 @@ export function OrdersBoard({ initialOrders, scope, today }: Props) {
   const [orders, setOrders] = useState(initialOrders);
   const [tab, setTab] = useState<Tab>(scope === "live" ? "active" : "all");
   const [query, setQuery] = useState("");
-  const [soundOn, setSoundOn] = useState(false);
+ const [soundOn, setSoundOn] = useState(() => {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem("soundOn") === "true";
+});
+
   const [busyId, setBusyId] = useState<number | null>(null);
   const [fresh, setFresh] = useState<number[]>([]);
   const [now, setNow] = useState<LondonNow | null>(null);
@@ -206,6 +210,7 @@ if (incoming.length) {
     const next = !soundRef.current;
     soundRef.current = next;
     setSoundOn(next);
+localStorage.setItem("soundOn", String(next));
     if (next && audio.current) {
       void audio.current.resume();
       playChime(audio.current);
