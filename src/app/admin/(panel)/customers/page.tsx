@@ -87,7 +87,6 @@ const topCustomer = [...customers].sort(
           <p className="mt-2 text-4xl font-bold text-amber-300">
   {returningCustomers}
 </p>
-``
         </div>
 
         <div className="rounded-xl border border-amber-500/20 bg-[#1a1714] p-5">

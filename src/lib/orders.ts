@@ -469,7 +469,6 @@ export async function getRevenue(period: string) {
 
       case "lastMonth":
   return false;
-``
 
       case "year":
         return date.getFullYear() === now.getFullYear();

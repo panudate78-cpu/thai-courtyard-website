@@ -178,3 +178,39 @@ export const siteSettings = pgTable("site_settings", {
   announcement: text("announcement"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Additive business-dashboard tables. Created with IF NOT EXISTS by
+ * ensureBusinessTables() — not part of the original menu/order migration,
+ * so existing databases are left untouched until that helper runs.
+ */
+export const businessSettings = pgTable("business_settings", {
+  id: integer("id").primaryKey(),
+  openingHours: jsonb("opening_hours").$type<Record<string, { closed: boolean; open: string; close: string }>>().notNull(),
+  holidayHours: jsonb("holiday_hours").$type<
+    { id: string; date: string; closed: boolean; open: string | null; close: string | null; note: string }[]
+  >().notNull(),
+  specialEvents: jsonb("special_events").$type<
+    { id: string; title: string; date: string; endDate: string | null; description: string }[]
+  >().notNull(),
+  contact: jsonb("contact").$type<{
+    phoneDisplay: string;
+    email: string;
+    street: string;
+    locality: string;
+    postcode: string;
+  }>().notNull(),
+  notices: jsonb("notices").$type<{ id: string; title: string; body: string; active: boolean }[]>().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const seoOverrides = pgTable("seo_overrides", {
+  id: serial("id").primaryKey(),
+  path: text("path").notNull().unique(),
+  metaTitle: text("meta_title"),
+  metaDescription: text("meta_description"),
+  ogTitle: text("og_title"),
+  ogDescription: text("og_description"),
+  ogImage: text("og_image"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

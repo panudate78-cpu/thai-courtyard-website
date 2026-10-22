@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Dev-only. Lets the hosted preview iframe load the admin dashboard.
+  allowedDevOrigins: ["*.e2b.app", "*.e2b.dev"],
   images: {
     minimumCacheTTL: 60 * 60 * 24 * 30,
   },

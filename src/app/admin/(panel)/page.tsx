@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { CalendarDays, Clock, Mail, PoundSterling, ShoppingBag } from "lucide-react";
+import { BusinessOverview } from "@/components/admin/business/BusinessOverview";
 import { OrdersBoard } from "@/components/admin/OrdersBoard";
 import { getDashboardStats, listBookings } from "@/lib/admin-data";
 import { formatPrice } from "@/lib/format";
@@ -71,6 +72,8 @@ export default async function AdminDashboardPage() {
           {settings.orderingEnabled ? "● Online ordering is live" : "● Online ordering is paused"}
         </Link>
       </header>
+
+      <BusinessOverview />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Stat label="New orders" value={stats.newOrders} icon={ShoppingBag} highlight={stats.newOrders > 0} href="/admin/orders" />
