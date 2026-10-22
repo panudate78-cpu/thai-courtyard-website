@@ -1,4 +1,5 @@
 import { pool } from "@/db";
+import { CUSTOMERS_CREATE_SQL } from "./ensure-customers";
 
 /**
  * Additive migration for the business dashboard.
@@ -6,17 +7,7 @@ import { pool } from "@/db";
  * break ordering, bookings, or the public site.
  */
 export const BUSINESS_MIGRATION_SQL = [
-  `CREATE TABLE IF NOT EXISTS "customers" (
-    "id" serial PRIMARY KEY,
-    "name" text,
-    "phone" text,
-    "email" text,
-    "orders" integer,
-    "spend" numeric,
-    "last_order_date" text,
-    "marketing_consent" text,
-    "source" text
-  )`,
+  CUSTOMERS_CREATE_SQL,
   `CREATE TABLE IF NOT EXISTS "business_settings" (
     "id" integer PRIMARY KEY,
     "opening_hours" jsonb NOT NULL,

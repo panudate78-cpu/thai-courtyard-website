@@ -1,6 +1,7 @@
 import { count, sql } from "drizzle-orm";
 import { db, pool } from "@/db";
 import { ensureBusinessTables } from "./business-migration";
+import { ensureCustomersTable } from "./ensure-customers";
 import { MIGRATION_STATEMENTS } from "./migration-sql";
 import { menuCategories, menuItems, optionChoices, optionGroups, siteSettings } from "./schema";
 import { SEED_MENU, type SeedGroup } from "./seed-data";
@@ -55,6 +56,7 @@ async function bootstrap() {
   }
   await db.insert(siteSettings).values({ id: 1 }).onConflictDoNothing();
   await seedMenuIfEmpty();
+  await ensureCustomersTable();
   await ensureBusinessTables();
 }
 
