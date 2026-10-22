@@ -2,6 +2,8 @@ import crypto from "node:crypto";
 import { asc, desc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureDatabase } from "@/db/bootstrap";
+import { ensureCustomersTable } from "@/db/ensure-customers";
+import { withDatabaseError } from "./db-error";
 import {
   customers,
   orderItems,
@@ -83,6 +85,7 @@ return {
 
 async function withItems(rows: OrderRow[]): Promise<OrderView[]> {
   if (!rows.length) return [];
+  await ensureCustomersTable();
   const items = await db
     .select()
     .from(orderItems)
@@ -99,9 +102,7 @@ async function withItems(rows: OrderRow[]): Promise<OrderView[]> {
     list.push(item);
     byOrder.set(item.orderId, list);
   }
-  const customerRows = await db
-  .select()
-  .from(customers);
+  const customerRows = await withDatabaseError(() => db.select().from(customers));
 
 return rows.map((r) => {
   console.log("ORDER PHONE:", r.phone);
@@ -430,23 +431,26 @@ return customers.find(
 );
 }
 export async function getCustomers() {
-  return await db
-    .select()
-    .from(customers);
+  await ensureDatabase();
+  await ensureCustomersTable();
+  return withDatabaseError(() => db.select().from(customers));
 }
 
 export async function findCustomerByPhone(phone: string) {
-  const results = await db
-    .select()
-    .from(customers)
-    .where(
-  or(
-    eq(customers.phone, phone),
-    eq(customers.phone, phone.replace(/^0/, "44")),
-    eq(customers.phone, phone.replace(/^0/, "+44"))
-  )
-)
-    .limit(1);
+  await ensureCustomersTable();
+  const results = await withDatabaseError(() =>
+    db
+      .select()
+      .from(customers)
+      .where(
+        or(
+          eq(customers.phone, phone),
+          eq(customers.phone, phone.replace(/^0/, "44")),
+          eq(customers.phone, phone.replace(/^0/, "+44")),
+        ),
+      )
+      .limit(1),
+  );
 
   return results[0] ?? null;
 }
@@ -469,7 +473,6 @@ export async function getRevenue(period: string) {
 
       case "lastMonth":
   return false;
-``
 
       case "year":
         return date.getFullYear() === now.getFullYear();

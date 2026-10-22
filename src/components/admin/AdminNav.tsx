@@ -6,14 +6,22 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   CalendarDays,
+  CalendarRange,
   ExternalLink,
+  FileBarChart,
   LayoutDashboard,
-  Users,
+  LineChart,
   LogOut,
   Mail,
+  Megaphone,
   Menu,
+  PieChart,
+  Search,
   Settings as SettingsIcon,
   ShoppingBag,
+  Soup,
+  Store,
+  Users,
   UtensilsCrossed,
   X,
 } from "lucide-react";
@@ -26,17 +34,33 @@ export function AdminNav({ counts }: { counts: Counts }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
-  const links = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, badge: 0 },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: counts.newOrders },
-
-  { href: "/admin/customers", label: "Customers", icon: Users, badge: 0 },
-
-  { href: "/admin/menu", label: "Menu & prices", icon: UtensilsCrossed, badge: 0 },
-  { href: "/admin/bookings", label: "Bookings", icon: CalendarDays, badge: counts.pendingBookings },
-  { href: "/admin/messages", label: "Messages", icon: Mail, badge: counts.unreadMessages },
-  { href: "/admin/settings", label: "Settings", icon: SettingsIcon, badge: 0 },
-];
+  const groups = [
+    {
+      label: "Operations",
+      links: [
+        { href: "/admin", label: "Dashboard", icon: LayoutDashboard, badge: 0 },
+        { href: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: counts.newOrders },
+        { href: "/admin/customers", label: "Customers", icon: Users, badge: 0 },
+        { href: "/admin/menu", label: "Menu & prices", icon: UtensilsCrossed, badge: 0 },
+        { href: "/admin/bookings", label: "Bookings", icon: CalendarDays, badge: counts.pendingBookings },
+        { href: "/admin/messages", label: "Messages", icon: Mail, badge: counts.unreadMessages },
+        { href: "/admin/settings", label: "Settings", icon: SettingsIcon, badge: 0 },
+      ],
+    },
+    {
+      label: "Business",
+      links: [
+        { href: "/admin/sales", label: "Sales", icon: LineChart, badge: 0 },
+        { href: "/admin/food", label: "Food performance", icon: Soup, badge: 0 },
+        { href: "/admin/booking-analytics", label: "Booking analytics", icon: CalendarRange, badge: 0 },
+        { href: "/admin/customer-analytics", label: "Customer analytics", icon: PieChart, badge: 0 },
+        { href: "/admin/marketing", label: "Marketing", icon: Megaphone, badge: 0 },
+        { href: "/admin/reports", label: "Reports", icon: FileBarChart, badge: 0 },
+        { href: "/admin/restaurant", label: "Restaurant", icon: Store, badge: 0 },
+        { href: "/admin/seo", label: "SEO", icon: Search, badge: 0 },
+      ],
+    },
+  ];
 
   const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
 
@@ -48,35 +72,40 @@ export function AdminNav({ counts }: { counts: Counts }) {
 
   const nav = (
     <nav aria-label="Admin">
-      <ul className="space-y-1">
-        {links.map(({ href, label, icon: Icon, badge }) => {
-          const active = isActive(href);
-          return (
-            <li key={href}>
-              <Link
-                href={href}
-                onClick={() => setOpen(false)}
-                aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-                  active ? "bg-gold text-charcoal" : "text-cream/80 hover:bg-cream/10 hover:text-cream"
-                }`}
-              >
-                <Icon className="h-4 w-4" aria-hidden="true" />
-                <span className="flex-1">{label}</span>
-                {badge > 0 ? (
-                  <span
-                    className={`min-w-6 rounded-full px-1.5 py-0.5 text-center text-xs font-bold ${
-                      active ? "bg-charcoal text-cream" : "bg-gold text-charcoal"
+      {groups.map((group) => (
+        <div key={group.label} className="mb-4">
+          <p className="px-3 pb-1 text-[10px] font-semibold tracking-[0.22em] text-cream/40 uppercase">{group.label}</p>
+          <ul className="space-y-1">
+            {group.links.map(({ href, label, icon: Icon, badge }) => {
+              const active = isActive(href);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                      active ? "bg-gold text-charcoal" : "text-cream/80 hover:bg-cream/10 hover:text-cream"
                     }`}
                   >
-                    {badge}
-                  </span>
-                ) : null}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+                    <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span className="flex-1">{label}</span>
+                    {badge > 0 ? (
+                      <span
+                        className={`min-w-6 rounded-full px-1.5 py-0.5 text-center text-xs font-bold ${
+                          active ? "bg-charcoal text-cream" : "bg-gold text-charcoal"
+                        }`}
+                      >
+                        {badge}
+                      </span>
+                    ) : null}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </nav>
   );
 
@@ -124,7 +153,7 @@ export function AdminNav({ counts }: { counts: Counts }) {
         </button>
       </div>
       {open ? (
-        <div id="admin-mobile-nav" className="fixed inset-x-0 top-14 z-40 space-y-4 bg-charcoal p-4 shadow-2xl lg:hidden">
+        <div id="admin-mobile-nav" className="fixed inset-x-0 top-14 z-40 max-h-[calc(100svh-3.5rem)] space-y-4 overflow-y-auto bg-charcoal p-4 shadow-2xl lg:hidden">
           {nav}
           {footer}
         </div>
