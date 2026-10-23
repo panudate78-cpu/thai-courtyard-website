@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, Trash2 } from "lucide-react";
-import { DAY_NAMES, SITE } from "@/lib/site";
+import { DAY_NAMES } from "@/lib/site";
 import { defaultOpeningHours, type BusinessSettingsView, type DayKey } from "@/lib/business/settings-model";
 import { Notice, Toggle, useNotice } from "../AdminUI";
 
@@ -46,7 +46,7 @@ export function RestaurantForm({ initial }: { initial: BusinessSettingsView }) {
         }),
       });
       if (res.status === 401) {
-        window.location.href = "/admin/login";
+        window.location.assign("/admin/login");
         return;
       }
       const data = (await res.json().catch(() => ({}))) as { error?: string };
@@ -90,10 +90,10 @@ export function RestaurantForm({ initial }: { initial: BusinessSettingsView }) {
       <section className="adm-card p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-semibold">Opening hours</h2>
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-amber-900 uppercase">Saved for the team · not published</span>
+          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold tracking-wide text-emerald-800 uppercase">Live on website</span>
         </div>
         <p className="mt-1 text-sm text-black/55">
-          The public website, collection slots and booking times still use {SITE.hoursSummary}. Changing these hours does not change what guests can book. To stop online orders on a date, add it under Settings → Holiday closures.
+          Saving these hours updates the public website, collection slots and booking times immediately. To close on a specific date, add it under Holiday hours below or Settings → Holiday closures.
         </p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[36rem] text-sm">
@@ -127,13 +127,13 @@ export function RestaurantForm({ initial }: { initial: BusinessSettingsView }) {
           </table>
         </div>
         <button type="button" className="adm-btn mt-3" onClick={() => setForm({ ...form, openingHours: defaultOpeningHours() })}>
-          Reset to website hours
+          Reset to platform defaults
         </button>
       </section>
 
       <section className="adm-card p-5">
         <h2 className="font-semibold">Holiday hours</h2>
-        <p className="mt-1 text-sm text-black/55">A staff record of Christmas, private hire and other exceptions. This list does not close online ordering by itself.</p>
+        <p className="mt-1 text-sm text-black/55">One-off exceptions (Christmas, private hire…). Closed dates stop collection slots and online bookings; custom hours override the weekly timetable for that date.</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <input type="date" className="adm-input w-auto" value={holidayDate} onChange={(event) => setHolidayDate(event.target.value)} aria-label="Holiday date" />
           <button
@@ -164,7 +164,7 @@ export function RestaurantForm({ initial }: { initial: BusinessSettingsView }) {
                     setForm({
                       ...form,
                       holidayHours: form.holidayHours.map((item) =>
-                        item.id === row.id ? { ...item, closed: event.target.checked, open: event.target.checked ? null : "12:00", close: event.target.checked ? null : "21:00" } : item,
+                        item.id === row.id ? { ...item, closed: event.target.checked, open: event.target.checked ? null : "12:00", close: event.target.checked ? null : "22:00" } : item,
                       ),
                     })
                   }
@@ -202,7 +202,7 @@ export function RestaurantForm({ initial }: { initial: BusinessSettingsView }) {
                   <input
                     type="time"
                     className="adm-input w-32"
-                    value={row.close ?? "21:00"}
+                    value={row.close ?? "22:00"}
                     onChange={(event) =>
                       setForm({
                         ...form,
@@ -271,10 +271,10 @@ export function RestaurantForm({ initial }: { initial: BusinessSettingsView }) {
       <section className="adm-card p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-semibold">Contact information</h2>
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-amber-900 uppercase">Not published</span>
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-amber-900 uppercase">Staff record</span>
         </div>
         <p className="mt-1 text-sm text-black/55">
-          Guests still see {SITE.phoneDisplay} and {SITE.addressLine}. This copy is for the management record.
+          Guests see the contact details in Business Profile above. This copy is an internal management record (kept in sync when you save the profile).
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {(

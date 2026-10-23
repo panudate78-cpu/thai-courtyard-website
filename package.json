@@ -1,5 +1,5 @@
 {
-  "name": "nextjs-postgresql-template",
+  "name": "restaurant-management-platform",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -19,6 +19,8 @@
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "sharp": "^0.35.5",
+    "unpdf": "^1.9.1",
+    "xlsx": "^0.18.5",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -33,5 +35,6 @@
     "postcss": "8.5.8",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3"
-  }
+  },
+  "description": "White-label restaurant website, online ordering, bookings and business analytics platform."
 }

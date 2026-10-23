@@ -1,25 +1,31 @@
 import type { Metadata } from "next";
-import { Clock, MapPin, Navigation, Phone, Star } from "lucide-react";
+import { Clock, Mail, MapPin, Navigation, Phone, Star } from "lucide-react";
 import { ContactForm } from "@/components/forms/ContactForm";
-import { DeliverooButton, JsonLd, OpeningHours, PageHero } from "@/components/ui";
+import { DeliveryButton, JsonLd, OpeningHours, PageHero, FacebookIcon, InstagramIcon } from "@/components/ui";
+import { getRestaurantConfigSafe } from "@/lib/restaurant";
 import { breadcrumbJsonLd } from "@/lib/seo";
-import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Contact & Opening Hours",
-  description:
-    "Find Thai Courtyard at 105 Walton Road, East Molesey, KT8 0DR. Open Tuesday to Saturday 12:00–21:00. Call 020 8941 3595 or send us a message.",
-  alternates: { canonical: "/contact" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getRestaurantConfigSafe();
+  return {
+    title: "Contact & Opening Hours",
+    description: `Find ${config.name} at ${config.addressLine}. Open ${config.hoursSummary}. Call ${config.phoneDisplay} or send us a message.`,
+    alternates: { canonical: "/contact" },
+  };
+}
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const config = await getRestaurantConfigSafe();
   return (
     <>
       <JsonLd
-        data={breadcrumbJsonLd([
-          { name: "Home", path: "/" },
-          { name: "Contact", path: "/contact" },
-        ])}
+        data={breadcrumbJsonLd(
+          [
+            { name: "Home", path: "/" },
+            { name: "Contact", path: "/contact" },
+          ],
+          config,
+        )}
       />
       <PageHero
         eyebrow="Get in touch"
@@ -34,14 +40,15 @@ export default function ContactPage() {
               <MapPin className="h-6 w-6 text-gold-deep" aria-hidden="true" />
               <h2 className="mt-3 font-serif text-2xl font-semibold">Address</h2>
               <address className="mt-2 text-charcoal/75 not-italic">
-                Thai Courtyard
+                {config.name}
                 <br />
-                {SITE.address.street}
+                {config.address.street}
                 <br />
-                {SITE.address.locality}, {SITE.address.postcode}
+                {config.address.locality}
+                {config.address.region ? <>, {config.address.region}</> : null}, {config.address.postcode}
               </address>
               <a
-                href={SITE.googleDirectionsUrl}
+                href={config.googleDirectionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-deep hover:underline"
@@ -53,10 +60,30 @@ export default function ContactPage() {
             <div className="card p-6">
               <Phone className="h-6 w-6 text-gold-deep" aria-hidden="true" />
               <h2 className="mt-3 font-serif text-2xl font-semibold">Phone</h2>
-              <a href={SITE.phoneHref} className="mt-2 block text-xl font-semibold text-teak hover:underline">
-                {SITE.phoneDisplay}
+              <a href={config.phoneHref} className="mt-2 block text-xl font-semibold text-teak hover:underline">
+                {config.phoneDisplay}
               </a>
+              {config.email ? (
+                <a href={`mailto:${config.email}`} className="mt-2 flex items-center gap-2 text-sm font-semibold text-teak hover:underline">
+                  <Mail className="h-4 w-4" aria-hidden="true" />
+                  {config.email}
+                </a>
+              ) : null}
               <p className="mt-2 text-sm text-charcoal/65">Bookings, collection orders and enquiries during opening hours.</p>
+              {(config.social.facebook || config.social.instagram) && (
+                <p className="mt-3 flex gap-2">
+                  {config.social.facebook ? (
+                    <a href={config.social.facebook} target="_blank" rel="noopener noreferrer" className="grid h-9 w-9 place-items-center rounded-full bg-cream-dark hover:bg-gold" aria-label="Facebook">
+                      <FacebookIcon className="h-4 w-4" aria-hidden="true" />
+                    </a>
+                  ) : null}
+                  {config.social.instagram ? (
+                    <a href={config.social.instagram} target="_blank" rel="noopener noreferrer" className="grid h-9 w-9 place-items-center rounded-full bg-cream-dark hover:bg-gold" aria-label="Instagram">
+                      <InstagramIcon className="h-4 w-4" aria-hidden="true" />
+                    </a>
+                  ) : null}
+                </p>
+              )}
             </div>
           </div>
 
@@ -65,13 +92,13 @@ export default function ContactPage() {
               <Clock className="h-6 w-6 text-gold-deep" aria-hidden="true" />
               <h2 className="font-serif text-2xl font-semibold">Opening hours</h2>
             </div>
-            <OpeningHours className="mt-3" />
+            <OpeningHours hours={config.openingHours} className="mt-3" />
           </div>
 
           <div className="overflow-hidden rounded-2xl shadow-sm ring-1 ring-teak/10">
             <iframe
-              src={SITE.googleMapsEmbedUrl}
-              title="Google Map showing Thai Courtyard at 105 Walton Road, East Molesey"
+              src={config.googleMapsEmbedUrl}
+              title={`Google Map showing ${config.name} at ${config.addressLine}`}
               className="h-[340px] w-full border-0 sm:h-[400px]"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -80,15 +107,15 @@ export default function ContactPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <a href={SITE.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+            <a href={config.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
               <MapPin aria-hidden="true" />
               Open in Google Maps
             </a>
-            <a href={SITE.googleReviewUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+            <a href={config.googleReviewUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
               <Star aria-hidden="true" />
               Review us on Google
             </a>
-            <DeliverooButton />
+            <DeliveryButton delivery={config.delivery} />
           </div>
         </div>
 
@@ -96,7 +123,7 @@ export default function ContactPage() {
           <div className="card p-6 sm:p-8 lg:sticky lg:top-28">
             <h2 className="font-serif text-3xl font-semibold">Send us a message</h2>
             <p className="mt-2 text-sm text-charcoal/65">
-              We aim to reply within one working day. For same-day bookings or orders, please call us.
+              We aim to reply within one working day. For same-day bookings or orders, please call us on {config.phoneDisplay}.
             </p>
             <ContactForm />
           </div>

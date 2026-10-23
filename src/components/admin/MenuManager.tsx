@@ -37,7 +37,7 @@ export function MenuManager({ categories }: { categories: MenuCategory[] }) {
         body: JSON.stringify(body),
       });
       if (res.status === 401) {
-        window.location.href = "/admin/login";
+        window.location.assign("/admin/login");
         return false;
       }
       const data = (await res.json().catch(() => ({}))) as { error?: string };

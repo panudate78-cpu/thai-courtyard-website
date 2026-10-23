@@ -2,21 +2,27 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { CalendarCheck, Loader2 } from "lucide-react";
-import { addDays, bookingTimesFor, formatDateLong, isValidDateString } from "@/lib/hours";
-import { SITE } from "@/lib/site";
+import { addDays, bookingTimesFor, formatDateLong, isValidDateString, parseHours, type HolidayException } from "@/lib/hours";
 
-type Props = { today: string; closedDates: string[] };
+type Props = {
+  today: string;
+  closedDates: string[];
+  openingHours: Record<string, { open: string; close: string } | null>;
+  holidays: HolidayException[];
+  phoneDisplay: string;
+  hoursSummary: string;
+};
 
 const EMPTY = { date: "", time: "", partySize: "2", name: "", phone: "", email: "", notes: "", company: "" };
 
-export function BookingForm({ today, closedDates }: Props) {
+export function BookingForm({ today, closedDates, openingHours, holidays, phoneDisplay, hoursSummary }: Props) {
   const [form, setForm] = useState(EMPTY);
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
 
   const times = useMemo(
-    () => (form.date && isValidDateString(form.date) ? bookingTimesFor(form.date, closedDates) : []),
-    [form.date, closedDates],
+    () => (form.date && isValidDateString(form.date) ? bookingTimesFor(form.date, closedDates, parseHours(openingHours), holidays) : []),
+    [form.date, closedDates, openingHours, holidays],
   );
   const update = (patch: Partial<typeof EMPTY>) => setForm((f) => ({ ...f, ...patch }));
 
@@ -33,7 +39,7 @@ export function BookingForm({ today, closedDates }: Props) {
         body: JSON.stringify({ ...form, partySize: Number(form.partySize) }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) throw new Error(data.error || `Sorry, something went wrong. Please call us on ${SITE.phoneDisplay}.`);
+      if (!res.ok) throw new Error(data.error || `Sorry, something went wrong. Please call us on ${phoneDisplay}.`);
       setState("done");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -123,8 +129,8 @@ export function BookingForm({ today, closedDates }: Props) {
       </div>
       {closedNotice ? (
         <p className="rounded-xl bg-cream-dark p-3 text-sm text-charcoal/75" role="status">
-          Sorry, there are no tables available online for that day. We&apos;re open {SITE.hoursSummary}. For same-day bookings
-          please call {SITE.phoneDisplay}.
+          Sorry, there are no tables available online for that day. We&apos;re open {hoursSummary}. For same-day bookings
+          please call {phoneDisplay}.
         </p>
       ) : null}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -206,7 +212,7 @@ export function BookingForm({ today, closedDates }: Props) {
         )}
       </button>
       <p className="text-center text-xs text-charcoal/55">
-        Your booking is confirmed once we&apos;ve been in touch. Need it sooner? Call {SITE.phoneDisplay}.
+        Your booking is confirmed once we&apos;ve been in touch. Need it sooner? Call {phoneDisplay}.
       </p>
     </form>
   );

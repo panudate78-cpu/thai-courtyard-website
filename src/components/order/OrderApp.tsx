@@ -7,15 +7,15 @@ import { DietaryBadges } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
 import { getCollectionDays, type SlotConfig, type SlotDay } from "@/lib/hours";
 import { hasPriceRange, requiredChoiceHint, startingPrice } from "@/lib/menu-utils";
-import { SITE } from "@/lib/site";
+import type { RestaurantConfig } from "@/lib/restaurant";
 import type { MenuCategory, MenuItem } from "@/lib/types";
 import { BasketPanel, type CheckoutDetails, type Slot } from "./BasketPanel";
 import { ItemDialog } from "./ItemDialog";
 import { lineKey, reconcileBasket, type BasketLine, type BasketOption } from "./basket";
 
-const BASKET_KEY = "tc_basket_v1";
-const DETAILS_KEY = "tc_customer_v1";
-const EMPTY_DETAILS: CheckoutDetails = { name: "", phone: "", email: "", instructions: "", company: "" };
+const BASKET_KEY = "rmp_basket_v1";
+const DETAILS_KEY = "rmp_customer_v1";
+const EMPTY_DETAILS: CheckoutDetails = { name: "", phone: "", email: "", instructions: "", company: "", paymentMethod: "pay_on_collection" };
 
 type Props = {
   categories: MenuCategory[];
@@ -24,6 +24,7 @@ type Props = {
   orderingEnabled: boolean;
   pausedMessage: string | null;
   initialItemId: number | null;
+  config: RestaurantConfig;
 };
 
 function ItemCard({ item, quantity, onAdd }: { item: MenuItem; quantity: number; onAdd: () => void }) {
@@ -63,7 +64,7 @@ function ItemCard({ item, quantity, onAdd }: { item: MenuItem; quantity: number;
   );
 }
 
-export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled, pausedMessage, initialItemId }: Props) {
+export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled, pausedMessage, initialItemId, config }: Props) {
   const router = useRouter();
   const itemsById = useMemo(() => {
     const map = new Map<number, MenuItem>();
@@ -93,6 +94,8 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
   useEffect(() => {
     try {
       const raw = localStorage.getItem(BASKET_KEY);
+      // Hydrating from localStorage after mount avoids SSR/client mismatch.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (raw) setBasket(reconcileBasket(JSON.parse(raw), itemsById));
       const saved = localStorage.getItem(DETAILS_KEY);
       if (saved) {
@@ -123,6 +126,8 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
   }, [slotConfig]);
 
   useEffect(() => {
+    // Keep the selected slot valid as collection days change (external clock).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSlot((prev) => {
       const day = days.find((d) => d.date === prev.date) ?? days[0];
       if (!day) return prev.date || prev.time ? { date: "", time: "" } : prev;
@@ -231,6 +236,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
           email: details.email,
           instructions: details.instructions,
           company: details.company,
+          paymentMethod: details.paymentMethod,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { publicId?: string; error?: string };
@@ -268,6 +274,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
     submitting,
     error,
     onSubmit: submitOrder,
+    config,
   };
 
   return (
@@ -284,7 +291,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search dishes, e.g. Pad Thai"
+              placeholder="Search dishes…"
               className="block w-full rounded-full border border-sand bg-white py-2.5 pr-4 pl-10 text-base shadow-sm placeholder:text-charcoal/40 focus:border-gold focus:ring-2 focus:ring-gold/30 focus:outline-none"
             />
           </div>
@@ -323,7 +330,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
         {!orderingEnabled ? (
           <div role="alert" className="mt-6 rounded-2xl border border-chili/30 bg-chili/5 p-4 text-sm text-chili">
             <strong className="font-semibold">Online ordering is paused.</strong>{" "}
-            {pausedMessage || `Please call us on ${SITE.phoneDisplay} to place an order.`}
+            {pausedMessage || `Please call us on ${config.phoneDisplay} to place an order.`}
           </div>
         ) : null}
 

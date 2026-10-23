@@ -4,13 +4,11 @@
  */
 export const ESTIMATED_MARGIN: Record<string, number> = {
   Starters: 0.68,
-  Soups: 0.7,
-  Curries: 0.66,
-  "Stir Fried": 0.64,
+  Mains: 0.66,
+  Grill: 0.62,
   Salads: 0.72,
-  "Recommended Dishes": 0.62,
-  "Noodles / Rice": 0.7,
   Sides: 0.75,
+  Desserts: 0.74,
   Drinks: 0.78,
 };
 

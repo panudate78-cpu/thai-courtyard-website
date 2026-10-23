@@ -20,16 +20,18 @@ import {
   Settings as SettingsIcon,
   ShoppingBag,
   Soup,
+  Sparkles,
   Store,
   Users,
   UtensilsCrossed,
   X,
 } from "lucide-react";
-import { IMG } from "@/lib/image-manifest";
+
 
 type Counts = { newOrders: number; pendingBookings: number; unreadMessages: number };
+type NavConfig = { name: string; logoUrl: string; setupCompleted: boolean };
 
-export function AdminNav({ counts }: { counts: Counts }) {
+export function AdminNav({ counts, config, fallbackPassword = false }: { counts: Counts; config: NavConfig; fallbackPassword?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -42,6 +44,7 @@ export function AdminNav({ counts }: { counts: Counts }) {
         { href: "/admin/orders", label: "Orders", icon: ShoppingBag, badge: counts.newOrders },
         { href: "/admin/customers", label: "Customers", icon: Users, badge: 0 },
         { href: "/admin/menu", label: "Menu & prices", icon: UtensilsCrossed, badge: 0 },
+        { href: "/admin/menu/import", label: "Menu import", icon: UtensilsCrossed, badge: 0 },
         { href: "/admin/bookings", label: "Bookings", icon: CalendarDays, badge: counts.pendingBookings },
         { href: "/admin/messages", label: "Messages", icon: Mail, badge: counts.unreadMessages },
         { href: "/admin/settings", label: "Settings", icon: SettingsIcon, badge: 0 },
@@ -56,7 +59,8 @@ export function AdminNav({ counts }: { counts: Counts }) {
         { href: "/admin/customer-analytics", label: "Customer analytics", icon: PieChart, badge: 0 },
         { href: "/admin/marketing", label: "Marketing", icon: Megaphone, badge: 0 },
         { href: "/admin/reports", label: "Reports", icon: FileBarChart, badge: 0 },
-        { href: "/admin/restaurant", label: "Restaurant", icon: Store, badge: 0 },
+        { href: "/admin/restaurant", label: "Business settings", icon: Store, badge: 0 },
+        { href: "/setup", label: "Setup wizard", icon: Sparkles, badge: 0 },
         { href: "/admin/seo", label: "SEO", icon: Search, badge: 0 },
       ],
     },
@@ -135,8 +139,8 @@ export function AdminNav({ counts }: { counts: Counts }) {
     <>
       <div className="sticky top-0 z-40 flex h-14 items-center justify-between bg-charcoal px-4 text-cream lg:hidden print:hidden">
         <Link href="/admin" className="flex items-center gap-2">
-          <Image src={IMG.logo.src} alt="" width={34} height={32} className="h-8 w-auto" />
-          <span className="font-serif text-lg font-semibold text-gold-light">Thai Courtyard Admin</span>
+          <Image src={config.logoUrl} alt="" width={34} height={34} unoptimized className="h-8 w-8 rounded-full object-cover" />
+          <span className="font-serif text-lg font-semibold text-gold-light">{config.name} Admin</span>
         </Link>
         <button
           type="button"
@@ -161,13 +165,19 @@ export function AdminNav({ counts }: { counts: Counts }) {
 
       <aside className="hidden bg-charcoal text-cream lg:sticky lg:top-0 lg:flex lg:h-svh lg:flex-col lg:p-5 print:hidden">
         <Link href="/admin" className="flex items-center gap-3 px-2">
-          <Image src={IMG.logo.src} alt="" width={46} height={44} className="h-11 w-auto" />
+          <Image src={config.logoUrl} alt="" width={46} height={46} unoptimized className="h-11 w-11 rounded-full object-cover" />
           <span className="leading-tight">
-            <span className="block font-serif text-xl font-semibold text-gold-light">Thai Courtyard</span>
+            <span className="block font-serif text-xl font-semibold text-gold-light">{config.name}</span>
             <span className="text-[10px] tracking-[0.3em] text-cream/50 uppercase">Admin</span>
           </span>
         </Link>
         <div className="mt-8 flex-1 overflow-y-auto">{nav}</div>
+        {!config.setupCompleted ? (
+          <Link href="/setup" className="mb-3 block rounded-xl bg-gold px-3 py-2.5 text-sm font-semibold text-charcoal">Finish setup wizard →</Link>
+        ) : null}
+        {fallbackPassword ? (
+          <p className="mb-3 rounded-xl bg-red-500/15 px-3 py-2 text-xs text-red-200">Using the demo admin password. Set ADMIN_PASSWORD before going live.</p>
+        ) : null}
         {footer}
       </aside>
     </>

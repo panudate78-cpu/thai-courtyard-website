@@ -33,7 +33,7 @@ export function BookingsTable({ initialBookings, today }: { initialBookings: Boo
         body: JSON.stringify({ status }),
       });
       if (res.status === 401) {
-        window.location.href = "/admin/login";
+        window.location.assign("/admin/login");
         return;
       }
       const data = (await res.json().catch(() => ({}))) as { booking?: BookingView; error?: string };

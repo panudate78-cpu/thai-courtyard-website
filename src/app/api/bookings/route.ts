@@ -4,10 +4,11 @@ import { db } from "@/db";
 import { ensureDatabase } from "@/db/bootstrap";
 import { bookings } from "@/db/schema";
 import { toBookingView } from "@/lib/admin-data";
-import { bookingCustomerEmail, bookingRestaurantEmail, restaurantEmail, sendMail } from "@/lib/email";
+import { bookingCustomerEmail, bookingRestaurantEmail, restaurantEmail, sendMail, setEmailBrand } from "@/lib/email";
 import { addDays, bookingTimesFor, londonNow } from "@/lib/hours";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { getSettingsSafe } from "@/lib/settings";
+import { getHolidayExceptions, getOpeningHoursMap, getRestaurantConfigSafe } from "@/lib/restaurant";
 import { firstError, nameSchema, optionalEmailSchema, phoneSchema, readJson } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -38,8 +39,9 @@ export async function POST(req: Request) {
   if (company) return Response.json({ error: "Unable to process this request." }, { status: 400 });
 
   const settings = await getSettingsSafe();
+  const [openingHours, holidays] = await Promise.all([getOpeningHoursMap(), getHolidayExceptions()]);
   const today = londonNow().date;
-  if (input.date > addDays(today, 90) || !bookingTimesFor(input.date, settings.closedDates).includes(input.time)) {
+  if (input.date > addDays(today, 90) || !bookingTimesFor(input.date, settings.closedDates, openingHours, holidays).includes(input.time)) {
     return Response.json(
       { error: "Sorry, that date and time isn't available online. Please choose another time or call us." },
       { status: 422 },
@@ -52,11 +54,13 @@ export async function POST(req: Request) {
     const booking = toBookingView(row);
     after(async () => {
       try {
-        const to = restaurantEmail(settings);
-        const mail = bookingRestaurantEmail(booking);
+        const config = await getRestaurantConfigSafe();
+        setEmailBrand(config.name);
+        const to = restaurantEmail(settings, config);
+        const mail = bookingRestaurantEmail(booking, config);
         if (to) await sendMail({ to, ...mail, replyTo: booking.email });
         else console.info(`[email:no-recipient] ${mail.subject}\n${mail.text}`);
-        if (booking.email) await sendMail({ to: booking.email, ...bookingCustomerEmail(booking, "received") });
+        if (booking.email) await sendMail({ to: booking.email, ...bookingCustomerEmail(booking, "received", config) });
       } catch (error) {
         console.error("[bookings] notification failed", error);
       }

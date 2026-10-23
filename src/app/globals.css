@@ -15,7 +15,7 @@
   --color-sand: #e5d9c3;
   --color-chili: #a12d24;
   --color-jade: #2f5d4f;
-  --color-deliveroo: #00ccbc;
+  --color-delivery: #00ccbc;
 
   --animate-slide-up: slide-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
   --animate-fade-in: fade-in 0.2s ease-out;
@@ -113,8 +113,8 @@
   .btn-outline-light {
     @apply border border-cream/35 text-cream hover:border-gold-light hover:bg-cream/10;
   }
-  .btn-deliveroo {
-    @apply bg-deliveroo text-[#002b27] hover:brightness-95;
+  .btn-delivery {
+    @apply bg-delivery text-[#002b27] hover:brightness-95;
   }
   .eyebrow {
     @apply text-xs font-semibold tracking-[0.28em] text-gold uppercase;
@@ -164,7 +164,7 @@
   }
 }
 
-@utility thai-pattern {
+@utility brand-pattern {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23c9a14a' stroke-opacity='0.13'%3E%3Cpath d='M32 6 58 32 32 58 6 32Z'/%3E%3Cpath d='M32 18 46 32 32 46 18 32Z'/%3E%3Cpath d='M0 0 6 6M64 0 58 6M0 64 6 58M64 64 58 58'/%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='2.5' fill='%23c9a14a' fill-opacity='0.2'/%3E%3C/svg%3E");
   background-size: 64px 64px;
 }

@@ -43,7 +43,7 @@ function rng(seed: number) {
 
 export function isSampleClosed(date: string) {
   const weekday = weekdayOf(date);
-  if (weekday === 0 || weekday === 1) return true;
+  if (weekday === 1) return true; // demo defaults: closed Mondays (see DEFAULT_OPENING_HOURS)
   const md = date.slice(4);
   return md === "-12-25" || md === "-12-26" || md === "-01-01";
 }
@@ -89,24 +89,24 @@ export function sampleCustomersForOrders(orders: number) {
 }
 
 const DISHES: { name: string; category: string; quantity: number; unitPence: number }[] = [
-  { name: "Pad Thai", category: "Noodles / Rice", quantity: 186, unitPence: 1480 },
-  { name: "Green Curry", category: "Curries", quantity: 164, unitPence: 1420 },
-  { name: "Chicken Satay", category: "Starters", quantity: 142, unitPence: 750 },
-  { name: "Tom Yum", category: "Soups", quantity: 128, unitPence: 980 },
-  { name: "Phanaeng", category: "Curries", quantity: 121, unitPence: 1390 },
-  { name: "Fried Rice", category: "Noodles / Rice", quantity: 117, unitPence: 1360 },
-  { name: "Lemon Grass Chicken", category: "Recommended Dishes", quantity: 96, unitPence: 1800 },
-  { name: "Tamarind Duck", category: "Recommended Dishes", quantity: 84, unitPence: 1850 },
-  { name: "Pad Grapow", category: "Stir Fried", quantity: 79, unitPence: 1410 },
-  { name: "Steamed Seabass", category: "Recommended Dishes", quantity: 61, unitPence: 2000 },
-  { name: "Pork Dumplings", category: "Starters", quantity: 58, unitPence: 750 },
-  { name: "Yum Yum", category: "Salads", quantity: 44, unitPence: 1290 },
-  { name: "Pad Kee Mao", category: "Noodles / Rice", quantity: 39, unitPence: 1380 },
-  { name: "Szechuan Ribs", category: "Starters", quantity: 22, unitPence: 850 },
-  { name: "Mussels", category: "Starters", quantity: 14, unitPence: 800 },
-  { name: "Pad Mee", category: "Noodles / Rice", quantity: 11, unitPence: 1320 },
-  { name: "Roti", category: "Sides", quantity: 9, unitPence: 250 },
-  { name: "Still Water 500ml", category: "Drinks", quantity: 8, unitPence: 250 },
+  { name: "House Burger", category: "Mains", quantity: 186, unitPence: 1550 },
+  { name: "Grilled Chicken", category: "Mains", quantity: 164, unitPence: 1650 },
+  { name: "Crispy Halloumi", category: "Starters", quantity: 142, unitPence: 750 },
+  { name: "Fish & Chips", category: "Mains", quantity: 128, unitPence: 1600 },
+  { name: "Garden Risotto", category: "Mains", quantity: 121, unitPence: 1450 },
+  { name: "Mixed Grill", category: "Grill", quantity: 96, unitPence: 2400 },
+  { name: "Steak Frites", category: "Mains", quantity: 84, unitPence: 2150 },
+  { name: "Grilled Salmon", category: "Grill", quantity: 79, unitPence: 1950 },
+  { name: "Sticky Toffee Pudding", category: "Desserts", quantity: 74, unitPence: 750 },
+  { name: "Lamb Chops", category: "Grill", quantity: 61, unitPence: 2200 },
+  { name: "Chicken Wings", category: "Starters", quantity: 58, unitPence: 800 },
+  { name: "Chocolate Brownie", category: "Desserts", quantity: 44, unitPence: 700 },
+  { name: "Soup of the Day", category: "Starters", quantity: 39, unitPence: 650 },
+  { name: "Onion Rings", category: "Sides", quantity: 22, unitPence: 450 },
+  { name: "House Salad", category: "Sides", quantity: 14, unitPence: 450 },
+  { name: "Seasonal Greens", category: "Sides", quantity: 11, unitPence: 450 },
+  { name: "Garlic Bread", category: "Starters", quantity: 9, unitPence: 450 },
+  { name: "Still Water 500ml", category: "Drinks", quantity: 8, unitPence: 200 },
 ];
 
 export function sampleDishes() {
@@ -124,21 +124,21 @@ export function sampleDishes() {
 
 export function sampleAddons(): Rank[] {
   return [
-    { name: "Prawn", value: 96, hint: "£240 · protein upgrade" },
-    { name: "Beef", value: 74, hint: "£111 · protein upgrade" },
-    { name: "Fried Egg", value: 63, hint: "£63" },
-    { name: "Mixed Seafood", value: 41, hint: "£102 · protein upgrade" },
-    { name: "Chicken", value: 38, hint: "£19 · protein upgrade" },
+    { name: "Skin-on fries", value: 96, hint: "£336 · side add-on" },
+    { name: "Seasonal greens", value: 74, hint: "£259 · side add-on" },
+    { name: "Chilli jam", value: 63, hint: "£31" },
+    { name: "House salad", value: 41, hint: "£123 · side add-on" },
+    { name: "Garlic mayo", value: 38, hint: "Included" },
   ];
 }
 
 export function sampleDrinks(): Rank[] {
   return [
     { name: "Coke 330ml", value: 88, hint: "£220" },
-    { name: "Thai-style still water", value: 54, hint: "£135" },
+    { name: "Still Water 500ml", value: 54, hint: "£108" },
     { name: "Sprite 330ml", value: 41, hint: "£102" },
     { name: "Diet Coke 330ml", value: 36, hint: "£90" },
-    { name: "Lipton Lemon Ice Tea 330ml", value: 29, hint: "£72" },
+    { name: "Orange Juice", value: 29, hint: "£87" },
   ];
 }
 
@@ -148,8 +148,8 @@ export function sampleServiceSplit() {
   const quantity = dishes.reduce((sum, dish) => sum + dish.quantity, 0);
   const lunchRevenue = Math.round(revenue * 0.36);
   return {
-    lunch: { revenuePence: lunchRevenue, orders: Math.round(quantity * 0.34), top: "Pad Thai" },
-    dinner: { revenuePence: revenue - lunchRevenue, orders: quantity - Math.round(quantity * 0.34), top: "Green Curry" },
+    lunch: { revenuePence: lunchRevenue, orders: Math.round(quantity * 0.34), top: "House Burger" },
+    dinner: { revenuePence: revenue - lunchRevenue, orders: quantity - Math.round(quantity * 0.34), top: "Grilled Chicken" },
   };
 }
 
@@ -242,10 +242,10 @@ export function samplePopularTimes(): Rank[] {
 }
 
 export function sampleBusiestDays(): Rank[] {
-  return ["Saturday", "Friday", "Thursday", "Wednesday", "Tuesday", "Sunday", "Monday"].map((name, index) => ({
+  return ["Saturday", "Friday", "Sunday", "Thursday", "Wednesday", "Tuesday", "Monday"].map((name, index) => ({
     name,
-    value: [128, 112, 74, 61, 52, 0, 0][index] ?? 0,
-    hint: index >= 5 ? "Closed" : undefined,
+    value: [128, 112, 88, 74, 61, 52, 0][index] ?? 0,
+    hint: name === "Monday" ? "Closed" : undefined,
   }));
 }
 
@@ -321,7 +321,7 @@ export function narrativeFor(monthLabel: string, previousLabel: string, growth: 
       ? `There is no ${previousLabel} revenue to compare with.`
       : `${monthLabel} is ${growth >= 0 ? "up" : "down"} ${Math.abs(growth).toFixed(1)}% versus ${previousLabel}.`;
   const dayText = best >= 0 ? ` ${WEEKDAYS[best]} is the strongest collection day in this period.` : "";
-  return `${growthText}${dayText} Sunday and Monday stay at zero because the restaurant is closed.`;
+  return `${growthText}${dayText} Mondays stay at zero in this demo configuration because the restaurant is closed.`;
 }
 
 export function sampleBookingRows(year: number, month: number, today: string) {

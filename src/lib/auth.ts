@@ -2,18 +2,21 @@ import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const ADMIN_COOKIE = "tc_admin_session";
+export const ADMIN_COOKIE = "rmp_admin_session";
 const SESSION_DAYS = 14;
 
-/** Set ADMIN_PASSWORD in the environment. The fallback exists only so a fresh preview is usable. */
+/** Set ADMIN_PASSWORD in the environment (see .env.example). The fallback exists only so a fresh local/preview install is usable — change it before going live. */
+export function isUsingFallbackPassword() {
+  return !process.env.ADMIN_PASSWORD;
+}
 function adminPassword() {
-  return process.env.ADMIN_PASSWORD || "Th@1courtyard!";
+  return process.env.ADMIN_PASSWORD || "admin123";
 }
 
 function secret() {
   return (
     process.env.ADMIN_SESSION_SECRET ||
-    crypto.createHash("sha256").update(`thai-courtyard:${adminPassword()}:${process.env.DATABASE_URL ?? ""}`).digest("hex")
+    crypto.createHash("sha256").update(`restaurant-platform:${adminPassword()}:${process.env.DATABASE_URL ?? ""}`).digest("hex")
   );
 }
 

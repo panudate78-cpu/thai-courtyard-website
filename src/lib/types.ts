@@ -78,6 +78,9 @@ export type OrderView = {
   subtotalPence: number;
   itemCount: number;
   status: OrderStatus;
+  paymentMethod: string;
+  paymentStatus: string;
+  isDemo: boolean;
   emailStatus: string;
   createdAt: string;
   items: OrderLineView[];
@@ -99,6 +102,7 @@ export type BookingView = {
   time: string;
   notes: string | null;
   status: BookingStatus;
+  isDemo?: boolean;
   createdAt: string;
 };
 

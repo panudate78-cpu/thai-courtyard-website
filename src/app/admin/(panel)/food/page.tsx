@@ -21,7 +21,7 @@ export default async function FoodPage() {
         note={
           food.origin === "live"
             ? "Dish rankings use live order lines. Profit still uses estimated category margins until cost prices exist."
-            : "No order lines yet. Rankings use an illustrative mix of the current Thai Courtyard menu and are labelled sample."
+            : "No order lines yet. Rankings use an illustrative mix of the current menu and are labelled sample."
         }
       />
 

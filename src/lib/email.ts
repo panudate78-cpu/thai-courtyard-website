@@ -1,13 +1,14 @@
 import nodemailer, { type Transporter } from "nodemailer";
 import { escapeHtml as e, formatPrice } from "./format";
 import { formatDateLong } from "./hours";
-import { SITE } from "./site";
+import type { RestaurantConfig } from "./restaurant";
 import type { BookingView, OrderView, Settings } from "./types";
 
 export type MailResult = "sent" | "logged" | "failed";
 type Mail = { to: string; subject: string; html: string; text: string; replyTo?: string | null };
 
 let transport: Transporter | null = null;
+let fromName = "Restaurant";
 
 export function emailProvider(): "resend" | "smtp" | null {
   if (process.env.RESEND_API_KEY) return "resend";
@@ -15,16 +16,21 @@ export function emailProvider(): "resend" | "smtp" | null {
   return null;
 }
 
-/** Where restaurant notifications go: admin setting first, then environment. */
-export function restaurantEmail(settings?: Pick<Settings, "notificationEmail"> | null) {
-  return settings?.notificationEmail || process.env.RESTAURANT_EMAIL || process.env.ORDER_NOTIFICATION_EMAIL || null;
+/** Where restaurant notifications go: admin setting first, then environment, then profile email. */
+export function restaurantEmail(settings?: Pick<Settings, "notificationEmail"> | null, config?: Pick<RestaurantConfig, "email"> | null) {
+  return settings?.notificationEmail || process.env.RESTAURANT_EMAIL || process.env.ORDER_NOTIFICATION_EMAIL || config?.email || null;
+}
+
+/** Called once the restaurant config is known so the From name matches the brand. */
+export function setEmailBrand(name: string) {
+  if (name) fromName = name;
 }
 
 function fromAddress() {
   if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
   if (process.env.SMTP_FROM) return process.env.SMTP_FROM;
-  if (process.env.SMTP_USER && process.env.SMTP_USER.includes("@")) return `Thai Courtyard <${process.env.SMTP_USER}>`;
-  return "Thai Courtyard <onboarding@resend.dev>";
+  if (process.env.SMTP_USER && process.env.SMTP_USER.includes("@")) return `${fromName} <${process.env.SMTP_USER}>`;
+  return `${fromName} <onboarding@resend.dev>`;
 }
 
 export async function sendMail(mail: Mail): Promise<MailResult> {
@@ -76,13 +82,15 @@ export async function sendMail(mail: Mail): Promise<MailResult> {
 
 /* ----------------------------- Templates ----------------------------- */
 
-function shell(heading: string, body: string) {
+function shell(config: RestaurantConfig, heading: string, body: string) {
   return `<!doctype html><html><body style="margin:0;background:#f4eee3;font-family:Arial,Helvetica,sans-serif;color:#1d1b1a">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4eee3;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:14px;overflow:hidden">
-<tr><td style="background:#1d1b1a;padding:22px 26px"><div style="font-family:Georgia,serif;font-size:24px;color:#e3c77f">Thai Courtyard</div><div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#faf6ee;opacity:.7;margin-top:4px">East Molesey</div></td></tr>
+<tr><td style="background:#1d1b1a;padding:22px 26px"><div style="font-family:Georgia,serif;font-size:24px;color:${config.primaryColor}">${e(config.name)}</div>${
+    config.tagline ? `<div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#faf6ee;opacity:.7;margin-top:4px">${e(config.tagline)}</div>` : ""
+  }</td></tr>
 <tr><td style="padding:26px"><h1 style="font-family:Georgia,serif;font-size:24px;margin:0 0 16px;color:#1d1b1a">${heading}</h1>${body}</td></tr>
-<tr><td style="padding:16px 26px;background:#faf6ee;font-size:12px;color:#6b4226">${SITE.addressLine} · ${SITE.phoneDisplay}</td></tr>
+<tr><td style="padding:16px 26px;background:#faf6ee;font-size:12px;color:${config.secondaryColor}">${e(config.addressLine)} · ${e(config.phoneDisplay)}</td></tr>
 </table></td></tr></table></body></html>`;
 }
 
@@ -111,11 +119,14 @@ function itemsText(order: OrderView) {
     .join("\n");
 }
 
-const notice = `<p style="background:#f8f0dc;border:1px solid #e6cf97;border-radius:10px;padding:12px 14px;font-size:13px;margin:0">${SITE.paymentNotice}</p>`;
+function noticeHtml(config: RestaurantConfig) {
+  return `<p style="background:#f8f0dc;border:1px solid #e6cf97;border-radius:10px;padding:12px 14px;font-size:13px;margin:0">${e(config.paymentNotice)}</p>`;
+}
 
-export function orderRestaurantEmail(order: OrderView) {
+export function orderRestaurantEmail(order: OrderView, config: RestaurantConfig) {
   const when = `${formatDateLong(order.collectionDate)} at ${order.collectionTime}`;
   const html = shell(
+    config,
     `New collection order #${order.number}`,
     `<table role="presentation" cellpadding="0" cellspacing="0">${row("Collection", `<strong>${e(when)}</strong>`)}${row(
       "Customer",
@@ -125,13 +136,13 @@ export function orderRestaurantEmail(order: OrderView) {
       order.email ? e(order.email) : "—",
     )}${order.instructions ? row("Special instructions", `<strong style="color:#a12d24">${e(order.instructions)}</strong>`) : ""}</table>${itemsTable(
       order,
-    )}${notice}<p style="margin:20px 0 0"><a href="${SITE.url}/admin/orders" style="display:inline-block;background:#c9a14a;color:#1d1b1a;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:999px">Open admin dashboard</a></p>`,
+    )}${noticeHtml(config)}<p style="margin:20px 0 0"><a href="${config.url}/admin/orders" style="display:inline-block;background:${config.primaryColor};color:#1d1b1a;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:999px">Open admin dashboard</a></p>`,
   );
   const text = `NEW COLLECTION ORDER #${order.number}\nCollection: ${when}\nCustomer: ${order.customerName}\nTelephone: ${order.phone}\nEmail: ${
     order.email ?? "-"
   }\n${order.instructions ? `Special instructions: ${order.instructions}\n` : ""}\n${itemsText(order)}\n\nTOTAL (pay on collection): ${formatPrice(
     order.subtotalPence,
-  )}\n\nManage orders: ${SITE.url}/admin/orders`;
+  )}\n\nManage orders: ${config.url}/admin/orders`;
   return {
     subject: `New collection order #${order.number} · ${order.collectionTime} ${formatDateLong(order.collectionDate)} · ${order.customerName}`,
     html,
@@ -139,75 +150,55 @@ export function orderRestaurantEmail(order: OrderView) {
   };
 }
 
-export function orderCustomerEmail(order: OrderView) {
+export function orderCustomerEmail(order: OrderView, config: RestaurantConfig) {
   const when = `${formatDateLong(order.collectionDate)} at ${order.collectionTime}`;
-const html = shell(
-`Thank you, ${e(order.customerName)} — we've received your order`,
-`<p style="font-size:15px;line-height:1.6;margin:0 0 12px">Your collection order <strong>#${order.number}</strong> has been sent to our kitchen.</p>
- 
-<p style="font-size:15px;line-height:1.6;margin:0 0 12px">We aim to have collection orders ready within approximately 30 minutes.</p>
- 
-<p style="font-size:15px;line-height:1.6;margin:0 0 12px">During busy periods preparation may take a little longer. If there is a significant delay, a member of our team will contact you using the telephone number provided.</p>
- 
+  const html = shell(
+    config,
+    `Thank you, ${e(order.customerName)} — we've received your order`,
+    `<p style="font-size:15px;line-height:1.6;margin:0 0 12px">Your collection order <strong>#${order.number}</strong> has been sent to our kitchen.</p>
+<p style="font-size:15px;line-height:1.6;margin:0 0 12px">We aim to have collection orders ready for your chosen time. During busy periods preparation may take a little longer — if there is a significant delay, a member of our team will contact you using the telephone number provided.</p>
 <table role="presentation" cellpadding="0" cellspacing="0">
-${row(
-"Collection time",
-`<strong>${e(when)}</strong>`,
-)}
-${row("Collect from", e(SITE.addressLine))}
+${row("Collection time", `<strong>${e(when)}</strong>`)}
+${row("Collect from", e(config.addressLine))}
 </table>
 ${itemsTable(order)}
-${notice}
-<p style="font-size:13px;color:#6f6a64;margin:18px 0 0">
-Need to change something? Call us on
-<a href="${SITE.phoneHref}">${SITE.phoneDisplay}</a>.</p>`,
-  );  
-const text = `Thank you, ${order.customerName}! We've received your collection order #${order.number}.
-
-We aim to have collection orders ready within approximately 30 minutes.
-
-If there is a significant delay, a member of our team will contact you using the telephone number provided.
-
-Collection: ${when}
-Collect from: ${SITE.addressLine}
-
-${itemsText(order)}
-
-Total: ${formatPrice(order.subtotalPence)}
-${SITE.paymentNotice}
-
-Questions? Call ${SITE.phoneDisplay}.`;
-  return { subject: `Your Thai Courtyard order #${order.number} — collection ${order.collectionTime}`, html, text };
+${noticeHtml(config)}
+<p style="font-size:13px;color:#6f6a64;margin:18px 0 0">Need to change something? Call us on <a href="${config.phoneHref}">${e(config.phoneDisplay)}</a>.</p>`,
+  );
+  const text = `Thank you, ${order.customerName}! We've received your collection order #${order.number}.\n\nCollection: ${when}\nCollect from: ${config.addressLine}\n\n${itemsText(order)}\n\nTotal: ${formatPrice(order.subtotalPence)}\n${config.paymentNotice}\n\nQuestions? Call ${config.phoneDisplay}.`;
+  return { subject: `Your ${config.name} order #${order.number} — collection ${order.collectionTime}`, html, text };
 }
 
-export function orderReadyEmail(order: OrderView) {
+export function orderReadyEmail(order: OrderView, config: RestaurantConfig) {
   const html = shell(
+    config,
     `Your order #${order.number} is ready`,
-    `<p style="font-size:15px;line-height:1.6">Good news, ${e(order.customerName)} — your order is ready to collect from ${e(SITE.addressLine)}.</p>${notice}`,
+    `<p style="font-size:15px;line-height:1.6">Good news, ${e(order.customerName)} — your order is ready to collect from ${e(config.addressLine)}.</p>${noticeHtml(config)}`,
   );
   return {
-    subject: `Your Thai Courtyard order #${order.number} is ready to collect`,
+    subject: `Your ${config.name} order #${order.number} is ready to collect`,
     html,
-    text: `Good news, ${order.customerName} — your order #${order.number} is ready to collect from ${SITE.addressLine}.\n${SITE.paymentNotice}`,
+    text: `Good news, ${order.customerName} — your order #${order.number} is ready to collect from ${config.addressLine}.\n${config.paymentNotice}`,
   };
 }
 
-export function bookingRestaurantEmail(b: BookingView) {
+export function bookingRestaurantEmail(b: BookingView, config: RestaurantConfig) {
   const when = `${formatDateLong(b.date)} at ${b.time}`;
   const html = shell(
+    config,
     `New table booking request`,
     `<table role="presentation" cellpadding="0" cellspacing="0">${row("When", `<strong>${e(when)}</strong>`)}${row("Guests", String(b.partySize))}${row(
       "Name",
       e(b.name),
-    )}${row("Telephone", e(b.phone))}${row("Email", b.email ? e(b.email) : "—")}${b.notes ? row("Notes", e(b.notes)) : ""}</table><p style="margin:20px 0 0"><a href="${SITE.url}/admin/bookings" style="display:inline-block;background:#c9a14a;color:#1d1b1a;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:999px">Confirm in admin</a></p>`,
+    )}${row("Telephone", e(b.phone))}${row("Email", b.email ? e(b.email) : "—")}${b.notes ? row("Notes", e(b.notes)) : ""}</table><p style="margin:20px 0 0"><a href="${config.url}/admin/bookings" style="display:inline-block;background:${config.primaryColor};color:#1d1b1a;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:999px">Confirm in admin</a></p>`,
   );
   const text = `NEW TABLE BOOKING REQUEST\nWhen: ${when}\nGuests: ${b.partySize}\nName: ${b.name}\nTelephone: ${b.phone}\nEmail: ${b.email ?? "-"}\n${
     b.notes ? `Notes: ${b.notes}\n` : ""
-  }\nManage bookings: ${SITE.url}/admin/bookings`;
+  }\nManage bookings: ${config.url}/admin/bookings`;
   return { subject: `Booking request: ${b.partySize} guests · ${b.time} ${formatDateLong(b.date)} · ${b.name}`, html, text };
 }
 
-export function bookingCustomerEmail(b: BookingView, kind: "received" | "confirmed" | "declined") {
+export function bookingCustomerEmail(b: BookingView, kind: "received" | "confirmed" | "declined", config: RestaurantConfig) {
   const when = `${formatDateLong(b.date)} at ${b.time}`;
   const copy = {
     received: {
@@ -223,18 +214,22 @@ export function bookingCustomerEmail(b: BookingView, kind: "received" | "confirm
     declined: {
       subject: "About your booking request",
       heading: "Sorry, we can't confirm your booking",
-      body: `Unfortunately we're unable to accept your booking for <strong>${e(when)}</strong>. Please call us on ${SITE.phoneDisplay} and we'll do our best to find an alternative.`,
+      body: `Unfortunately we're unable to accept your booking for <strong>${e(when)}</strong>. Please call us on ${e(config.phoneDisplay)} and we'll do our best to find an alternative.`,
     },
   }[kind];
   return {
-    subject: `Thai Courtyard — ${copy.subject}`,
-    html: shell(copy.heading, `<p style="font-size:15px;line-height:1.6">Hello ${e(b.name)},</p><p style="font-size:15px;line-height:1.6">${copy.body}</p>`),
-    text: `Hello ${b.name},\n\n${copy.body.replace(/<[^>]+>/g, "")}\n\nThai Courtyard · ${SITE.addressLine} · ${SITE.phoneDisplay}`,
+    subject: `${config.name} — ${copy.subject}`,
+    html: shell(config, copy.heading, `<p style="font-size:15px;line-height:1.6">Hello ${e(b.name)},</p><p style="font-size:15px;line-height:1.6">${copy.body}</p>`),
+    text: `Hello ${b.name},\n\n${copy.body.replace(/<[^>]+>/g, "")}\n\n${config.name} · ${config.addressLine} · ${config.phoneDisplay}`,
   };
 }
 
-export function contactRestaurantEmail(m: { name: string; email: string; phone: string | null; message: string }) {
+export function contactRestaurantEmail(
+  m: { name: string; email: string; phone: string | null; message: string },
+  config: RestaurantConfig,
+) {
   const html = shell(
+    config,
     "New website enquiry",
     `<table role="presentation" cellpadding="0" cellspacing="0">${row("Name", e(m.name))}${row("Email", e(m.email))}${row(
       "Telephone",

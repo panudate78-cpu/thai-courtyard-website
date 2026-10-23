@@ -99,7 +99,7 @@ function printTicket(order: OrderView) {
     .join("");
   w.document.write(
     `<!doctype html><html><head><title>Order #${order.number}</title><style>body{font-family:ui-monospace,Menlo,Consolas,monospace;padding:16px;color:#000}h1{font-size:20px;margin:0 0 4px}table{width:100%;border-collapse:collapse;font-size:14px}hr{border:0;border-top:1px dashed #000;margin:10px 0}</style></head><body>` +
-      `<h1>THAI COURTYARD</h1><div>COLLECTION ORDER <b>#${order.number}</b></div><hr>` +
+      `<h1>RESTAURANT</h1><div>COLLECTION ORDER <b>#${order.number}</b></div><hr>` +
       `<div><b>Collect:</b> ${e(formatDateLong(order.collectionDate))} at ${e(order.collectionTime)}</div>` +
       `<div><b>Name:</b> ${e(order.customerName)}</div><div><b>Tel:</b> ${e(order.phone)}</div><hr>` +
       `<table>${rows}</table><hr><table><tr><td><b>TOTAL - PAY ON COLLECTION</b></td><td style="text-align:right"><b>${formatPrice(
@@ -157,7 +157,7 @@ function stopAlarm() {
     try {
       const res = await fetch(`/api/admin/orders?scope=${scope}`, { cache: "no-store" });
       if (res.status === 401) {
-        window.location.href = "/admin/login";
+        window.location.assign("/admin/login");
         return;
       }
 if (!res.ok) throw new Error("Could not refresh orders — retrying…");
@@ -189,16 +189,22 @@ if (incoming.length) {
   }, [scope, router]);
 
   useEffect(() => {
-    const current = londonNow();
-    setNow(current);
-    setLastUpdated(fromMinutes(current.minutes));
+    const tick = () => {
+      const current = londonNow();
+      setNow(current);
+      setLastUpdated(fromMinutes(current.minutes));
+    };
+    const initial = setTimeout(tick, 0);
     const timer = setInterval(refresh, 15_000);
-    return () => clearInterval(timer);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(timer);
+    };
   }, [refresh]);
 
   useEffect(() => {
     const pending = orders.filter((o) => o.status === "new").length;
-    document.title = pending ? `(${pending}) New order${pending > 1 ? "s" : ""} · Thai Courtyard Admin` : "Orders · Thai Courtyard Admin";
+    document.title = pending ? `(${pending}) New order${pending > 1 ? "s" : ""} · Restaurant Admin` : "Orders · Restaurant Admin";
   }, [orders]);
 
   function toggleSound() {
@@ -227,7 +233,7 @@ localStorage.setItem("soundOn", String(next));
         body: JSON.stringify({ status }),
       });
       if (res.status === 401) {
-        window.location.href = "/admin/login";
+        window.location.assign("/admin/login");
         return;
       }
       const data = (await res.json().catch(() => ({}))) as { order?: OrderView; error?: string };

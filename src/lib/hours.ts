@@ -1,12 +1,19 @@
-import { OPENING_HOURS } from "./site";
+import { DEFAULT_OPENING_HOURS } from "./site";
 
 export const TIME_ZONE = "Europe/London";
+
+export type OpeningHoursMap = Record<number, { open: string; close: string } | null>;
+export type HolidayException = { date: string; closed: boolean; open: string | null; close: string | null };
 
 export type SlotConfig = {
   leadTimeMinutes: number;
   slotIntervalMinutes: number;
   maxDaysAhead: number;
   closedDates: string[];
+  /** Weekly opening hours from Business Settings (defaults applied when omitted). */
+  openingHours?: OpeningHoursMap;
+  /** One-off holiday exceptions from Business Settings. */
+  holidays?: HolidayException[];
 };
 
 export type SlotDay = { date: string; label: string; times: string[] };
@@ -78,8 +85,14 @@ export function fromMinutes(total: number) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-export function hoursFor(date: string) {
-  return OPENING_HOURS[weekdayOf(date)] ?? null;
+/** Effective hours for a date: holiday exception wins over the weekly map. */
+export function hoursFor(date: string, openingHours: OpeningHoursMap = DEFAULT_OPENING_HOURS, holidays: HolidayException[] = []) {
+  const holiday = holidays.find((h) => h.date === date);
+  if (holiday) {
+    if (holiday.closed) return null;
+    if (holiday.open && holiday.close) return { open: holiday.open, close: holiday.close };
+  }
+  return openingHours[weekdayOf(date)] ?? null;
 }
 
 export function formatDateShort(date: string) {
@@ -109,7 +122,7 @@ export function getSlotsForDate(date: string, cfg: SlotConfig, now: LondonNow = 
   if (!isValidDateString(date) || date < now.date) return [];
   if (date > addDays(now.date, Math.max(1, cfg.maxDaysAhead) - 1)) return [];
   if (cfg.closedDates.includes(date)) return [];
-  const hours = hoursFor(date);
+  const hours = hoursFor(date, cfg.openingHours ?? DEFAULT_OPENING_HOURS, cfg.holidays ?? []);
   if (!hours) return [];
   const interval = Math.min(60, Math.max(5, cfg.slotIntervalMinutes));
   const open = toMinutes(hours.open);
@@ -134,20 +147,23 @@ export function getCollectionDays(cfg: SlotConfig, now: LondonNow = londonNow())
   return days;
 }
 
-export function isValidCollectionSlot(
-  date: string,
-  time: string,
-  cfg: SlotConfig,
-  graceMinutes = 10
-) {
+export function isValidCollectionSlot(date: string, time: string, cfg: SlotConfig, graceMinutes = 10) {
   if (!/^\d{2}:\d{2}$/.test(time)) return false;
   return getSlotsForDate(date, cfg, londonNow(), graceMinutes).includes(time);
 }
 
 /** Table booking times: every 30 minutes from opening until an hour before closing. */
-export function bookingTimesFor(date: string, closedDates: string[] = [], now: LondonNow = londonNow()) {
+export function bookingTimesFor(
+  date: string,
+  closedDates: string[] = [],
+  openingHours: OpeningHoursMap = DEFAULT_OPENING_HOURS,
+  holidaysOrNow: HolidayException[] | LondonNow = [],
+  maybeNow: LondonNow = londonNow(),
+) {
+  const holidays = Array.isArray(holidaysOrNow) ? holidaysOrNow : [];
+  const now = Array.isArray(holidaysOrNow) ? maybeNow : holidaysOrNow;
   if (!isValidDateString(date) || date < now.date || closedDates.includes(date)) return [];
-  const hours = hoursFor(date);
+  const hours = hoursFor(date, openingHours, holidays);
   if (!hours) return [];
   const times: string[] = [];
   for (let t = toMinutes(hours.open); t <= toMinutes(hours.close) - 60; t += 30) {
@@ -155,4 +171,18 @@ export function bookingTimesFor(date: string, closedDates: string[] = [], now: L
     times.push(fromMinutes(t));
   }
   return times;
+}
+
+/** Serializable (string-keyed) form for passing hours to client components. */
+export function serialiseHours(map: OpeningHoursMap): Record<string, { open: string; close: string } | null> {
+  const out: Record<string, { open: string; close: string } | null> = {};
+  for (let day = 0; day < 7; day += 1) out[String(day)] = map[day] ?? null;
+  return out;
+}
+
+export function parseHours(record: Record<string, { open: string; close: string } | null> | undefined): OpeningHoursMap {
+  if (!record) return DEFAULT_OPENING_HOURS;
+  const map: OpeningHoursMap = {};
+  for (let day = 0; day < 7; day += 1) map[day] = record[String(day)] ?? null;
+  return map;
 }

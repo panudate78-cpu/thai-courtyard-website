@@ -344,6 +344,7 @@ export async function liveCustomersFromDirectory(): Promise<LiveCustomer[]> {
   }));
 }
 
+/** Legacy imported-customer export table (absent on fresh installs). */
 export async function liveCustomersFromGloria(): Promise<LiveCustomer[]> {
   if (!(await tableExists("gloriafoodsexport"))) return [];
   const rows = await query<{

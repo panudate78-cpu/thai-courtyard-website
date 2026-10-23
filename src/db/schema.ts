@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -85,6 +86,9 @@ export const orders = pgTable(
     subtotalPence: integer("subtotal_pence").notNull(),
     itemCount: integer("item_count").notNull(),
     status: text("status").notNull().default("new"),
+    paymentMethod: text("payment_method").notNull().default("pay_on_collection"),
+    paymentStatus: text("payment_status").notNull().default("unpaid"),
+    isDemo: boolean("is_demo").notNull().default(false),
     emailStatus: text("email_status").notNull().default("pending"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -153,6 +157,7 @@ export const bookings = pgTable("bookings", {
   time: text("time").notNull(),
   notes: text("notes"),
   status: text("status").notNull().default("pending"),
+  isDemo: boolean("is_demo").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -213,4 +218,71 @@ export const seoOverrides = pgTable("seo_overrides", {
   ogDescription: text("og_description"),
   ogImage: text("og_image"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * White-label platform tables (additive, created with IF NOT EXISTS by
+ * ensureBusinessTables). `restaurant_profile` is the single-row source of
+ * truth for branding, contact details, ordering/delivery and payment
+ * configuration — see src/lib/restaurant.ts.
+ */
+export const restaurantProfile = pgTable("restaurant_profile", {
+  id: integer("id").primaryKey(),
+  name: text("name").notNull().default("Demo Restaurant"),
+  tagline: text("tagline"),
+  description: text("description"),
+  cuisine: text("cuisine"),
+  heroHeadline: text("hero_headline"),
+  heroSubheadline: text("hero_subheadline"),
+  aboutText: text("about_text"),
+  email: text("email"),
+  phoneDisplay: text("phone_display").notNull().default("020 7946 0958"),
+  street: text("street").notNull().default("1 High Street"),
+  locality: text("locality").notNull().default("Your Town"),
+  region: text("region"),
+  postcode: text("postcode").notNull().default("AB1 2CD"),
+  country: text("country").notNull().default("GB"),
+  geoLat: doublePrecision("geo_lat"),
+  geoLng: doublePrecision("geo_lng"),
+  googlePlaceId: text("google_place_id"),
+  googleReviewUrl: text("google_review_url"),
+  logoUrl: text("logo_url"),
+  heroImageUrl: text("hero_image_url"),
+  aboutImageUrl: text("about_image_url"),
+  galleryImages: jsonb("gallery_images").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+  primaryColor: text("primary_color").notNull().default("#c9a14a"),
+  secondaryColor: text("secondary_color").notNull().default("#6b4226"),
+  facebookUrl: text("facebook_url"),
+  instagramUrl: text("instagram_url"),
+  tripadvisorUrl: text("tripadvisor_url"),
+  deliveryEnabled: boolean("delivery_enabled").notNull().default(false),
+  deliveryUrl: text("delivery_url"),
+  deliveryLabel: text("delivery_label"),
+  deliveryFeePence: integer("delivery_fee_pence").notNull().default(0),
+  deliveryMinOrderPence: integer("delivery_min_order_pence").notNull().default(0),
+  deliveryNotes: text("delivery_notes"),
+  collectionEnabled: boolean("collection_enabled").notNull().default(true),
+  collectionInstructions: text("collection_instructions"),
+  payOnCollection: boolean("pay_on_collection").notNull().default(true),
+  payOnlineEnabled: boolean("pay_online_enabled").notNull().default(false),
+  stripePublishableKey: text("stripe_publishable_key"),
+  stripeTestMode: boolean("stripe_test_mode").notNull().default(true),
+  currency: text("currency").notNull().default("GBP"),
+  timezone: text("timezone").notNull().default("Europe/London"),
+  locale: text("locale").notNull().default("en-GB"),
+  setupCompleted: boolean("setup_completed").notNull().default(false),
+  demoMode: boolean("demo_mode").notNull().default(true),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Audit trail for menu imports (CSV / Excel / PDF). Draft payloads are reviewed in the admin UI before publishing. */
+export const menuImports = pgTable("menu_imports", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull(),
+  sourceType: text("source_type").notNull().default("csv"),
+  status: text("status").notNull().default("published"),
+  categoryCount: integer("category_count").notNull().default(0),
+  itemCount: integer("item_count").notNull().default(0),
+  payload: jsonb("payload").notNull().default(sql`'{}'::jsonb`),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SeoForm } from "@/components/admin/business/SeoForm";
 import { PageIntro, Panel } from "@/components/admin/business/widgets";
 import { getSeoEditor, SITEMAP_STATUS, SOCIAL_IMAGES, STRUCTURED_DATA_STATUS } from "@/lib/business/seo";
-import { SITE } from "@/lib/site";
+import { siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = { title: "SEO" };
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export default async function SeoAdminPage() {
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between gap-3">
               <dt className="text-black/50">Address</dt>
-              <dd className="font-medium">{SITE.url}{SITEMAP_STATUS.path}</dd>
+              <dd className="font-medium">{siteUrl()}{SITEMAP_STATUS.path}</dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt className="text-black/50">Source</dt>

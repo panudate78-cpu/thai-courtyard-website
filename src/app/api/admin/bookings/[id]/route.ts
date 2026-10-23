@@ -6,7 +6,8 @@ import { ensureDatabase } from "@/db/bootstrap";
 import { bookings } from "@/db/schema";
 import { toBookingView } from "@/lib/admin-data";
 import { adminGuard } from "@/lib/auth";
-import { bookingCustomerEmail, sendMail } from "@/lib/email";
+import { bookingCustomerEmail, sendMail, setEmailBrand } from "@/lib/email";
+import { getRestaurantConfigSafe } from "@/lib/restaurant";
 import { BOOKING_STATUSES } from "@/lib/types";
 import { readJson } from "@/lib/validation";
 
@@ -32,7 +33,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (email && (status === "confirmed" || status === "declined")) {
     after(async () => {
       try {
-        await sendMail({ to: email, ...bookingCustomerEmail(booking, status) });
+        const config = await getRestaurantConfigSafe();
+        setEmailBrand(config.name);
+        await sendMail({ to: email, ...bookingCustomerEmail(booking, status, config) });
       } catch (error) {
         console.error("[bookings] customer email failed", error);
       }

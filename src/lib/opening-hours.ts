@@ -1,14 +1,14 @@
-export function isRestaurantOpenNow() {
-  const now = new Date();
+import { hoursFor, londonNow, toMinutes, type HolidayException, type OpeningHoursMap } from "./hours";
+import { DEFAULT_OPENING_HOURS } from "./site";
 
-  const day = now.getDay(); // 0=Sun, 1=Mon, 2=Tue...
-  const hour = now.getHours();
-
-  const openDay = 2; // Tuesday
-  const closeDay = 6; // Saturday
-
-  const isCorrectDay = day >= openDay && day <= closeDay;
-  const isCorrectTime = hour >= 12 && hour < 21;
-
-  return isCorrectDay && isCorrectTime;
+/** Is the restaurant open right now (UK time), given its configured hours? */
+export function isRestaurantOpenNow(
+  openingHours: OpeningHoursMap = DEFAULT_OPENING_HOURS,
+  holidays: HolidayException[] = [],
+  at: Date = new Date(),
+) {
+  const now = londonNow(at);
+  const hours = hoursFor(now.date, openingHours, holidays);
+  if (!hours) return false;
+  return now.minutes >= toMinutes(hours.open) && now.minutes < toMinutes(hours.close);
 }

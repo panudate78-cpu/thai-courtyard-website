@@ -1,5 +1,5 @@
 import { formatPrice } from "@/lib/format";
-import { SITE } from "@/lib/site";
+import { getRestaurantConfigSafe, slugifyName } from "@/lib/restaurant";
 import {
   SHORT_MONTHS,
   WEEKDAYS,
@@ -88,7 +88,7 @@ import type {
 } from "./types";
 
 const SAMPLE_NOTE =
-  "Sample data — realistic placeholders for Thai Courtyard. Live orders, bookings or customer records replace these figures automatically.";
+  "Sample data — realistic placeholders for your restaurant. Live orders, bookings or customer records replace these figures automatically.";
 
 function sampleRange(start: string, end: string, today: string) {
   return sampleDays(start, end, today);
@@ -132,9 +132,9 @@ export async function getOverview(): Promise<Overview> {
   const prevYearSum = sumDays(days, windows.prevYearStart, windows.prevYearEnd);
 
   let totalOrders = monthSum.orders;
-  let bestName = "Pad Thai";
+  let bestName = "House Burger";
   let bestHint = "Sample · this month";
-  let categoryName = "Noodles / Rice";
+  let categoryName = "Mains";
   let categoryHint = "Sample · this month";
   const samplePeople = sampleCustomerDirectory(today);
   let newCustomers = samplePeople.filter((person) => person.firstOrder >= windows.monthStart && person.firstOrder <= today).length;
@@ -165,9 +165,9 @@ export async function getOverview(): Promise<Overview> {
     }
   } else {
     const dishes = sampleDishes();
-    bestName = dishes[0]?.name ?? "Pad Thai";
+    bestName = dishes[0]?.name ?? "House Burger";
     bestHint = `${dishes[0]?.quantity ?? 0} sold · sample mix`;
-    categoryName = categoryRanks(dishes)[0]?.name ?? "Noodles / Rice";
+    categoryName = categoryRanks(dishes)[0]?.name ?? "Mains";
     categoryHint = "Sample mix";
     totalOrders = sampleLifetimeOrders(today);
   }
@@ -414,7 +414,7 @@ function sampleFood(warning?: string): FoodDashboard {
   return {
     origin: "sample",
     warning,
-    windowLabel: "Illustrative month on the current Thai Courtyard menu",
+    windowLabel: "Illustrative month on the demo menu",
     marginNote: MARGIN_NOTE,
     best: dishRanks(dishes),
     worst: worst.map((dish) => ({
@@ -440,7 +440,7 @@ function sampleFood(warning?: string): FoodDashboard {
     },
     addons: sampleAddons(),
     drinks: sampleDrinks(),
-    addonNote: "Sample add-ons based on the menu's protein upgrades and fried egg.",
+    addonNote: "Sample add-ons based on the demo menu's sides and sauces.",
     drinkNote: "Sample drinks from the current drinks list.",
   };
 }
@@ -610,7 +610,7 @@ export async function getCustomerDashboard(): Promise<CustomerDashboard> {
     }
     const gloria = await liveCustomersFromGloria();
     if (gloria.length) {
-      return customerFromRecords(gloria, "live", "Imported GloriaFood customers. Growth is limited because first-order dates are not in that export.", today, warning);
+      return customerFromRecords(gloria, "live", "Imported customers from a previous ordering system. Growth is limited because first-order dates are not in that export.", today, warning);
     }
   } catch (error) {
     console.error("[business] customers", error);
@@ -719,25 +719,26 @@ function displayPhone(phone: string) {
 }
 
 export async function getMarketingDashboard(): Promise<MarketingDashboard> {
+  const config = await getRestaurantConfigSafe();
   return {
     origin: "sample",
-    reviewUrl: SITE.googleReviewUrl,
+    reviewUrl: config.googleReviewUrl,
     vouchers: [
       { code: "WELCOME10", offer: "10% off a first collection", uses: "46", value: "£612 attributed", status: "Sample · active" },
       { code: "LUNCH5", offer: "£5 off before 15:00", uses: "28", value: "£140 discount", status: "Sample · active" },
       { code: "BIRTHDAY", offer: "Free starter with a main", uses: "11", value: "£82 discount", status: "Sample · scheduled" },
-      { code: "MOLESEY15", offer: "15% off midweek", uses: "63", value: "Ended in August", status: "Sample · ended" },
+      { code: "MIDWEEK15", offer: "15% off midweek", uses: "63", value: "Ended in August", status: "Sample · ended" },
     ],
     promotions: [
       { name: "Tuesday lunch", detail: "Set lunch mention on the homepage banner", redemptions: "34", lift: "+12% lunch covers" },
-      { name: "Pad Thai Friday", detail: "Staff mention, not a coded voucher", redemptions: "41", lift: "+18% noodle items" },
-      { name: "Green curry week", detail: "Featured dish push", redemptions: "22", lift: "+9% curry sales" },
+      { name: "Burger Friday", detail: "Staff mention, not a coded voucher", redemptions: "41", lift: "+18% burger sales" },
+      { name: "Grill week", detail: "Featured dish push", redemptions: "22", lift: "+9% grill sales" },
     ],
     referrals: [
       { name: "Google search", value: 48, hint: "Sample share of first visits" },
       { name: "Friend or family", value: 22, hint: "Sample" },
       { name: "Instagram", value: 14, hint: "Sample" },
-      { name: "Deliveroo profile", value: 9, hint: "Sample" },
+      { name: "Delivery partner profile", value: 9, hint: "Sample" },
       { name: "Walk-in", value: 7, hint: "Sample" },
     ],
     seasonal: SHORT_MONTHS.map((label, index) => ({
@@ -756,22 +757,25 @@ export async function getMarketingDashboard(): Promise<MarketingDashboard> {
         { name: "1 star", value: 4, hint: "Sample" },
       ],
       recent: [
-        { author: "Sample · Amelia P.", rating: 5, text: "Green curry tasted just like Bangkok. Warm room and a quick Tuesday lunch.", date: "12 Oct 2026" },
-        { author: "Sample · James K.", rating: 5, text: "Pad Thai and satay for collection — ready on time and properly spiced.", date: "4 Oct 2026" },
-        { author: "Sample · Priya N.", rating: 4, text: "Lovely duck and a friendly welcome. We booked for six and the table was ready.", date: "21 Sep 2026" },
+        { author: "Sample · Amelia P.", rating: 5, text: "The grilled chicken was superb. Warm room and a quick Tuesday lunch.", date: "12 Oct 2026" },
+        { author: "Sample · James K.", rating: 5, text: "Burger and wings for collection — ready on time and still hot.", date: "4 Oct 2026" },
+        { author: "Sample · Priya N.", rating: 4, text: "Lovely Sunday lunch and a friendly welcome. We booked for six and the table was ready.", date: "21 Sep 2026" },
       ],
     },
   };
 }
 
 export async function getReport(kind: string, month: number, year: number): Promise<ReportDocument | null> {
+  const config = await getRestaurantConfigSafe();
+  const brand = config.name;
+  const slug = slugifyName(config.name);
   const today = londonNow().date;
   const stamp = generatedLabel();
   if (kind === "sales") {
     const sales = await getSalesDashboard(month, year);
     return {
-      title: `Thai Courtyard sales · ${formatMonthLabel(year, month)}`,
-      filename: `thai-courtyard-sales-${year}-${String(month).padStart(2, "0")}`,
+      title: `${brand} sales · ${formatMonthLabel(year, month)}`,
+      filename: `${slug}-sales-${year}-${String(month).padStart(2, "0")}`,
       origin: sales.origin,
       notes: [
         `Generated ${stamp}`,
@@ -790,8 +794,8 @@ export async function getReport(kind: string, month: number, year: number): Prom
     if (status === "present") {
       const rows = await liveBookingRows(bounds.start, bounds.end);
       return {
-        title: `Thai Courtyard bookings · ${formatMonthLabel(year, month)}`,
-        filename: `thai-courtyard-bookings-${year}-${String(month).padStart(2, "0")}`,
+        title: `${brand} bookings · ${formatMonthLabel(year, month)}`,
+        filename: `${slug}-bookings-${year}-${String(month).padStart(2, "0")}`,
         origin: "live",
         notes: [`Generated ${stamp}`, "Data source: live website bookings", rows.length >= 800 ? "Export capped at 800 rows." : `${rows.length} rows`],
         columns: ["Date", "Time", "Name", "Phone", "Email", "Party", "Status", "Notes"],
@@ -800,8 +804,8 @@ export async function getReport(kind: string, month: number, year: number): Prom
     }
     const rows = sampleBookingRows(year, month, today);
     return {
-      title: `Thai Courtyard bookings · ${formatMonthLabel(year, month)}`,
-      filename: `thai-courtyard-bookings-${year}-${String(month).padStart(2, "0")}`,
+      title: `${brand} bookings · ${formatMonthLabel(year, month)}`,
+      filename: `${slug}-bookings-${year}-${String(month).padStart(2, "0")}`,
       origin: "sample",
       notes: [`Generated ${stamp}`, "Data source: SAMPLE — fictional booking requests", "Replace automatically when website bookings exist."],
       columns: ["Date", "Time", "Name", "Phone", "Email", "Party", "Status", "Notes"],
@@ -833,8 +837,8 @@ export async function getReport(kind: string, month: number, year: number): Prom
           "Sample",
         ]);
     return {
-      title: "Thai Courtyard customers",
-      filename: "thai-courtyard-customers",
+      title: `${brand} customers`,
+      filename: `${slug}-customers`,
       origin: customers.origin,
       notes: [
         `Generated ${stamp}`,

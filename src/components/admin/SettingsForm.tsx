@@ -60,7 +60,7 @@ export function SettingsForm({ initial, provider, envRecipient }: Props) {
         }),
       });
       if (res.status === 401) {
-        window.location.href = "/admin/login";
+        window.location.assign("/admin/login");
         return;
       }
       const data = (await res.json().catch(() => ({}))) as { error?: string };

@@ -3,27 +3,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
 import { CalendarDays, Info, ShoppingBag } from "lucide-react";
-import { DeliverooButton, DietaryBadges, DietaryLegend, JsonLd, Ornament, PageHero } from "@/components/ui";
+import { DeliveryButton, DietaryBadges, DietaryLegend, JsonLd, Ornament, PageHero, imgFromUrl, isUnoptimised } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
-import { IMG, type SiteImage } from "@/lib/image-manifest";
 import { getMenu } from "@/lib/menu";
 import { hasPriceRange, startingPrice } from "@/lib/menu-utils";
+import { getRestaurantConfigSafe } from "@/lib/restaurant";
 import { breadcrumbJsonLd, menuJsonLd } from "@/lib/seo";
 import type { MenuGroup } from "@/lib/types";
 
-export const metadata: Metadata = {
-  title: "Menu",
-  description:
-    "The Thai Courtyard menu: starters, Tom Yum and Tom Kha soups, red, green and Phanaeng curries, stir-fries, Thai salads, Pad Thai, noodles and chef's specials — with prices, protein choices and dietary information.",
-  alternates: { canonical: "/menu" },
-};
-
-const PHOTO_BANDS: SiteImage[][] = [
-  [IMG.satay, IMG.greenCurry, IMG.dumplings],
-  [IMG.noodles, IMG.redCurry, IMG.garlicPepper],
-  [IMG.squid, IMG.beefSalad, IMG.wings],
-  [IMG.lemongrass, IMG.stirFry, IMG.rolls],
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getRestaurantConfigSafe();
+  return {
+    title: "Menu",
+    description: `The ${config.name} menu — freshly prepared dishes with prices and dietary information. Order online for collection or book a table.`,
+    alternates: { canonical: "/menu" },
+  };
+}
 
 function choiceList(group: MenuGroup) {
   return group.choices
@@ -49,45 +44,27 @@ function ChoicesPanel({ groups }: { groups: MenuGroup[] }) {
   );
 }
 
-function PhotoBand({ images }: { images: SiteImage[] }) {
-  return (
-    <div className="container-x py-4">
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
-        {images.map((img) => (
-          <div key={img.src} className="relative aspect-[3/4] overflow-hidden rounded-2xl sm:aspect-[4/3]">
-            <Image
-              src={img.src}
-              alt={img.alt}
-              fill
-              sizes="(min-width: 1280px) 400px, 33vw"
-              placeholder="blur"
-              blurDataURL={img.blurDataURL}
-              className="object-cover transition duration-700 hover:scale-105"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default async function MenuPage() {
-  const menu = await getMenu();
+  const [menu, config] = await Promise.all([getMenu(), getRestaurantConfigSafe()]);
+  const gallery = config.galleryImages.map((src, i) => imgFromUrl(src, `From the kitchen at ${config.name} (${i + 1})`, 1200, 900));
 
   return (
     <>
-      <JsonLd data={menuJsonLd(menu)} />
+      <JsonLd data={menuJsonLd(menu, config)} />
       <JsonLd
-        data={breadcrumbJsonLd([
-          { name: "Home", path: "/" },
-          { name: "Menu", path: "/menu" },
-        ])}
+        data={breadcrumbJsonLd(
+          [
+            { name: "Home", path: "/" },
+            { name: "Menu", path: "/menu" },
+          ],
+          config,
+        )}
       />
       <PageHero
         eyebrow="Our menu"
-        title="Thai Courtyard Menu"
-        intro="Authentic Thai dishes, freshly prepared to order. Many dishes can be made with your choice of protein and spice level."
-        image={IMG.thaiSpread}
+        title={`${config.name} Menu`}
+        intro="Freshly prepared dishes, cooked to order. Many dishes can be customised — just tell us what you need."
+        image={imgFromUrl(config.heroImageUrl, `${config.name} dishes`)}
       >
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link href="/order" className="btn btn-gold">
@@ -100,11 +77,8 @@ export default async function MenuPage() {
           </Link>
         </div>
       </PageHero>
-        
-      <nav
-        aria-label="Menu sections"
-        className="sticky top-16 z-20 border-b border-sand bg-cream/95 backdrop-blur lg:top-20"
-      >
+
+      <nav aria-label="Menu sections" className="sticky top-16 z-20 border-b border-sand bg-cream/95 backdrop-blur lg:top-20">
         <div className="container-x no-scrollbar flex gap-2 overflow-x-auto py-3">
           {menu.map((c) => (
             <a key={c.id} href={`#section-${c.id}`} className="chip">
@@ -118,50 +92,21 @@ export default async function MenuPage() {
         <DietaryLegend />
         <p className="mx-auto mt-5 flex max-w-3xl items-start justify-center gap-2 text-center text-xs leading-relaxed text-charcoal/60">
           <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          Dietary indicators are provided as a guide only.
-Some dishes may contain fish sauce, oyster sauce, nuts, gluten, shellfish, sesame, soya, eggs, milk and other allergens.
-Our kitchen handles nuts, gluten, shellfish and other allergens, so we cannot guarantee that any dish is completely allergen free.
-Please inform us of any allergies or dietary requirements before ordering and a member of our team will be happy to advise.
+          Dietary indicators are provided as a guide only. Our kitchen handles nuts, gluten, shellfish and other
+          allergens, so we cannot guarantee that any dish is completely allergen free. Please inform us of any
+          allergies or dietary requirements before ordering and a member of our team will be happy to advise.
         </p>
       </section>
-      <section className="container-x py-8">
-  <div className="rounded-2xl border border-gold/30 bg-cream-dark p-8">
-    <p className="eyebrow">Express Lunch</p>
 
-    <h2 className="mt-2 font-serif text-4xl font-semibold">
-      Express Lunch Menu
-    </h2>
+      {menu.length === 0 ? (
+        <section className="container-x py-20 text-center">
+          <h2 className="font-serif text-3xl font-semibold">Our menu is coming soon</h2>
+          <p className="mt-3 text-charcoal/70">
+            We&apos;re putting the finishing touches to our menu. Please call us on {config.phoneDisplay} in the meantime.
+          </p>
+        </section>
+      ) : null}
 
-    <p className="mt-3 text-charcoal/75">
-      Available Tuesday to Saturday • 12:00pm – 3:00pm 
-    </p>
-
-    <p className="mt-4 text-charcoal/75">
-      Choice of select curries, stir-fries, noodle or rice dishes with complimentary
-      prawn crackers (2 pieces) and a soft drink. *See menu in store for more details.*
-    </p>
-
-    <div className="mt-6 grid gap-3 sm:grid-cols-3">
-      <div className="rounded-xl bg-white p-4">
-        <strong>Vegetable or Tofu</strong>
-        <br />
-        £9.95
-      </div>
-
-      <div className="rounded-xl bg-white p-4">
-        <strong>Chicken or Pork</strong>
-        <br />
-        £10.50
-      </div>
-
-      <div className="rounded-xl bg-white p-4">
-        <strong>Beef or King Prawns</strong>
-        <br />
-        £11.50
-      </div>
-    </div>
-  </div>
-</section>
       {menu.map((category, index) => (
         <Fragment key={category.id}>
           <section id={`section-${category.id}`} aria-labelledby={`heading-${category.id}`} className="scroll-mt-36 py-12 lg:py-16">
@@ -171,9 +116,7 @@ Please inform us of any allergies or dietary requirements before ordering and a 
                   {category.name}
                 </h2>
                 <Ornament className="mx-auto mt-4" />
-                {category.description ? (
-                  <p className="mx-auto mt-4 max-w-2xl text-charcoal/70">{category.description}</p>
-                ) : null}
+                {category.description ? <p className="mx-auto mt-4 max-w-2xl text-charcoal/70">{category.description}</p> : null}
               </div>
               <ChoicesPanel groups={category.groups} />
               <ul className="mt-10 grid gap-x-14 gap-y-7 md:grid-cols-2">
@@ -188,36 +131,40 @@ Please inform us of any allergies or dietary requirements before ordering and a 
                       </p>
                     </div>
                     <DietaryBadges tags={item.dietary} className="mt-2" />
-                    {item.description ? (
-                      <p className="mt-2 text-sm leading-relaxed text-charcoal/70">{item.description}</p>
-                    ) : null}
+                    {item.description ? <p className="mt-2 text-sm leading-relaxed text-charcoal/70">{item.description}</p> : null}
                     {item.ownGroups.map((g) => (
                       <p key={g.id} className="mt-1.5 text-xs leading-relaxed text-charcoal/60">
                         <span className="font-semibold text-charcoal/75">{g.name}:</span> {choiceList(g)}
                       </p>
                     ))}
-                    {!item.available ? (
-                      <p className="mt-1 text-xs font-semibold text-chili">Currently unavailable</p>
-                    ) : null}
+                    {!item.available ? <p className="mt-1 text-xs font-semibold text-chili">Currently unavailable</p> : null}
                   </li>
                 ))}
               </ul>
             </div>
           </section>
-          {index % 2 === 1 && index < menu.length - 1 ? (
-            <PhotoBand images={PHOTO_BANDS[Math.floor(index / 2) % PHOTO_BANDS.length]} />
+          {index % 2 === 1 && index < menu.length - 1 && gallery.length >= 3 ? (
+            <div className="container-x py-4">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                {gallery.slice(0, 3).map((img, i) => (
+                  <div key={`${img.src}-${i}`} className="relative aspect-[3/4] overflow-hidden rounded-2xl sm:aspect-[4/3]">
+                    <Image src={img.src} alt={img.alt} fill sizes="(min-width: 1280px) 400px, 33vw" unoptimized={isUnoptimised(img.src)} className="object-cover transition duration-700 hover:scale-105" />
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : null}
         </Fragment>
       ))}
 
       <section className="relative isolate overflow-hidden bg-charcoal py-16 text-center text-cream lg:py-20">
-        <div className="thai-pattern absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
+        <div className="brand-pattern absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
         <div className="container-x">
           <p className="eyebrow">Hungry already?</p>
           <h2 className="mt-3 font-serif text-4xl font-semibold sm:text-5xl">Order for collection in under a minute</h2>
           <p className="mx-auto mt-4 max-w-xl text-cream/75">
-            Choose your dishes and collection time online — pay in restaurant when you collect. Prefer delivery? Find us on
-            Deliveroo.
+            Choose your dishes and collection time online — pay in the restaurant when you collect.
+            {config.delivery.enabled ? " Prefer delivery? Use the delivery link below." : ""}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href="/order" className="btn btn-gold">
@@ -228,7 +175,7 @@ Please inform us of any allergies or dietary requirements before ordering and a 
               <CalendarDays aria-hidden="true" />
               Book a Table
             </Link>
-            <DeliverooButton />
+            <DeliveryButton delivery={config.delivery} />
           </div>
         </div>
       </section>

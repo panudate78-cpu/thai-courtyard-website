@@ -56,9 +56,9 @@ function envFileTarget(fileName: string) {
 
 const runtimeTarget = describeUrl(databaseUrl);
 const localFileTarget = envFileTarget(".env.local");
-const globalForLog = globalThis as typeof globalThis & { __thaiCourtyardDbLogged?: boolean };
-if (!globalForLog.__thaiCourtyardDbLogged) {
-  globalForLog.__thaiCourtyardDbLogged = true;
+const globalForLog = globalThis as typeof globalThis & { __rmpDbLogged?: boolean };
+if (!globalForLog.__rmpDbLogged) {
+  globalForLog.__rmpDbLogged = true;
 console.info("[db:startup] DATABASE_URL exists", {
   runtime: runtimeTarget,
   envLocal: localFileTarget,
@@ -75,29 +75,34 @@ if ("neon" in runtimeTarget && !runtimeTarget.neon) {
 }
 
 const globalForDb = globalThis as typeof globalThis & {
-  __arenaNextJsPostgresqlPool?: Pool;
+  __rmpPostgresqlPool?: Pool;
 };
 
+const poolMax = Number(process.env.DB_POOL_MAX ?? "");
 export const pool =
-  globalForDb.__arenaNextJsPostgresqlPool ??
+  globalForDb.__rmpPostgresqlPool ??
   new Pool({
     connectionString: databaseUrl,
+    // Optional: DB_POOL_MAX lets serverless deployments (Neon + Vercel)
+    // cap connections per instance. Defaults to pg's built-in pool size.
+    ...(Number.isFinite(poolMax) && poolMax > 0 ? { max: Math.min(poolMax, 20) } : {}),
   });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.__arenaNextJsPostgresqlPool = pool;
-}
+// Always reuse one pool per process — important on serverless (Neon
+// connection limits) and prevents multiple module-graph copies of this
+// file from opening competing pools.
+globalForDb.__rmpPostgresqlPool = pool;
 
-const globalForStartup = globalThis as typeof globalThis & { __thaiCourtyardDbStartup?: Promise<void> };
-if (!globalForStartup.__thaiCourtyardDbStartup) {
-  globalForStartup.__thaiCourtyardDbStartup = pool
+const globalForStartup = globalThis as typeof globalThis & { __rmpDbStartup?: Promise<void> };
+if (!globalForStartup.__rmpDbStartup) {
+  globalForStartup.__rmpDbStartup = pool
     .query<{ database: string; user: string }>("select current_database() as database, current_user as \"user\"")
     .then((result) => {
       console.info("[db:startup] connected", result.rows[0]);
     })
     .catch((error) => {
       console.error("[db:startup] connection failed\n" + describeDatabaseError(error));
-      globalForStartup.__thaiCourtyardDbStartup = undefined;
+      globalForStartup.__rmpDbStartup = undefined;
     });
 }
 

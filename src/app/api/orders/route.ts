@@ -29,6 +29,7 @@ const orderSchema = z.object({
     .optional()
     .transform((v) => (v ? v : null)),
   company: z.string().optional(),
+  paymentMethod: z.enum(["pay_on_collection", "pay_online"]).optional(),
 });
 
 export async function POST(req: Request) {
@@ -42,6 +43,12 @@ export async function POST(req: Request) {
   if (!parsed.success) return Response.json({ error: firstError(parsed.error) }, { status: 400 });
   const { company, ...input } = parsed.data;
   if (company) return Response.json({ error: "Unable to process this order." }, { status: 400 });
+  if (input.paymentMethod === "pay_online") {
+    return Response.json(
+      { error: "Online card payment is coming soon. Please choose Pay on Collection, or call us to order." },
+      { status: 422 },
+    );
+  }
 
   try {
     const { order, settings } = await createOrder(input);

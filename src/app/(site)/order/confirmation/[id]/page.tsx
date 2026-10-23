@@ -6,7 +6,7 @@ import { PaymentNotice } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
 import { formatDateLong, londonNow, relativeDayLabel } from "@/lib/hours";
 import { getOrderByPublicId } from "@/lib/orders";
-import { SITE } from "@/lib/site";
+import { getRestaurantConfigSafe } from "@/lib/restaurant";
 import type { OrderStatus } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ const STATUS: Record<OrderStatus, { label: string; tone: string }> = {
 
 export default async function OrderConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const order = await getOrderByPublicId(id);
+  const [order, config] = await Promise.all([getOrderByPublicId(id), getRestaurantConfigSafe()]);
   if (!order) notFound();
 
   const day = relativeDayLabel(order.collectionDate, londonNow().date);
@@ -34,12 +34,12 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   return (
     <div className="bg-cream-dark">
       <section className="relative isolate overflow-hidden bg-charcoal text-cream">
-        <div className="thai-pattern absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
+        <div className="brand-pattern absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
         <div className="container-x py-12 text-center sm:py-16">
           <CheckCircle2 className="mx-auto h-16 w-16 text-gold-light" aria-hidden="true" />
           <h1 className="mt-4 font-serif text-4xl font-semibold sm:text-5xl">Thank you, {firstName}!</h1>
           <p className="mx-auto mt-3 max-w-xl text-lg text-cream/80">
-            Your collection order has been sent to Thai Courtyard. We&apos;ll have it freshly prepared for you.
+            Your collection order has been sent to {config.name}. We&apos;ll have it freshly prepared for you.
           </p>
           <p className="mt-6 inline-flex items-center gap-2 rounded-full bg-cream/10 px-5 py-2 text-sm ring-1 ring-cream/20">
             Order number <strong className="text-lg text-gold-light">#{order.number}</strong>
@@ -64,10 +64,10 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
                 <p className="flex items-center gap-2 text-xs font-semibold tracking-wider text-charcoal/55 uppercase">
                   <MapPin className="h-4 w-4" aria-hidden="true" /> Collect from
                 </p>
-                <p className="mt-2 font-semibold">Thai Courtyard</p>
-                <p className="text-sm text-charcoal/70">{SITE.addressLine}</p>
+                <p className="mt-2 font-semibold">{config.name}</p>
+                <p className="text-sm text-charcoal/70">{config.addressLine}</p>
                 <a
-                  href={SITE.googleDirectionsUrl}
+                  href={config.googleDirectionsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-deep hover:underline"
@@ -108,7 +108,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
             </div>
           </div>
 
-          <PaymentNotice />
+          <PaymentNotice notice={config.paymentNotice} />
 
           <div className="card p-6 text-sm leading-relaxed text-charcoal/75">
             <h2 className="font-serif text-xl font-semibold text-charcoal">What happens next?</h2>
@@ -119,8 +119,8 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
             </p>
             <p className="mt-2">
               Need to change something? Call us on{" "}
-              <a href={SITE.phoneHref} className="font-semibold text-teak hover:underline">
-                {SITE.phoneDisplay}
+              <a href={config.phoneHref} className="font-semibold text-teak hover:underline">
+                {config.phoneDisplay}
               </a>{" "}
               and quote order <strong>#{order.number}</strong>.
             </p>
@@ -130,7 +130,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
             <Link href="/" className="btn btn-dark">
               Back to home
             </Link>
-            <a href={SITE.phoneHref} className="btn btn-outline">
+            <a href={config.phoneHref} className="btn btn-outline">
               <Phone aria-hidden="true" />
               Call the restaurant
             </a>

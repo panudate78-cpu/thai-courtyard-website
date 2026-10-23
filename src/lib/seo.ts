@@ -1,54 +1,59 @@
-import { IMG } from "./image-manifest";
-import { DAY_NAMES, OPENING_HOURS, SITE } from "./site";
+import { DAY_NAMES } from "./site";
+import type { RestaurantConfig } from "./restaurant";
 import type { MenuCategory } from "./types";
 
-export function restaurantJsonLd() {
+export function restaurantJsonLd(config: RestaurantConfig) {
   const openingHoursSpecification = [0, 1, 2, 3, 4, 5, 6]
-    .filter((d) => OPENING_HOURS[d])
+    .filter((d) => config.openingHours[d])
     .map((d) => ({
       "@type": "OpeningHoursSpecification",
       dayOfWeek: `https://schema.org/${DAY_NAMES[d]}`,
-      opens: OPENING_HOURS[d]!.open,
-      closes: OPENING_HOURS[d]!.close,
+      opens: config.openingHours[d]!.open,
+      closes: config.openingHours[d]!.close,
     }));
+
+  const sameAs = [config.googleMapsUrl, config.social.facebook, config.social.instagram, config.social.tripadvisor, config.delivery.url].filter(
+    Boolean,
+  );
 
   return {
     "@context": "https://schema.org",
     "@type": "Restaurant",
-    "@id": `${SITE.url}/#restaurant`,
-    name: SITE.name,
-    alternateName: SITE.fullName,
-    slogan: "Simply Delicious",
-    description: SITE.description,
-    url: SITE.url,
-    telephone: SITE.phoneIntl,
-    image: [IMG.heroSpread.src, IMG.thaiSpread.src, IMG.greenCurry.src].map((src) => `${SITE.url}${src}`),
-    logo: `${SITE.url}${IMG.logo.src}`,
-    servesCuisine: ["Thai", "Asian"],
+    "@id": `${config.url}/#restaurant`,
+    name: config.name,
+    alternateName: config.fullName,
+    ...(config.tagline ? { slogan: config.tagline } : {}),
+    description: config.description,
+    url: config.url,
+    telephone: config.phoneIntl,
+    ...(config.email ? { email: config.email } : {}),
+    image: [config.heroImageUrl, config.aboutImageUrl].filter(Boolean).map((src) => (src.startsWith("http") ? src : `${config.url}${src}`)),
+    logo: config.logoUrl.startsWith("http") || config.logoUrl.startsWith("data:") ? config.logoUrl : `${config.url}${config.logoUrl}`,
+    ...(config.cuisine ? { servesCuisine: [config.cuisine] } : {}),
     priceRange: "££",
-    currenciesAccepted: "GBP",
+    currenciesAccepted: config.currency,
     paymentAccepted: "Cash, Credit Card, Debit Card",
-    acceptsReservations: `${SITE.url}/book`,
-    hasMenu: `${SITE.url}/menu`,
+    acceptsReservations: `${config.url}/book`,
+    hasMenu: `${config.url}/menu`,
     address: {
       "@type": "PostalAddress",
-      streetAddress: SITE.address.street,
-      addressLocality: SITE.address.locality,
-      addressRegion: SITE.address.region,
-      postalCode: SITE.address.postcode,
-      addressCountry: SITE.address.country,
+      streetAddress: config.address.street,
+      addressLocality: config.address.locality,
+      ...(config.address.region ? { addressRegion: config.address.region } : {}),
+      postalCode: config.address.postcode,
+      addressCountry: config.address.country,
     },
-    geo: { "@type": "GeoCoordinates", latitude: SITE.geo.lat, longitude: SITE.geo.lng },
-    hasMap: SITE.googleMapsUrl,
+    ...(config.geo ? { geo: { "@type": "GeoCoordinates", latitude: config.geo.lat, longitude: config.geo.lng } } : {}),
+    hasMap: config.googleMapsUrl,
     openingHoursSpecification,
-    sameAs: [SITE.googleMapsUrl, SITE.deliverooUrl],
+    sameAs,
     potentialAction: [
       {
         "@type": "OrderAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: `${SITE.url}/order`,
-          inLanguage: "en-GB",
+          urlTemplate: `${config.url}/order`,
+          inLanguage: config.locale,
           actionPlatform: ["https://schema.org/DesktopWebPlatform", "https://schema.org/MobileWebPlatform"],
         },
         deliveryMethod: "http://purl.org/goodrelations/v1#DeliveryModePickUp",
@@ -57,24 +62,24 @@ export function restaurantJsonLd() {
         "@type": "ReserveAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: `${SITE.url}/book`,
-          inLanguage: "en-GB",
+          urlTemplate: `${config.url}/book`,
+          inLanguage: config.locale,
           actionPlatform: ["https://schema.org/DesktopWebPlatform", "https://schema.org/MobileWebPlatform"],
         },
-        result: { "@type": "FoodEstablishmentReservation", name: "Table booking at Thai Courtyard" },
+        result: { "@type": "FoodEstablishmentReservation", name: `Table booking at ${config.name}` },
       },
     ],
   };
 }
 
-export function menuJsonLd(menu: MenuCategory[]) {
+export function menuJsonLd(menu: MenuCategory[], config: RestaurantConfig) {
   return {
     "@context": "https://schema.org",
     "@type": "Menu",
-    name: "Thai Courtyard Menu",
-    url: `${SITE.url}/menu`,
-    inLanguage: "en-GB",
-    mainEntityOfPage: `${SITE.url}/menu`,
+    name: `${config.name} Menu`,
+    url: `${config.url}/menu`,
+    inLanguage: config.locale,
+    mainEntityOfPage: `${config.url}/menu`,
     hasMenuSection: menu.map((c) => ({
       "@type": "MenuSection",
       name: c.name,
@@ -91,7 +96,7 @@ export function menuJsonLd(menu: MenuCategory[]) {
           "@type": "MenuItem",
           name: i.name,
           ...(i.description ? { description: i.description } : {}),
-          offers: { "@type": "Offer", price: (i.pricePence / 100).toFixed(2), priceCurrency: "GBP" },
+          offers: { "@type": "Offer", price: (i.pricePence / 100).toFixed(2), priceCurrency: config.currency },
           ...(diet ? { suitableForDiet: diet } : {}),
         };
       }),
@@ -99,7 +104,7 @@ export function menuJsonLd(menu: MenuCategory[]) {
   };
 }
 
-export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
+export function breadcrumbJsonLd(items: { name: string; path: string }[], config: RestaurantConfig) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -107,7 +112,12 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: `${SITE.url}${item.path}`,
+      item: `${config.url}${item.path}`,
     })),
   };
+}
+
+/** Per-page metadata helpers driven by the restaurant profile. */
+export function pageDescription(config: RestaurantConfig, fallback: string) {
+  return config.description || fallback;
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DemoControls } from "@/components/admin/DemoControls";
 import { SettingsForm } from "@/components/admin/SettingsForm";
 import { emailProvider } from "@/lib/email";
 import { getSettings } from "@/lib/settings";

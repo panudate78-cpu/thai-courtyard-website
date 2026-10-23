@@ -8,6 +8,7 @@ import { getDashboardStats, listBookings } from "@/lib/admin-data";
 import { formatPrice } from "@/lib/format";
 import { formatDateLong, londonNow, relativeDayLabel } from "@/lib/hours";
 import { listOrders } from "@/lib/orders";
+import { getRestaurantConfigSafe } from "@/lib/restaurant";
 import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -69,11 +70,12 @@ function OpStat({
 
 export default async function AdminDashboardPage() {
   const today = londonNow().date;
-  const [stats, orders, bookings, settings] = await Promise.all([
+  const [stats, orders, bookings, settings, config] = await Promise.all([
     getDashboardStats(),
     listOrders({ scope: "live" }),
     listBookings(150),
     getSettings(),
+    getRestaurantConfigSafe(),
   ]);
   const upcoming = bookings
     .filter((b) => b.date >= today && (b.status === "pending" || b.status === "confirmed"))
@@ -82,6 +84,18 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
+      {!config.setupCompleted ? (
+        <section className="brand-pattern rounded-3xl bg-charcoal p-5 text-cream sm:p-6">
+          <p className="text-xs font-bold tracking-widest text-gold uppercase">Welcome — your restaurant is almost live</p>
+          <h2 className="mt-1 font-serif text-2xl font-semibold">Finish the Setup Wizard to launch</h2>
+          <p className="mt-1 max-w-2xl text-sm text-cream/70">
+            Add your logo, business details, opening hours and menu. Until then, the website shows the demo restaurant and the numbers below include demo data — everything is safe to explore.
+          </p>
+          <Link href="/setup" className="mt-4 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-charcoal">
+            Start setup <ArrowRight aria-hidden="true" />
+          </Link>
+        </section>
+      ) : null}
       {/* ── Compact header ─────────────────────────────────────────────── */}
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>

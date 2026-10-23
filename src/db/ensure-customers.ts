@@ -43,16 +43,16 @@ export const EXPECTED_CUSTOMER_COLUMNS: Record<string, string> = {
 
 type ColumnRow = { column_name: string; data_type: string };
 
-const globalForCustomers = globalThis as typeof globalThis & { __thaiCourtyardCustomersReady?: Promise<void> };
+const globalForCustomers = globalThis as typeof globalThis & { __rmpCustomersReady?: Promise<void> };
 
 export function ensureCustomersTable(): Promise<void> {
-  if (!globalForCustomers.__thaiCourtyardCustomersReady) {
-    globalForCustomers.__thaiCourtyardCustomersReady = applyCustomersSchema().catch((error) => {
-      globalForCustomers.__thaiCourtyardCustomersReady = undefined;
+  if (!globalForCustomers.__rmpCustomersReady) {
+    globalForCustomers.__rmpCustomersReady = applyCustomersSchema().catch((error) => {
+      globalForCustomers.__rmpCustomersReady = undefined;
       throw error;
     });
   }
-  return globalForCustomers.__thaiCourtyardCustomersReady;
+  return globalForCustomers.__rmpCustomersReady;
 }
 
 async function applyCustomersSchema() {

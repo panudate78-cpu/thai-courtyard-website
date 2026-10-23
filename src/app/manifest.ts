@@ -1,18 +1,19 @@
 import type { MetadataRoute } from "next";
-import { SITE } from "@/lib/site";
+import { getRestaurantConfigSafe } from "@/lib/restaurant";
 
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const config = await getRestaurantConfigSafe();
   return {
-    name: SITE.fullName,
-    short_name: SITE.name,
-    description: SITE.description,
+    name: config.fullName,
+    short_name: config.name,
+    description: config.description,
     start_url: "/",
     display: "standalone",
     background_color: "#1d1b1a",
     theme_color: "#1d1b1a",
     icons: [
-      { src: "/images/icon-192.png", sizes: "192x192", type: "image/png" },
-      { src: "/icon.png", sizes: "512x512", type: "image/png" },
+      { src: "/icon.svg", sizes: "any", type: "image/svg+xml" },
+      { src: config.logoUrl, sizes: "512x512", type: "image/png" },
     ],
-  };  
+  };
 }

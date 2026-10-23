@@ -43,6 +43,7 @@ export function toBookingView(r: typeof bookings.$inferSelect): BookingView {
     time: r.time,
     notes: r.notes,
     status: (BOOKING_STATUSES as readonly string[]).includes(r.status) ? (r.status as BookingStatus) : "pending",
+    isDemo: Boolean((r as { isDemo?: boolean }).isDemo),
     createdAt: r.createdAt.toISOString(),
   };
 }

@@ -15,7 +15,7 @@ export function MessagesList({ initialMessages }: { initialMessages: MessageView
   async function call(id: number, init: RequestInit) {
     const res = await fetch(`/api/admin/messages/${id}`, init);
     if (res.status === 401) {
-      window.location.href = "/admin/login";
+      window.location.assign("/admin/login");
       return false;
     }
     if (!res.ok) {
@@ -65,7 +65,7 @@ export function MessagesList({ initialMessages }: { initialMessages: MessageView
                   {!m.read ? <span className="rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-charcoal uppercase">New</span> : null}
                 </p>
                 <p className="mt-0.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-black/60">
-                  <a href={`mailto:${m.email}?subject=${encodeURIComponent("Re: your message to Thai Courtyard")}`} className="inline-flex items-center gap-1 break-all hover:underline">
+                  <a href={`mailto:${m.email}?subject=${encodeURIComponent("Re: your message to your website")}`} className="inline-flex items-center gap-1 break-all hover:underline">
                     <Mail className="h-3.5 w-3.5" aria-hidden="true" />
                     {m.email}
                   </a>
@@ -83,7 +83,7 @@ export function MessagesList({ initialMessages }: { initialMessages: MessageView
             </div>
             <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap">{m.message}</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <a href={`mailto:${m.email}?subject=${encodeURIComponent("Re: your message to Thai Courtyard")}`} className="adm-btn-primary">
+              <a href={`mailto:${m.email}?subject=${encodeURIComponent("Re: your message to your website")}`} className="adm-btn-primary">
                 <Mail aria-hidden="true" /> Reply
               </a>
               <button type="button" className="adm-btn" onClick={() => setRead(m, !m.read)}>

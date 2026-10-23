@@ -2,28 +2,29 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, ChefHat, HeartHandshake, Leaf, ShoppingBag, Users } from "lucide-react";
-import { JsonLd, Ornament, PageHero, SectionHeading } from "@/components/ui";
-import { IMG } from "@/lib/image-manifest";
+import { JsonLd, Ornament, PageHero, SectionHeading, imgFromUrl, isUnoptimised } from "@/components/ui";
+import { getRestaurantConfigSafe } from "@/lib/restaurant";
 import { breadcrumbJsonLd } from "@/lib/seo";
-import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "About Us",
-  description:
-    "The story of Thai Courtyard, East Molesey — a cosy Thai restaurant offering authentic cuisine, warm hospitality and freshly prepared dishes.",
-  alternates: { canonical: "/about" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getRestaurantConfigSafe();
+  return {
+    title: "About Us",
+    description: `The story of ${config.fullName} — ${config.description}`,
+    alternates: { canonical: "/about" },
+  };
+}
 
 const VALUES = [
   {
     icon: ChefHat,
     title: "Freshly prepared",
-    text: "Dishes are cooked to order in our kitchen, so every curry, stir-fry and salad arrives fragrant, vibrant and full of flavour.",
+    text: "Dishes are cooked to order in our kitchen, so everything arrives fresh, hot and full of flavour.",
   },
   {
     icon: Leaf,
-    title: "Authentic flavours",
-    text: "Lemongrass, galangal, kaffir lime, holy basil and chilli — the true tastes of Thailand, balanced the traditional way.",
+    title: "Quality ingredients",
+    text: "We choose ingredients with care and let them shine — simple food, done properly.",
   },
   {
     icon: HeartHandshake,
@@ -37,44 +38,35 @@ const VALUES = [
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const config = await getRestaurantConfigSafe();
+  const hero = imgFromUrl(config.heroImageUrl, `Inside ${config.name}`);
+  const about = imgFromUrl(config.aboutImageUrl, `The dining room at ${config.name}`);
+  const gallery = config.galleryImages.map((src, i) => imgFromUrl(src, `From the kitchen at ${config.name} (${i + 1})`, 1200, 1200));
   return (
     <>
       <JsonLd
-        data={breadcrumbJsonLd([
-          { name: "Home", path: "/" },
-          { name: "About", path: "/about" },
-        ])}
+        data={breadcrumbJsonLd(
+          [
+            { name: "Home", path: "/" },
+            { name: "About", path: "/about" },
+          ],
+          config,
+        )}
       />
-      <PageHero
-        eyebrow="Our story"
-        title="About Thai Courtyard"
-        intro="A cosy Thai restaurant offering authentic cuisine, warm hospitality and freshly prepared dishes."
-        image={IMG.thaiSpread}
-      />
+      <PageHero eyebrow="Our story" title={`About ${config.name}`} intro={config.description} image={hero} />
 
       <section className="py-20 lg:py-28">
         <div className="container-x grid items-center gap-14 lg:grid-cols-2">
           <div>
             <h2 className="mt-3 font-serif text-4xl leading-tight font-semibold sm:text-5xl">
-              Traditional Thai hospitality, right here in East Molesey
+              Warm hospitality{config.address.locality ? `, right here in ${config.address.locality}` : ""}
             </h2>
             <Ornament className="mt-5" />
             <div className="mt-6 space-y-4 text-lg leading-relaxed text-charcoal/75">
-              <p>
-                Thai Courtyard is a cosy Thai restaurant offering authentic
-                cuisine, warm hospitality and freshly prepared dishes.
-              </p>
-              <p>
-                Tucked away on Walton Road, a short stroll from Hampton Court, our restaurant brings together traditional
-                Thai hospitality and the relaxed comfort of modern British dining. It&apos;s the kind of place where
-                neighbours become regulars, and every guest is welcomed like family.
-              </p>
-              <p>
-                We honour the classic recipes our guests love, cook every dish
-                fresh, and make each visit feel special — whether you are joining us for a quiet weekday lunch, a family
-                celebration or picking up dinner on your way home.
-              </p>
+              {config.aboutText.split(/\n+/).filter(Boolean).map((paragraph, i) => (
+                <p key={i}>{paragraph}</p>
+              ))}
             </div>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link href="/book" className="btn btn-dark">
@@ -89,49 +81,25 @@ export default function AboutPage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="relative col-span-2 aspect-[16/10] overflow-hidden rounded-[2rem] shadow-xl shadow-teak/15">
-              <Image
-                src={IMG.heroSpread.src}
-                alt={IMG.heroSpread.alt}
-                fill
-                sizes="(min-width: 1024px) 45vw, 100vw"
-                placeholder="blur"
-                blurDataURL={IMG.heroSpread.blurDataURL}
-                className="object-cover"
-              />
+              <Image src={hero.src} alt={hero.alt} fill sizes="(min-width: 1024px) 45vw, 100vw" unoptimized={isUnoptimised(hero.src)} className="object-cover" />
             </div>
             <div className="relative aspect-square overflow-hidden rounded-3xl">
-              <Image
-                src={IMG.seabass.src}
-                alt={IMG.seabass.alt}
-                fill
-                sizes="(min-width: 1024px) 22vw, 50vw"
-                placeholder="blur"
-                blurDataURL={IMG.seabass.blurDataURL}
-                className="object-cover"
-              />
+              <Image src={(gallery[0] ?? about).src} alt={(gallery[0] ?? about).alt} fill sizes="(min-width: 1024px) 22vw, 50vw" unoptimized={isUnoptimised((gallery[0] ?? about).src)} className="object-cover" />
             </div>
             <div className="relative aspect-square overflow-hidden rounded-3xl">
-              <Image
-                src={IMG.duck.src}
-                alt={IMG.duck.alt}
-                fill
-                sizes="(min-width: 1024px) 22vw, 50vw"
-                placeholder="blur"
-                blurDataURL={IMG.duck.blurDataURL}
-                className="object-cover"
-              />
+              <Image src={(gallery[1] ?? about).src} alt={(gallery[1] ?? about).alt} fill sizes="(min-width: 1024px) 22vw, 50vw" unoptimized={isUnoptimised((gallery[1] ?? about).src)} className="object-cover" />
             </div>
           </div>
         </div>
       </section>
 
       <section className="relative isolate bg-charcoal py-20 text-cream lg:py-28">
-        <div className="thai-pattern absolute inset-0 -z-10 opacity-70" aria-hidden="true" />
+        <div className="brand-pattern absolute inset-0 -z-10 opacity-70" aria-hidden="true" />
         <div className="container-x">
           <SectionHeading
             dark
             eyebrow="What we stand for"
-            title="The Thai Courtyard way"
+            title={`The ${config.name} way`}
             intro="Four simple things guide everything we do, from the kitchen to your table."
           />
           <ul className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -150,27 +118,21 @@ export default function AboutPage() {
 
       <section className="py-20 lg:py-28">
         <div className="container-x">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {[IMG.noodles, IMG.redCurry, IMG.satay, IMG.padThai].map((img) => (
-              <div key={img.src} className="relative aspect-[3/4] overflow-hidden rounded-2xl">
-                <Image
-                  src={img.src}
-                  alt={img.alt}
-                  fill
-                  sizes="(min-width: 768px) 25vw, 50vw"
-                  placeholder="blur"
-                  blurDataURL={img.blurDataURL}
-                  className="object-cover"
-                />
-              </div>
-            ))}
-          </div>
+          {gallery.length ? (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {gallery.slice(0, 4).map((img, i) => (
+                <div key={`${img.src}-${i}`} className="relative aspect-[3/4] overflow-hidden rounded-2xl">
+                  <Image src={img.src} alt={img.alt} fill sizes="(min-width: 768px) 25vw, 50vw" unoptimized={isUnoptimised(img.src)} className="object-cover" />
+                </div>
+              ))}
+            </div>
+          ) : null}
           <div className="mx-auto mt-14 max-w-2xl text-center">
             <h2 className="font-serif text-4xl font-semibold sm:text-5xl">We can&apos;t wait to welcome you</h2>
             <p className="mt-4 text-charcoal/70">
-              Open {SITE.hoursSummary} at {SITE.addressLine}. Call us on{" "}
-              <a href={SITE.phoneHref} className="font-semibold text-teak hover:underline">
-                {SITE.phoneDisplay}
+              Open {config.hoursSummary} at {config.addressLine}. Call us on{" "}
+              <a href={config.phoneHref} className="font-semibold text-teak hover:underline">
+                {config.phoneDisplay}
               </a>
               .
             </p>

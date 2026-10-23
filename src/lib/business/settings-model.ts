@@ -1,4 +1,4 @@
-import { DAY_NAMES, OPENING_HOURS, SITE } from "@/lib/site";
+import { DAY_NAMES, DEFAULT_OPENING_HOURS, DEFAULT_RESTAURANT } from "@/lib/site";
 
 export type DayKey = "0" | "1" | "2" | "3" | "4" | "5" | "6";
 
@@ -43,21 +43,21 @@ export const DAY_KEYS: DayKey[] = ["0", "1", "2", "3", "4", "5", "6"];
 export function defaultOpeningHours(): OpeningHoursMap {
   const hours = {} as OpeningHoursMap;
   for (const key of DAY_KEYS) {
-    const live = OPENING_HOURS[Number(key)];
+    const live = DEFAULT_OPENING_HOURS[Number(key)];
     hours[key] = live
       ? { closed: false, open: live.open, close: live.close }
-      : { closed: true, open: "12:00", close: "21:00" };
+      : { closed: true, open: "12:00", close: "22:00" };
   }
   return hours;
 }
 
 export function defaultContact(): ManagedContact {
   return {
-    phoneDisplay: SITE.phoneDisplay,
-    email: "",
-    street: SITE.address.street,
-    locality: SITE.address.locality,
-    postcode: SITE.address.postcode,
+    phoneDisplay: DEFAULT_RESTAURANT.phoneDisplay,
+    email: DEFAULT_RESTAURANT.email,
+    street: DEFAULT_RESTAURANT.street,
+    locality: DEFAULT_RESTAURANT.locality,
+    postcode: DEFAULT_RESTAURANT.postcode,
   };
 }
 

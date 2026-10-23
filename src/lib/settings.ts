@@ -51,11 +51,16 @@ export async function updateSettings(patch: Partial<Settings>) {
   return getSettings();
 }
 
-export function toSlotConfig(settings: Settings): SlotConfig {
+export function toSlotConfig(
+  settings: Settings,
+  extras: Pick<SlotConfig, "openingHours" | "holidays"> = {},
+): SlotConfig {
   return {
     leadTimeMinutes: settings.leadTimeMinutes,
     slotIntervalMinutes: settings.slotIntervalMinutes,
     maxDaysAhead: settings.maxDaysAhead,
     closedDates: settings.closedDates,
+    openingHours: extras.openingHours,
+    holidays: extras.holidays,
   };
 }

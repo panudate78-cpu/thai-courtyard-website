@@ -3,9 +3,10 @@ import { z } from "zod";
 import { db } from "@/db";
 import { ensureDatabase } from "@/db/bootstrap";
 import { contactMessages } from "@/db/schema";
-import { contactRestaurantEmail, restaurantEmail, sendMail } from "@/lib/email";
+import { contactRestaurantEmail, restaurantEmail, sendMail, setEmailBrand } from "@/lib/email";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { getSettingsSafe } from "@/lib/settings";
+import { getRestaurantConfigSafe } from "@/lib/restaurant";
 import { firstError, nameSchema, optionalPhoneSchema, readJson, requiredEmailSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -37,8 +38,10 @@ export async function POST(req: Request) {
     const settings = await getSettingsSafe();
     after(async () => {
       try {
-        const to = restaurantEmail(settings);
-        const mail = contactRestaurantEmail(input);
+        const config = await getRestaurantConfigSafe();
+        setEmailBrand(config.name);
+        const to = restaurantEmail(settings, config);
+        const mail = contactRestaurantEmail(input, config);
         if (to) await sendMail({ to, ...mail, replyTo: input.email });
         else console.info(`[email:no-recipient] ${mail.subject}\n${mail.text}`);
       } catch (error) {
