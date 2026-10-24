@@ -3,7 +3,14 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, X } from "lucide-react";
-import { formatDateLong, isValidDateString } from "@/lib/hours";
+import {
+  formatPausedUntilLabel,
+  formatDateLong,
+  isPausedUntilActive,
+  isValidDateString,
+  londonNow,
+  fromMinutes,
+} from "@/lib/hours";
 import type { Settings } from "@/lib/types";
 import { Notice, Toggle, useNotice } from "./AdminUI";
 
@@ -25,6 +32,7 @@ export function SettingsForm({ initial, provider, envRecipient }: Props) {
   const router = useRouter();
   const [orderingEnabled, setOrderingEnabled] = useState(initial.orderingEnabled);
   const [pausedMessage, setPausedMessage] = useState(initial.pausedMessage ?? "");
+  const [pausedUntil, setPausedUntil] = useState(initial.orderingPausedUntil ?? "");
   const [leadTime, setLeadTime] = useState(initial.leadTimeMinutes);
   const [interval, setInterval] = useState(initial.slotIntervalMinutes);
   const [daysAhead, setDaysAhead] = useState(initial.maxDaysAhead);
@@ -34,6 +42,14 @@ export function SettingsForm({ initial, provider, envRecipient }: Props) {
   const [announcement, setAnnouncement] = useState(initial.announcement ?? "");
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useNotice();
+
+  const now = londonNow();
+  const today = now.date;
+  const pauseActive = pausedUntil ? isPausedUntilActive(pausedUntil, now) : false;
+  const effectivePaused = !orderingEnabled || pauseActive;
+  // An expired "pause until" is inert, so don't show it in the inputs.
+  const activePausedUntil = pauseActive ? pausedUntil : "";
+  const [pauseDate, pauseTime] = activePausedUntil.split("T");
 
   function addClosedDate() {
     if (!isValidDateString(newDate) || closedDates.includes(newDate)) return;
@@ -45,12 +61,16 @@ export function SettingsForm({ initial, provider, envRecipient }: Props) {
     e.preventDefault();
     setSaving(true);
     try {
+      if (pausedUntil && !isPausedUntilActive(pausedUntil)) {
+        throw new Error("Choose a date and time in the future.");
+      }
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderingEnabled,
           pausedMessage: pausedMessage.trim() || null,
+          orderingPausedUntil: pausedUntil || null,
           leadTimeMinutes: leadTime,
           slotIntervalMinutes: interval,
           maxDaysAhead: daysAhead,
@@ -81,10 +101,68 @@ export function SettingsForm({ initial, provider, envRecipient }: Props) {
       <Section title="Online ordering" description="Pause collection ordering when the kitchen is too busy or closed unexpectedly.">
         <div className="flex items-center gap-3">
           <Toggle checked={orderingEnabled} onChange={setOrderingEnabled} label="Accept online collection orders" />
-          <span className={`text-sm font-semibold ${orderingEnabled ? "text-emerald-700" : "text-red-700"}`}>
-            {orderingEnabled ? "Accepting online orders" : "Online ordering paused"}
+          <span className={`text-sm font-semibold ${effectivePaused ? "text-red-700" : "text-emerald-700"}`}>
+            {!orderingEnabled
+              ? "Online ordering paused"
+              : pauseActive
+              ? `Paused until ${formatPausedUntilLabel(pausedUntil)} — resumes automatically`
+              : "Accepting online orders"}
           </span>
         </div>
+        <p className={`mt-0.5 text-sm ${effectivePaused ? "text-red-700" : "text-black/50"}`}>
+          {!orderingEnabled
+            ? "Switch the toggle back on to accept orders again."
+            : pauseActive
+            ? "Ordering switches back on automatically at the time above."
+            : "Customers can place collection orders through the website."}
+        </p>
+
+        <div>
+          <label htmlFor="paused-until" className="adm-label">
+            Pause online ordering until
+          </label>
+          <div className="flex flex-wrap gap-2 items-end">
+            <label htmlFor="paused-date" className="sr-only">
+              Pause date
+            </label>
+            <input
+              id="paused-date"
+              type="date"
+              min={today}
+              value={pauseDate ?? ""}
+              onChange={(e) =>
+                setPausedUntil(e.target.value && pauseTime ? `${e.target.value}T${pauseTime}` : "")
+              }
+              className="adm-input w-auto"
+            />
+            <label htmlFor="paused-time" className="sr-only">
+              Pause time
+            </label>
+            <input
+              id="paused-time"
+              type="time"
+              min={pauseDate === today ? fromMinutes(now.minutes) : undefined}
+              value={pauseTime ?? ""}
+              onChange={(e) =>
+                setPausedUntil(pauseDate ? `${pauseDate}T${e.target.value}` : "")
+              }
+              className="adm-input w-auto"
+            />
+            <button
+              type="button"
+              onClick={() => setPausedUntil("")}
+              disabled={!pausedUntil}
+              className="adm-btn"
+            >
+              Clear
+            </button>
+          </div>
+          <p className="mt-0.5 text-sm text-black/50">
+            Leave empty to keep the current on/off state. When a time is set, ordering pauses until then and
+            switches back on automatically — useful for private parties or kitchen closures.
+          </p>
+        </div>
+
         <div>
           <label htmlFor="paused-message" className="adm-label">
             Message shown while paused

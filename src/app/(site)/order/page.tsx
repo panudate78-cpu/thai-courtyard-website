@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { Banknote, Clock, MapPin } from "lucide-react";
 import { OrderApp } from "@/components/order/OrderApp";
 import { DeliverooButton, JsonLd } from "@/components/ui";
-import { getCollectionDays } from "@/lib/hours";
+import {
+  formatPausedUntilLabel,
+  getCollectionDays,
+  isPausedUntilActive,
+  londonNow,
+} from "@/lib/hours";
 import { getMenu } from "@/lib/menu";
 import { breadcrumbJsonLd } from "@/lib/seo";
 import { getSettings, toSlotConfig } from "@/lib/settings";
@@ -19,6 +24,15 @@ export default async function OrderPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
   const [menu, settings] = await Promise.all([getMenu(), getSettings()]);
   const slotConfig = toSlotConfig(settings);
+
+  // A scheduled "pause until" switches ordering back on automatically.
+  const now = londonNow();
+  const pausedUntilActive =
+    settings.orderingPausedUntil != null && isPausedUntilActive(settings.orderingPausedUntil, now);
+  const orderingLive = settings.orderingEnabled && !pausedUntilActive;
+  const defaultPausedMessage = pausedUntilActive
+    ? `Online ordering is paused until ${formatPausedUntilLabel(settings.orderingPausedUntil)}. Please call us on ${SITE.phoneDisplay} to place an order.`
+    : null;
   const itemParam = Array.isArray(params.item) ? params.item[0] : params.item;
   const initialItemId = itemParam && /^\d+$/.test(itemParam) ? Number(itemParam) : null;
 
@@ -62,8 +76,8 @@ export default async function OrderPage({ searchParams }: { searchParams: Promis
         categories={menu}
         initialDays={getCollectionDays(slotConfig)}
         slotConfig={slotConfig}
-        orderingEnabled={settings.orderingEnabled}
-        pausedMessage={settings.pausedMessage}
+        orderingEnabled={orderingLive}
+        pausedMessage={settings.pausedMessage ?? defaultPausedMessage}
         initialItemId={initialItemId}
       />
     </>
