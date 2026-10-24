@@ -26,10 +26,12 @@ import {
   X,
 } from "lucide-react";
 import { IMG } from "@/lib/image-manifest";
+import type { VisitStats } from "@/lib/visits";
+import { VisitCounter } from "./VisitCounter";
 
 type Counts = { newOrders: number; pendingBookings: number; unreadMessages: number };
 
-export function AdminNav({ counts }: { counts: Counts }) {
+export function AdminNav({ counts, visits }: { counts: Counts; visits: VisitStats | null }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -110,7 +112,11 @@ export function AdminNav({ counts }: { counts: Counts }) {
   );
 
   const footer = (
-    <div className="space-y-1 border-t border-cream/10 pt-4">
+    <div className="shrink-0 space-y-1 border-t border-cream/10 pt-4">
+      {/* Site traffic lives here, in the sidebar footer, so nothing pushes the live dashboard cards around. */}
+      <div className="pb-1">
+        <VisitCounter initial={visits} />
+      </div>
       <a
         href="/"
         target="_blank"
