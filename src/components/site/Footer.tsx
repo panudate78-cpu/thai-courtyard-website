@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Navigation, Phone, Star } from "lucide-react";
+import { LaunchpadCredit } from "@/components/LaunchpadCredit";
 import { DeliverooButton, OpeningHours } from "@/components/ui";
 import { IMG } from "@/lib/image-manifest";
 import { NAV_LINKS, SITE } from "@/lib/site";
@@ -76,7 +77,13 @@ export function Footer() {
       </div>
       <div className="border-t border-cream/10">
         <div className="container-x flex flex-col gap-3 py-6 text-xs text-cream/55 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {year} Thai Courtyard, East Molesey. All rights reserved.</p>
+          <div className="space-y-1.5">
+            <p>© {year} Thai Courtyard, East Molesey. All rights reserved.</p>
+            <LaunchpadCredit
+              className="text-cream/50"
+              linkClassName="text-cream/70 decoration-cream/25 hover:text-gold-light hover:decoration-gold-light/70"
+            />
+          </div>
           <p className="flex gap-5">
             <Link href="/contact" className="hover:text-gold-light">
               Allergies &amp; enquiries

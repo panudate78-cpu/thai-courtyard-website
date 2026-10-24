@@ -43,6 +43,8 @@ export type MenuCategory = {
 export type Settings = {
   orderingEnabled: boolean;
   pausedMessage: string | null;
+  /** Ordering paused until this London wall-clock moment ("YYYY-MM-DDTHH:MM"), then resumes automatically. Null when not scheduled. */
+  orderingPausedUntil: string | null;
   leadTimeMinutes: number;
   slotIntervalMinutes: number;
   maxDaysAhead: number;

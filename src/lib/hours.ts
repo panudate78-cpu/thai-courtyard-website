@@ -78,6 +78,64 @@ export function fromMinutes(total: number) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
+/** "16:00" -> "4:00 pm". */
+export function formatTime12(time: string) {
+  const [h, m] = time.split(":").map(Number);
+  const hour = ((h || 0) + 11) % 12 + 1;
+  const ampm = (h || 0) < 12 ? "am" : "pm";
+  return `${hour}:${String(m || 0).padStart(2, "0")}${ampm}`;
+}
+
+/** Render a Date as a London wall-clock string "YYYY-MM-DDTHH:MM" (no timezone conversion). */
+export function toLondonDateTimeString(value: Date | string) {
+  const d = value instanceof Date ? value : new Date(value);
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(d);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? "0";
+  const hour = Number(get("hour")) % 24;
+  return `${get("year")}-${get("month")}-${get("day")}T${String(hour).padStart(2, "0")}:${get("minute")}`;
+}
+
+/**
+ * Is a scheduled "pause until" (London wall-clock "YYYY-MM-DDTHH:MM") currently active?
+ * Ordering stays paused until the chosen moment, then resumes automatically.
+ */
+export function isPausedUntilActive(pausedUntil: string | null, now: LondonNow = londonNow()) {
+  if (!pausedUntil) return false;
+  const [datePart, timePart] = pausedUntil.split("T");
+  const pausedMinutes = timePart ? toMinutes(timePart) : NaN;
+  if (!datePart || Number.isNaN(pausedMinutes)) return false;
+  return now.date < datePart || (now.date === datePart && now.minutes < pausedMinutes);
+}
+
+/**
+ * Human-friendly label for a scheduled resume, e.g. "4:00 pm today" or
+ * "4:00 pm on Friday 30 October".
+ */
+export function formatPausedUntilLabel(
+  pausedUntil: string | null,
+  today: string = londonNow().date,
+): string | null {
+  if (!pausedUntil) return null;
+  const [datePart, timePart] = pausedUntil.split("T");
+  if (!datePart || !timePart) return null;
+  const when =
+    datePart === today
+      ? "today"
+      : datePart === addDays(today, 1)
+      ? "tomorrow"
+      : formatDateLong(datePart);
+  return `${formatTime12(timePart)} ${when}`;
+}
+
 export function hoursFor(date: string) {
   return OPENING_HOURS[weekdayOf(date)] ?? null;
 }
