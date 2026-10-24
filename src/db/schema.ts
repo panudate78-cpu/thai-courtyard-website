@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  bigserial,
   boolean,
   index,
   integer,
@@ -215,3 +216,26 @@ export const seoOverrides = pgTable("seo_overrides", {
   ogImage: text("og_image"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Anonymous page views of the public website, shown as a "Site visits" counter
+ * in the admin sidebar footer. Admin and API routes are never recorded.
+ *
+ * visitorKey is a salted hash that is re-keyed every London day, so it can
+ * answer "distinct visitors today" without being able to follow a person
+ * across days. No IP address, cookie or full URL is stored.
+ */
+export const siteVisits = pgTable(
+  "site_visits",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    path: text("path").notNull(),
+    visitorKey: text("visitor_key"),
+    referrer: text("referrer"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("site_visits_created_idx").on(t.createdAt),
+    index("site_visits_path_idx").on(t.path),
+  ],
+);

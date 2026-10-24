@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Footer } from "@/components/site/Footer";
 import { Header, MobileActionBar } from "@/components/site/Header";
+import { VisitTracker } from "@/components/site/VisitTracker";
 import { JsonLd } from "@/components/ui";
 import { restaurantJsonLd } from "@/lib/seo";
 import { getSettingsSafe } from "@/lib/settings";
@@ -29,6 +30,8 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       </main>
       <Footer />
       <MobileActionBar />
+      {/* Anonymous, admin-excluded page views for the admin site-visit counter. Renders nothing. */}
+      <VisitTracker />
     </>
   );
 }
