@@ -6,7 +6,13 @@ import { BusinessOverview } from "@/components/admin/business/BusinessOverview";
 import { OrdersBoard } from "@/components/admin/OrdersBoard";
 import { getDashboardStats, listBookings } from "@/lib/admin-data";
 import { formatPrice } from "@/lib/format";
-import { formatDateLong, londonNow, relativeDayLabel } from "@/lib/hours";
+import {
+  formatDateLong,
+  formatPausedUntilLabel,
+  isPausedUntilActive,
+  londonNow,
+  relativeDayLabel,
+} from "@/lib/hours";
 import { listOrders } from "@/lib/orders";
 import { getSettings } from "@/lib/settings";
 
@@ -80,6 +86,10 @@ export default async function AdminDashboardPage() {
     .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
     .slice(0, 6);
 
+  const orderingPausedUntilActive =
+    settings.orderingPausedUntil != null && isPausedUntilActive(settings.orderingPausedUntil);
+  const orderingLive = settings.orderingEnabled && !orderingPausedUntilActive;
+
   return (
     <div className="space-y-8">
       {/* ── Compact header ─────────────────────────────────────────────── */}
@@ -92,10 +102,14 @@ export default async function AdminDashboardPage() {
         <Link
           href="/admin/settings"
           className={`rounded-full px-4 py-2 text-sm font-semibold ${
-            settings.orderingEnabled ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-800"
+            orderingLive ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-800"
           }`}
         >
-          {settings.orderingEnabled ? "● Online ordering is live" : "● Online ordering is paused"}
+          {orderingLive
+            ? "● Online ordering is live"
+            : orderingPausedUntilActive
+            ? `● Paused until ${formatPausedUntilLabel(settings.orderingPausedUntil)} — resumes automatically`
+            : "● Online ordering is paused"}
         </Link>
       </header>
 

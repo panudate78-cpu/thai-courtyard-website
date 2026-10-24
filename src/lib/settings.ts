@@ -2,12 +2,14 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureDatabase } from "@/db/bootstrap";
 import { siteSettings } from "@/db/schema";
+import { toLondonDateTimeString } from "./hours";
 import type { SlotConfig } from "./hours";
 import type { Settings } from "./types";
 
 export const DEFAULT_SETTINGS: Settings = {
   orderingEnabled: true,
   pausedMessage: null,
+  orderingPausedUntil: null,
   leadTimeMinutes: 20,
   slotIntervalMinutes: 15,
   maxDaysAhead: 7,
@@ -23,6 +25,12 @@ export async function getSettings(): Promise<Settings> {
   return {
     orderingEnabled: row.orderingEnabled,
     pausedMessage: row.pausedMessage,
+    orderingPausedUntil:
+      typeof row.orderingPausedUntil === "string"
+        ? row.orderingPausedUntil || null
+        : row.orderingPausedUntil
+        ? toLondonDateTimeString(row.orderingPausedUntil)
+        : null,
     leadTimeMinutes: row.leadTimeMinutes,
     slotIntervalMinutes: row.slotIntervalMinutes,
     maxDaysAhead: row.maxDaysAhead,

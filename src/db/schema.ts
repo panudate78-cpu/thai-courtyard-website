@@ -170,6 +170,7 @@ export const siteSettings = pgTable("site_settings", {
   id: integer("id").primaryKey(),
   orderingEnabled: boolean("ordering_enabled").notNull().default(true),
   pausedMessage: text("paused_message"),
+  orderingPausedUntil: text("ordering_paused_until"),
   leadTimeMinutes: integer("lead_time_minutes").notNull().default(20),
   slotIntervalMinutes: integer("slot_interval_minutes").notNull().default(15),
   maxDaysAhead: integer("max_days_ahead").notNull().default(7),
