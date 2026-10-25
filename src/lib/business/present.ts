@@ -14,10 +14,7 @@ import {
   weekLabel,
   weekStartMonday,
 } from "./dates";
-import { marginLabel, estimatedMargin } from "./margins";
-import type { DaySales } from "./sample";
-import { sumDays } from "./sample";
-import type { Delta, GroupPoint, Metric, Origin, Point, Rank } from "./types";
+import type { DaySales, Delta, GroupPoint, Metric, Point, Rank } from "./types";
 
 export function money(pence: number) {
   return formatPrice(Math.round(pence));
@@ -69,7 +66,14 @@ export function dailyPoints(days: DaySales[], today: string): Point[] {
 }
 
 export function windowSum(days: DaySales[], start: string, end: string) {
-  return sumDays(days, start, end);
+  return days.reduce((total, day) => {
+    if (day.date >= start && day.date <= end) {
+      total.revenuePence += day.revenuePence;
+      total.orders += day.orders;
+      total.refundPence += day.refundPence;
+    }
+    return total;
+  }, { revenuePence: 0, orders: 0, refundPence: 0 });
 }
 
 export { dashboardWindows, formatGrowth, formatMonthLabel, growthPercent, monthBounds, monthComparison, isoDate, SHORT_MONTHS, WEEKDAYS };
@@ -107,21 +111,6 @@ export function dishRanks(dishes: { name: string; quantity: number; revenuePence
     }));
 }
 
-export function profitRanks(dishes: { name: string; quantity: number; revenuePence: number; category: string }[]) {
-  return [...dishes]
-    .map((dish) => ({
-      ...dish,
-      profitPence: Math.round(dish.revenuePence * estimatedMargin(dish.category)),
-    }))
-    .sort((a, b) => b.profitPence - a.profitPence)
-    .slice(0, 8)
-    .map((dish) => ({
-      name: dish.name,
-      value: dish.profitPence,
-      hint: `${money(dish.profitPence)} est. profit · ${marginLabel(dish.category)} · ${money(dish.revenuePence)} sales`,
-    }));
-}
-
 export function categoryRanks(dishes: { category: string; quantity: number; revenuePence: number }[]) {
   const map = new Map<string, { quantity: number; revenuePence: number }>();
   for (const dish of dishes) {
@@ -139,14 +128,4 @@ export function categoryRanks(dishes: { category: string; quantity: number; reve
       value: row.revenuePence,
       hint: `${money(row.revenuePence)} · ${Math.round((row.revenuePence / total) * 100)}% · ${row.quantity} items`,
     }));
-}
-
-export function originOf(statuses: Array<"present" | "empty" | "unavailable">): Origin {
-  return statuses.some((status) => status === "present") ? "live" : "sample";
-}
-
-export function warningFor(statuses: Array<"present" | "empty" | "unavailable">, databaseWarning?: string) {
-  if (databaseWarning) return databaseWarning;
-  if (statuses.includes("unavailable")) return "A live query failed, so this section is showing sample data.";
-  return undefined;
 }

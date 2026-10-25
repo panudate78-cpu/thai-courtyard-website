@@ -30,11 +30,7 @@ export default async function SalesPage({
       <OriginBanner
         origin={sales.origin}
         warning={sales.warning}
-        note={
-          sales.origin === "live"
-            ? `${sales.rangeLabel}. Compared with ${sales.comparisonLabel}.`
-            : "No collection orders are stored yet, so this month uses a deterministic sample that follows Tuesday–Saturday opening hours."
-        }
+        note={`${sales.rangeLabel}. Compared with ${sales.comparisonLabel}. All figures come from saved collection orders.`}
       />
       <MetricGrid metrics={sales.metrics} />
 

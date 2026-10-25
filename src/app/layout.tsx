@@ -1,17 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { SITE } from "@/lib/site";
 import "./globals.css";
-
-const serif = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-cormorant",
-  display: "swap",
-});
-
-const sans = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
 
 const title = "Thai Courtyard | Authentic Thai Restaurant in East Molesey";
 
@@ -53,7 +43,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en-GB" className={`${serif.variable} ${sans.variable}`}>
+    <html lang="en-GB">
       <body className="font-sans antialiased">{children}</body>
     </html>
   );

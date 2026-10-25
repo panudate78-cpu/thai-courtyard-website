@@ -31,14 +31,13 @@ export function OriginBanner({
   warning,
   note,
 }: {
-  origin: Origin | "mixed" | "sample";
+  origin: Origin;
   warning?: string;
   note: string;
 }) {
-  const sample = origin !== "live";
   return (
-    <div className={`rounded-2xl px-4 py-3 text-sm ring-1 ${sample ? "bg-amber-50 text-amber-950 ring-amber-200" : "bg-emerald-50 text-emerald-950 ring-emerald-200"}`}>
-      <p className="font-semibold">{sample ? "Placeholder data is in use" : "Live restaurant data"}</p>
+    <div className={`rounded-2xl px-4 py-3 text-sm ring-1 ${warning ? "bg-amber-50 text-amber-950 ring-amber-200" : "bg-emerald-50 text-emerald-950 ring-emerald-200"}`}>
+      <p className="font-semibold">{warning ? "Live data unavailable" : "Live restaurant data"}</p>
       <p className="mt-1 leading-6">{note}</p>
       {warning ? <p className="mt-1 font-medium">{warning}</p> : null}
     </div>
@@ -48,7 +47,7 @@ export function OriginBanner({
 export function OriginPill({ origin }: { origin: Origin }) {
   return (
     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${origin === "live" ? "bg-emerald-50 text-emerald-800" : "bg-amber-100 text-amber-900"}`}>
-      {origin === "live" ? "Live" : "Sample"}
+      Live
     </span>
   );
 }

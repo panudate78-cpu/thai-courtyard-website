@@ -3,6 +3,7 @@ import { db, pool } from "@/db";
 import { ensureBusinessTables } from "./business-migration";
 import { ensureCustomersTable } from "./ensure-customers";
 import { ensureVisitsTable } from "./visits-migration";
+import { ensureOffersTable } from "./offers-migration";
 import { MIGRATION_STATEMENTS } from "./migration-sql";
 import { menuCategories, menuItems, optionChoices, optionGroups, siteSettings } from "./schema";
 import { SEED_MENU, type SeedGroup } from "./seed-data";
@@ -68,6 +69,7 @@ async function bootstrap() {
   await ensureCustomersTable();
   await ensureBusinessTables();
   await ensureVisitsTable();
+  await ensureOffersTable();
 }
 
 async function insertGroups(tx: Tx, groups: SeedGroup[], owner: { categoryId?: number; itemId?: number }) {

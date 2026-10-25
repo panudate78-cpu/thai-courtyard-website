@@ -1,4 +1,12 @@
-export type Origin = "live" | "sample";
+export type Origin = "live";
+
+export type DaySales = {
+  date: string;
+  revenuePence: number;
+  orders: number;
+  customers: number;
+  refundPence: number;
+};
 
 export type Delta = { percent: number | null; label: string };
 
@@ -20,7 +28,7 @@ export type Rank = { name: string; value: number; hint?: string };
 export type TableData = { columns: string[]; rows: string[][] };
 
 export type Overview = {
-  origin: Origin | "mixed";
+  origin: Origin;
   warning?: string;
   note: string;
   metrics: Metric[];
@@ -92,28 +100,4 @@ export type CustomerDashboard = {
   visits: Point[];
   spenders: CustomerRow[];
   frequent: CustomerRow[];
-};
-
-export type MarketingDashboard = {
-  origin: "sample";
-  vouchers: { code: string; offer: string; uses: string; value: string; status: string }[];
-  promotions: { name: string; detail: string; redemptions: string; lift: string }[];
-  referrals: Rank[];
-  seasonal: Point[];
-  reviews: {
-    average: string;
-    count: string;
-    distribution: Rank[];
-    recent: { author: string; rating: number; text: string; date: string }[];
-  };
-  reviewUrl: string;
-};
-
-export type ReportDocument = {
-  title: string;
-  filename: string;
-  origin: Origin;
-  notes: string[];
-  columns: string[];
-  rows: string[][];
 };

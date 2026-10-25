@@ -1,6 +1,6 @@
 import { pool } from "@/db";
 import { ensureDatabase } from "@/db/bootstrap";
-import type { DaySales } from "./sample";
+import type { DaySales } from "./types";
 
 export type LiveStatus = "present" | "empty" | "unavailable";
 
@@ -22,7 +22,7 @@ export async function databaseStatus(): Promise<{ warning?: string }> {
     return {};
   } catch (error) {
     console.error("[business] database unavailable", error);
-    return { warning: "The database could not be reached, so sample figures are shown." };
+    return { warning: "The database could not be reached. No data is available." };
   }
 }
 
