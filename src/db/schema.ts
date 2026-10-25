@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   bigserial,
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -225,6 +226,25 @@ export const seoOverrides = pgTable("seo_overrides", {
  * answer "distinct visitors today" without being able to follow a person
  * across days. No IP address, cookie or full URL is stored.
  */
+export const offers = pgTable(
+  "offers",
+  {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    description: text("description").notNull().default(""),
+    ctaText: text("cta_text").notNull(),
+    ctaLink: text("cta_link").notNull(),
+    imageData: text("image_data"),
+    startsOn: date("starts_on", { mode: "string" }).notNull(),
+    endsOn: date("ends_on", { mode: "string" }).notNull(),
+    displayOrder: integer("display_order").notNull().default(0),
+    enabled: boolean("enabled").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("offers_enabled_dates_order_idx").on(t.enabled, t.startsOn, t.endsOn, t.displayOrder)],
+);
+
 export const siteVisits = pgTable(
   "site_visits",
   {

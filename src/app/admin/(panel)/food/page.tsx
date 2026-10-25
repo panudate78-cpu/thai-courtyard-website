@@ -18,11 +18,7 @@ export default async function FoodPage() {
       <OriginBanner
         origin={food.origin}
         warning={food.warning}
-        note={
-          food.origin === "live"
-            ? "Dish rankings use live order lines. Profit still uses estimated category margins until cost prices exist."
-            : "No order lines yet. Rankings use an illustrative mix of the current Thai Courtyard menu and are labelled sample."
-        }
+        note="Dish rankings use saved order lines. Profit is not calculated because item cost prices are not stored."
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -34,7 +30,7 @@ export default async function FoodPage() {
         </Panel>
       </div>
 
-      <Panel title="Most profitable dishes" description={food.marginNote} action={<span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-amber-900 uppercase">Estimated</span>}>
+      <Panel title="Most profitable dishes" description={food.marginNote} action={<span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-bold tracking-wide text-black/60 uppercase">Unavailable</span>}>
         <RankBars rows={food.profitable} />
       </Panel>
 

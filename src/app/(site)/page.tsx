@@ -22,8 +22,10 @@ import { hasPriceRange, startingPrice } from "@/lib/menu-utils";
 import { getSettingsSafe } from "@/lib/settings";
 import { SITE } from "@/lib/site";
 import type { MenuCategory } from "@/lib/types";
+import { getActiveOffers } from "@/lib/offers";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
+export const dynamic = "force-dynamic";
 
 const GALLERY: { img: SiteImage; className: string }[] = [
   { img: IMG.noodles, className: "row-span-2" },
@@ -55,7 +57,11 @@ const VALUES = [
 ];
 
 export default async function HomePage() {
-  const [menu, settings] = await Promise.all([getMenu().catch((): MenuCategory[] => []), getSettingsSafe()]);
+  const [menu, settings, offers] = await Promise.all([
+    getMenu().catch((): MenuCategory[] => []),
+    getSettingsSafe(),
+    getActiveOffers().catch(() => []),
+  ]);
   const featured = menu
     .flatMap((c) => c.items)
     .filter((i) => i.featured && i.available)
@@ -147,6 +153,36 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {offers.length > 0 ? (
+        <section aria-label="Current offers" className="bg-cream-dark py-10 sm:py-14">
+          <div className="container-x">
+            <p className="eyebrow-dark">Offers &amp; promotions</p>
+            <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {offers.map((offer) => (
+                <article key={offer.id} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-teak/10">
+                  {offer.imageData ? (
+                    // Uploaded promotion images are stored with the offer record.
+                    <Image src={offer.imageData} alt="" width={960} height={480} unoptimized className="h-48 w-full object-cover" />
+                  ) : null}
+                  <div className="p-5">
+                    <h2 className="font-serif text-2xl font-semibold">{offer.title}</h2>
+                    {offer.description ? <p className="mt-2 text-sm leading-6 text-black/65">{offer.description}</p> : null}
+                    <a
+                      href={offer.ctaLink}
+                      className="btn btn-gold mt-5"
+                      target={offer.ctaLink.startsWith("http") ? "_blank" : undefined}
+                      rel={offer.ctaLink.startsWith("http") ? "noopener noreferrer" : undefined}
+                    >
+                      {offer.ctaText}
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {/* Info strip */}
       <section aria-label="Opening hours and location" className="border-y border-gold/20 bg-teak-dark text-cream">

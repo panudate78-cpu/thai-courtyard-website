@@ -24,11 +24,7 @@ export default async function BookingAnalyticsPage() {
       <OriginBanner
         origin={bookings.origin}
         warning={bookings.warning}
-        note={
-          bookings.origin === "live"
-            ? "Charts exclude declined and cancelled requests so they show real demand. The total includes every stored request."
-            : "No table requests are stored yet. Times, days and party size are a sample of a typical East Molesey week, with Sunday and Monday closed."
-        }
+        note="Charts and totals are calculated from stored booking requests. Declined and cancelled requests are excluded from demand charts."
       />
       <MetricGrid metrics={bookings.metrics} />
       <Panel title="Average party size" description={bookings.partyHint}>
