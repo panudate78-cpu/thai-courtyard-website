@@ -57,14 +57,6 @@ async function bootstrap() {
     }
   }
   await db.insert(siteSettings).values({ id: 1 }).onConflictDoNothing();
-  // Keep existing databases in sync: add the pause-until column if it is missing.
-  try {
-    await pool.query(
-      `ALTER TABLE "site_settings" ADD COLUMN IF NOT EXISTS "ordering_paused_until" text`,
-    );
-  } catch (error) {
-    console.error("[bootstrap] could not add ordering_paused_until column", error);
-  }
   await seedMenuIfEmpty();
   await ensureCustomersTable();
   await ensureBusinessTables();
