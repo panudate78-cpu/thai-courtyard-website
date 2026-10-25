@@ -8,8 +8,6 @@ import { getDashboardStats, listBookings } from "@/lib/admin-data";
 import { formatPrice } from "@/lib/format";
 import {
   formatDateLong,
-  formatPausedUntilLabel,
-  isPausedUntilActive,
   londonNow,
   relativeDayLabel,
 } from "@/lib/hours";
@@ -62,10 +60,6 @@ export default async function AdminDashboardPage() {
     .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
     .slice(0, 6);
 
-  const orderingPausedUntilActive =
-    settings.orderingPausedUntil != null && isPausedUntilActive(settings.orderingPausedUntil);
-  const orderingLive = settings.orderingEnabled && !orderingPausedUntilActive;
-
   return (
     <div className="space-y-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -76,14 +70,10 @@ export default async function AdminDashboardPage() {
         <Link
           href="/admin/settings"
           className={`rounded-full px-4 py-2 text-sm font-semibold ${
-            orderingLive ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-800"
+            settings.orderingEnabled ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-800"
           }`}
         >
-          {orderingLive
-            ? "● Online ordering is live"
-            : orderingPausedUntilActive
-            ? `● Paused until ${formatPausedUntilLabel(settings.orderingPausedUntil)} — resumes automatically`
-            : "● Online ordering is paused"}
+          {settings.orderingEnabled ? "● Online ordering is live" : "● Online ordering is paused"}
         </Link>
       </header>
 

@@ -19,15 +19,9 @@ import {
   type MailResult,
 } from "./email";
 import { orderNumber } from "./format";
-import {
-  formatPausedUntilLabel,
-  isPausedUntilActive,
-  isValidCollectionSlot,
-  londonNow,
-} from "./hours";
+import { isValidCollectionSlot, londonNow } from "./hours";
 import { getMenu } from "./menu";
 import { getSettings, toSlotConfig } from "./settings";
-import { SITE } from "./site";
 import { ORDER_STATUSES, type MenuItem, type OrderOption, type OrderStatus, type OrderView, type Settings } from "./types";
 
 type OrderRow = typeof orders.$inferSelect;
@@ -146,18 +140,8 @@ if (customer?.orders && customer.orders >= 25) {
 /** Validates the basket against the live menu (server-side pricing) and stores the order. */
 export async function createOrder(input: OrderInput): Promise<{ order: OrderView; settings: Settings }> {
   const settings = await getSettings();
-  const now = londonNow();
-  const pausedUntilActive =
-    settings.orderingPausedUntil != null && isPausedUntilActive(settings.orderingPausedUntil, now);
-  if (!settings.orderingEnabled || pausedUntilActive) {
-    let message = settings.pausedMessage;
-    if (!message && pausedUntilActive) {
-      message = `Online ordering is paused until ${formatPausedUntilLabel(settings.orderingPausedUntil)}. Please call us on ${SITE.phoneDisplay} to place an order.`;
-    }
-    throw new OrderError(
-      message || "Online ordering is currently paused. Please call us to place your order.",
-      409,
-    );
+  if (!settings.orderingEnabled) {
+    throw new OrderError(settings.pausedMessage || "Online ordering is currently paused. Please call us to place your order.", 409);
   }
   if (!isValidCollectionSlot(input.collectionDate, input.collectionTime, toSlotConfig(settings))) {
     throw new OrderError("Sorry, that collection time is no longer available. Please choose another time.");
