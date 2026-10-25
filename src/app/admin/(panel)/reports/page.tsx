@@ -27,8 +27,8 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
     { label: "Total customers", value: String(dates.customers), hint: "Distinct phone numbers in orders and bookings", origin: "live" },
     { label: "Total bookings / jobs", value: String(dates.jobs), hint: "Non-cancelled orders and bookings", origin: "live" },
     { label: "Completed jobs", value: String(dates.completedJobs), hint: "Collected orders and completed bookings", origin: "live" },
-    { label: "Revenue", value: formatPrice(dates.revenuePence), hint: "Revenue from collected orders", origin: "live" },
-    { label: "Average job value", value: dates.averageJobValuePence === null ? "No data available" : formatPrice(dates.averageJobValuePence), hint: "Revenue per completed collection order", origin: "live" },
+    { label: "Revenue", value: formatPrice(dates.revenuePence), hint: "Non-cancelled collection orders", origin: "live" },
+    { label: "Average job value", value: dates.averageJobValuePence === null ? "No data available" : formatPrice(dates.averageJobValuePence), hint: "Revenue per non-cancelled collection order", origin: "live" },
     { label: "Conversion rate", value: dates.conversionRate === null ? "No data available" : `${dates.conversionRate.toFixed(1)}%`, hint: "Completed jobs ÷ total bookings / jobs", origin: "live" },
   ];
   const query = new URLSearchParams({ range: dates.range, start: dates.start, end: dates.end }).toString();
@@ -52,15 +52,15 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
       ) : dates.hasData ? (
         <>
           <MetricGrid metrics={metrics} />
-          <Panel title="Monthly trends" description={`Real enquiries, jobs and collected-order revenue within ${dateLabel}.`} action={<ExportLinks hrefBase={`/api/admin/reports/business?${query}`} />}>
+          <Panel title="Monthly trends" description={`Real enquiries, jobs and collection-order revenue within ${dateLabel}.`} action={<ExportLinks hrefBase={`/api/admin/reports/business?${query}`} />}>
             <div className="grid gap-6 lg:grid-cols-2">
-              {monthly.some((point) => point.value > 0) ? <div><h3 className="mb-2 text-sm font-semibold">Revenue</h3><ColumnChart points={monthly} label="Monthly revenue from completed orders" format={(value) => `£${Math.round(value / 100)}`} /></div> : null}
+              {monthly.some((point) => point.value > 0) ? <div><h3 className="mb-2 text-sm font-semibold">Revenue</h3><ColumnChart points={monthly} label="Monthly revenue from collection orders" format={(value) => `£${Math.round(value / 100)}`} /></div> : null}
               {jobMonthly.some((point) => point.value > 0) ? <div><h3 className="mb-2 text-sm font-semibold">Bookings / jobs</h3><ColumnChart points={jobMonthly} label="Monthly bookings and jobs" format={(value) => String(Math.round(value))} /></div> : null}
             </div>
             <div className="mt-5">
               <DataTable columns={["Month", "Enquiries", "Customers", "Bookings / jobs", "Completed", "Revenue"]} rows={dates.trends.map((row) => [row.month, String(row.enquiries), String(row.customers), String(row.jobs), String(row.completedJobs), formatPrice(row.revenuePence)])} />
             </div>
-            <p className="mt-3 text-xs text-black/45">Conversion rate is completed jobs divided by total non-cancelled bookings and orders. Average job value uses completed collection orders because table bookings do not have stored revenue.</p>
+            <p className="mt-3 text-xs text-black/45">Conversion rate is completed jobs divided by total non-cancelled bookings and orders. Average job value uses non-cancelled collection orders because table bookings do not have stored revenue.</p>
           </Panel>
         </>
       ) : (

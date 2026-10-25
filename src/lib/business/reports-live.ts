@@ -54,103 +54,104 @@ function monthKeys(start: string, end: string) {
 export async function getLiveBusinessReport(rangeInput: { range?: string; start?: string; end?: string }): Promise<LiveBusinessReport> {
   await ensureDatabase();
   const { range, start, end } = resolveReportRange(rangeInput);
-  const summaryResult = await pool.query<{
-    enquiries: number;
-    customers: number;
-    jobs: number;
-    completed_jobs: number;
-    revenue_pence: number;
-    completed_orders: number;
-  }>(
-    `with order_rows as (
-       select id, phone, collection_date as event_date, status, subtotal_pence
-       from orders
-       where collection_date >= $1 and collection_date <= $2
-     ), booking_rows as (
-       select id, phone, date as event_date, status
-       from bookings
-       where date >= $1 and date <= $2
-     ), customer_phones as (
-       select regexp_replace(coalesce(phone, ''), '[^0-9]', '', 'g') as phone from order_rows where status <> 'cancelled'
-       union all
-       select regexp_replace(coalesce(phone, ''), '[^0-9]', '', 'g') as phone from booking_rows where status not in ('cancelled', 'declined')
-     )
-     select (select count(*)::int from contact_messages
-             where (created_at at time zone 'Europe/London')::date between $1::date and $2::date) as enquiries,
-            (select count(distinct phone) filter (where phone <> '')::int from customer_phones) as customers,
-            ((select count(*) from order_rows where status <> 'cancelled') +
-             (select count(*) from booking_rows where status not in ('cancelled', 'declined')))::int as jobs,
-            ((select count(*) from order_rows where status = 'collected') +
-             (select count(*) from booking_rows where status = 'completed'))::int as completed_jobs,
-            coalesce((select sum(subtotal_pence) from order_rows where status = 'collected'), 0)::int as revenue_pence,
-            (select count(*) from order_rows where status = 'collected')::int as completed_orders`,
-    [start, end],
-  );
-  const summary = summaryResult.rows[0];
-
-  const [trendRows, bookingTrendRows, enquiryTrendRows, customerTrendRows] = await Promise.all([
-    pool.query<{ month: string; jobs: number; completed_jobs: number; revenue_pence: number }>(
-      `select substr(event_date, 1, 7) as month,
+  const [orderResult, bookingResult, enquiryResult, customerSummary, customerMonthResult] = await Promise.all([
+    pool.query<{ month_key: string; jobs: number; completed_jobs: number; revenue_pence: number }>(
+      `select substr(collection_date, 1, 7) as month_key,
               count(*) filter (where status <> 'cancelled')::int as jobs,
               count(*) filter (where status = 'collected')::int as completed_jobs,
-              coalesce(sum(subtotal_pence) filter (where status = 'collected'), 0)::int as revenue_pence
-       from orders where event_date between $1 and $2 group by 1`, [start, end]),
-    pool.query<{ month: string; jobs: number; completed_jobs: number }>(
-      `select substr(date, 1, 7) as month,
+              coalesce(sum(subtotal_pence) filter (where status <> 'cancelled'), 0)::int as revenue_pence
+       from orders
+       where collection_date >= $1 and collection_date <= $2
+       group by 1`,
+      [start, end],
+    ),
+    pool.query<{ month_key: string; jobs: number; completed_jobs: number }>(
+      `select substr(date, 1, 7) as month_key,
               count(*) filter (where status not in ('cancelled', 'declined'))::int as jobs,
               count(*) filter (where status = 'completed')::int as completed_jobs
-       from bookings where date between $1 and $2 group by 1`, [start, end]),
-    pool.query<{ month: string; enquiries: number }>(
-      `select to_char(date_trunc('month', created_at at time zone 'Europe/London'), 'YYYY-MM') as month,
+       from bookings
+       where date >= $1 and date <= $2
+       group by 1`,
+      [start, end],
+    ),
+    pool.query<{ month_key: string; enquiries: number }>(
+      `select to_char(date_trunc('month', created_at at time zone 'Europe/London'), 'YYYY-MM') as month_key,
               count(*)::int as enquiries
        from contact_messages
-       where (created_at at time zone 'Europe/London')::date between $1::date and $2::date
-       group by 1`, [start, end]),
-    pool.query<{ month: string; customers: number }>(
-      `with people as (
-         select substr(collection_date, 1, 7) as month, regexp_replace(coalesce(phone, ''), '[^0-9]', '', 'g') as phone
-         from orders where collection_date between $1 and $2 and status <> 'cancelled'
+       where (created_at at time zone 'Europe/London')::date >= $1::date
+         and (created_at at time zone 'Europe/London')::date <= $2::date
+       group by 1`,
+      [start, end],
+    ),
+    pool.query<{ customers: number }>(
+      `select count(*)::int as customers
+       from (
+         select regexp_replace(coalesce(phone, ''), '[^0-9]', '', 'g') as phone
+         from orders
+         where collection_date >= $1 and collection_date <= $2 and status <> 'cancelled'
          union
-         select substr(date, 1, 7) as month, regexp_replace(coalesce(phone, ''), '[^0-9]', '', 'g') as phone
-         from bookings where date between $1 and $2 and status not in ('cancelled', 'declined')
-       ) select month, count(distinct phone) filter (where phone <> '')::int as customers from people group by month`, [start, end]),
+         select regexp_replace(coalesce(phone, ''), '[^0-9]', '', 'g') as phone
+         from bookings
+         where date >= $1 and date <= $2 and status not in ('cancelled', 'declined')
+       ) as all_customers
+       where phone <> ''`,
+      [start, end],
+    ),
+    pool.query<{ month_key: string; customers: number }>(
+      `select month_key, count(*)::int as customers
+       from (
+         select substr(collection_date, 1, 7) as month_key,
+                regexp_replace(coalesce(phone, ''), '[^0-9]', '', 'g') as phone
+         from orders
+         where collection_date >= $1 and collection_date <= $2 and status <> 'cancelled'
+         union
+         select substr(date, 1, 7) as month_key,
+                regexp_replace(coalesce(phone, ''), '[^0-9]', '', 'g') as phone
+         from bookings
+         where date >= $1 and date <= $2 and status not in ('cancelled', 'declined')
+       ) as customers_by_month
+       where phone <> ''
+       group by month_key`,
+      [start, end],
+    ),
   ]);
+
   const byMonth = new Map<string, MonthlyBusinessTrend>();
-  for (const key of monthKeys(start, end)) byMonth.set(key, { month: key, enquiries: 0, customers: 0, jobs: 0, completedJobs: 0, revenuePence: 0 });
-  for (const row of trendRows.rows) {
-    const data = byMonth.get(row.month);
-    if (data) {
-      data.jobs += number(row.jobs);
-      data.completedJobs += number(row.completed_jobs);
-      data.revenuePence += number(row.revenue_pence);
-    }
+  for (const month of monthKeys(start, end)) byMonth.set(month, { month, enquiries: 0, customers: 0, jobs: 0, completedJobs: 0, revenuePence: 0 });
+  for (const row of orderResult.rows) {
+    const value = byMonth.get(row.month_key);
+    if (!value) continue;
+    value.jobs += number(row.jobs);
+    value.completedJobs += number(row.completed_jobs);
+    value.revenuePence += number(row.revenue_pence);
   }
-  for (const row of bookingTrendRows.rows) {
-    const data = byMonth.get(row.month);
-    if (data) {
-      data.jobs += number(row.jobs);
-      data.completedJobs += number(row.completed_jobs);
-    }
+  for (const row of bookingResult.rows) {
+    const value = byMonth.get(row.month_key);
+    if (!value) continue;
+    value.jobs += number(row.jobs);
+    value.completedJobs += number(row.completed_jobs);
   }
-  for (const row of enquiryTrendRows.rows) {
-    const data = byMonth.get(row.month);
-    if (data) data.enquiries = number(row.enquiries);
+  for (const row of enquiryResult.rows) {
+    const value = byMonth.get(row.month_key);
+    if (value) value.enquiries = number(row.enquiries);
   }
-  for (const row of customerTrendRows.rows) {
-    const data = byMonth.get(row.month);
-    if (data) data.customers = number(row.customers);
+  for (const row of customerMonthResult.rows) {
+    const value = byMonth.get(row.month_key);
+    if (value) value.customers = number(row.customers);
   }
-  const customers = number(summary?.customers);
-  const jobs = number(summary?.jobs);
-  const completedJobs = number(summary?.completed_jobs);
-  const revenuePence = number(summary?.revenue_pence);
-  const completedOrders = number(summary?.completed_orders);
-  const enquiries = number(summary?.enquiries);
+
+  const trends = [...byMonth.values()];
+  const enquiries = trends.reduce((total, row) => total + row.enquiries, 0);
+  const jobs = trends.reduce((total, row) => total + row.jobs, 0);
+  const completedJobs = trends.reduce((total, row) => total + row.completedJobs, 0);
+  const revenuePence = trends.reduce((total, row) => total + row.revenuePence, 0);
+  const customers = number(customerSummary.rows[0]?.customers);
+  const orderCount = orderResult.rows.reduce((total, row) => total + number(row.jobs), 0);
   return {
     range, start, end, enquiries, customers, jobs, completedJobs, revenuePence,
-    averageJobValuePence: completedOrders ? Math.round(revenuePence / completedOrders) : null,
+    averageJobValuePence: orderCount ? Math.round(revenuePence / orderCount) : null,
     conversionRate: jobs ? (completedJobs / jobs) * 100 : null,
-    trends: [...byMonth.values()],
+    trends,
     hasData: enquiries + customers + jobs + revenuePence > 0,
   };
 }
