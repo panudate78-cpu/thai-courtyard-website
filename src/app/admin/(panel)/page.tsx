@@ -77,8 +77,6 @@ export default async function AdminDashboardPage() {
         </Link>
       </header>
 
-      <BusinessOverview />
-
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Stat label="New orders" value={stats.newOrders} icon={ShoppingBag} highlight={stats.newOrders > 0} href="/admin/orders" />
         <Stat label="Collections today" value={stats.todayOrders} icon={Clock} />
@@ -127,6 +125,8 @@ export default async function AdminDashboardPage() {
           </ul>
         )}
       </section>
+
+      <BusinessOverview />
     </div>
   );
 }
