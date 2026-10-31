@@ -1,4 +1,4 @@
-import { asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { ensureDatabase } from "@/db/bootstrap";
@@ -67,6 +67,11 @@ const schema = z.discriminatedUnion("action", [
       .max(40, "Too many choices"),
   }),
   z.object({ action: z.literal("deleteGroup"), id }),
+  z.object({
+    action: z.literal("setChoiceAvailability"),
+    choiceName: z.string().trim().min(1, "Choose a protein").max(80, "Name is too long"),
+    available: z.boolean(),
+  }),
 ]);
 
 const ok = () => Response.json({ ok: true });
@@ -248,6 +253,23 @@ export async function POST(req: Request) {
       case "deleteGroup": {
         await db.delete(optionGroups).where(eq(optionGroups.id, input.id));
         return ok();
+      }
+      case "setChoiceAvailability": {
+        // Master switch: flip one named choice (e.g. "Prawn") in every
+        // "Choice of Protein"-style group at once — category-wide groups and
+        // dish-specific ones — so a missing protein disappears from all
+        // sub-menus in a single action.
+        const target = input.choiceName.trim().toLowerCase();
+        const proteinGroupIds = db
+          .select({ id: optionGroups.id })
+          .from(optionGroups)
+          .where(sql`lower(trim(${optionGroups.name})) like '%protein%'`);
+        const rows = await db
+          .update(optionChoices)
+          .set({ available: input.available })
+          .where(and(inArray(optionChoices.groupId, proteinGroupIds), sql`lower(trim(${optionChoices.name})) = ${target}`))
+          .returning({ id: optionChoices.id });
+        return Response.json({ ok: true, updated: rows.length });
       }
     }
     return Response.json({ error: "Unknown action" }, { status: 400 });

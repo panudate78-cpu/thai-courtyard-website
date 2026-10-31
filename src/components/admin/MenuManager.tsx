@@ -105,6 +105,8 @@ export function MenuManager({ categories }: { categories: MenuCategory[] }) {
         it on the homepage. Category “Options” hold the protein and spice choices shared by every dish in that category.
       </p>
 
+      <ProteinSwitches categories={categories} busy={busy} run={run} />
+
       {categories.map((category, ci) => {
         const items = q ? category.items.filter((i) => i.name.toLowerCase().includes(q)) : category.items;
         if (q && items.length === 0) return null;
@@ -221,6 +223,80 @@ export function MenuManager({ categories }: { categories: MenuCategory[] }) {
       ) : null}
       <Notice notice={notice} onClose={() => setNotice(null)} />
     </div>
+  );
+}
+
+/**
+ * Master switches for every protein offered in "Choice of Protein" groups.
+ * One switch per protein name flips that choice in every sub-menu at once
+ * (category groups and dish-specific groups), so running out of e.g. prawns
+ * is a single toggle instead of editing each menu.
+ */
+function ProteinSwitches({ categories, busy, run }: { categories: MenuCategory[]; busy: boolean; run: RunFn }) {
+  const proteins = useMemo(() => {
+    const byName = new Map<string, { name: string; total: number; on: number }>();
+    for (const category of categories) {
+      const groups = [...category.groups, ...category.items.flatMap((i) => i.ownGroups)];
+      for (const group of groups) {
+        if (!/protein/i.test(group.name)) continue;
+        for (const choice of group.choices) {
+          const key = choice.name.trim().toLowerCase();
+          if (!key) continue;
+          const entry = byName.get(key) ?? { name: choice.name.trim(), total: 0, on: 0 };
+          entry.total += 1;
+          if (choice.available) entry.on += 1;
+          byName.set(key, entry);
+        }
+      }
+    }
+    return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [categories]);
+
+  if (proteins.length === 0) return null;
+
+  return (
+    <section className="adm-card p-4" aria-labelledby="protein-switches-title">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 id="protein-switches-title" className="font-semibold">
+          Choice of Protein — master switches
+        </h2>
+        <p className="text-xs text-black/55">
+          One switch per protein: flip it and every sub-menu (soups, curries, stir-fries, individual dishes) updates at once.
+        </p>
+      </div>
+      <ul className="mt-2 divide-y divide-black/5">
+        {proteins.map((p) => {
+          const allOn = p.on === p.total;
+          const status = allOn ? "On" : p.on > 0 ? "Partly off" : "Off";
+          return (
+            <li key={p.name} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm font-semibold">{p.name}</span>
+                <span className="text-xs text-black/50">
+                  {p.on}/{p.total} menu{p.total === 1 ? "" : "s"}
+                </span>
+              </div>
+              <span className="flex items-center gap-2 text-xs text-black/60">
+                <Toggle
+                  checked={allOn}
+                  disabled={busy}
+                  label={`${p.name}: ${allOn ? "on in every protein menu" : `${p.total - p.on} of ${p.total} menus have it off`} — switch ${
+                    allOn ? "off" : "on"
+                  } everywhere`}
+                  onChange={(value) =>
+                    run(
+                      { action: "setChoiceAvailability", choiceName: p.name, available: value },
+                      `${p.name} ${value ? "is back on" : "is now off"} in all ${p.total} protein menu${p.total === 1 ? "" : "s"}`,
+                    )
+                  }
+                />
+                <span className={`w-16 ${allOn ? "" : "font-semibold text-red-700"}`}>{status}</span>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 
