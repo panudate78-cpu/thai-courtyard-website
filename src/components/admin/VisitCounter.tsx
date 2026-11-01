@@ -1,10 +1,10 @@
 "use client";
 
-import { Eye } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Eye, Pause } from "lucide-react";
+import { useCallback, useState } from "react";
+import { POLL_INTERVALS, SERVICE_WINDOW } from "@/lib/refresh-schedule";
+import { usePolling, useServiceWindow } from "@/lib/use-polling";
 import type { VisitStats } from "@/lib/visits";
-
-const REFRESH_MS = 60_000;
 const formatNumber = new Intl.NumberFormat("en-GB");
 
 function compact(value: number) {
@@ -15,39 +15,28 @@ function compact(value: number) {
  * Compact "Site visits" panel for the admin sidebar footer.
  *
  * Shows today's public page views, the last seven days and all-time totals.
- * Refreshes from /api/admin/visits once a minute while the tab is visible, so
- * it updates without ever touching — or delaying — the dashboard itself.
+ * Refreshes from /api/admin/visits once a minute — but only during trading hours
+ * (Tue – Sat, 12:00 – 21:00) and while the tab is visible, so counter polls
+ * never keep the database awake overnight. Outside those hours the panel shows
+ * the figures rendered with the page.
  * Admin page views are never recorded by the tracker.
  */
 export function VisitCounter({ initial }: { initial: VisitStats | null }) {
   const [stats, setStats] = useState<VisitStats | null>(initial);
+  const serviceWindow = useServiceWindow();
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function refresh() {
-      if (document.visibilityState === "hidden") return;
-      try {
-        const response = await fetch("/api/admin/visits", { cache: "no-store" });
-        if (!response.ok) return;
-        const data = (await response.json()) as { stats?: VisitStats | null };
-        if (!cancelled && data.stats) setStats(data.stats);
-      } catch {
-        // Keep the last known figures; the next poll will try again.
-      }
+  const refresh = useCallback(async () => {
+    try {
+      const response = await fetch("/api/admin/visits", { cache: "no-store" });
+      if (!response.ok) return;
+      const data = (await response.json()) as { stats?: VisitStats | null };
+      if (data.stats) setStats(data.stats);
+    } catch {
+      // Keep the last known figures; the next poll will try again.
     }
-
-    const timer = window.setInterval(refresh, REFRESH_MS);
-    const onVisible = () => {
-      if (document.visibilityState === "visible") void refresh();
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-      document.removeEventListener("visibilitychange", onVisible);
-    };
   }, []);
+
+  usePolling(refresh, { intervalMs: POLL_INTERVALS.visitsMs });
 
   if (!stats) {
     return (
@@ -75,7 +64,7 @@ export function VisitCounter({ initial }: { initial: VisitStats | null }) {
   return (
     <section
       aria-label="Site visits"
-      title={`Updated ${updated} · excludes admin page views`}
+      title={`Updated ${updated} · excludes admin page views · auto-updates ${SERVICE_WINDOW.label.toLowerCase()} only`}
       className="rounded-xl bg-cream/5 px-3 py-2.5 ring-1 ring-cream/10"
     >
       <div className="flex items-center justify-between gap-2">
@@ -83,13 +72,23 @@ export function VisitCounter({ initial }: { initial: VisitStats | null }) {
           <Eye className="h-3 w-3" aria-hidden="true" />
           Site visits
         </p>
-        <span
-          className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.12em] text-emerald-300 uppercase"
-          title="Updates automatically every minute"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
-          Live
-        </span>
+        {serviceWindow.open === true ? (
+          <span
+            className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.12em] text-emerald-300 uppercase"
+            title={`Updates automatically every ${POLL_INTERVALS.visitsMs / 60_000} minute while this tab is visible`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+            Live
+          </span>
+        ) : serviceWindow.open === false ? (
+          <span
+            className="inline-flex items-center gap-1 rounded-full bg-cream/10 px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.12em] text-cream/50 uppercase"
+            title={`Auto-updates pause outside ${SERVICE_WINDOW.label} to save database compute`}
+          >
+            <Pause className="h-2.5 w-2.5" aria-hidden="true" />
+            Paused
+          </span>
+        ) : null}
       </div>
 
       <p className="mt-1.5 flex flex-wrap items-baseline gap-x-1.5">
