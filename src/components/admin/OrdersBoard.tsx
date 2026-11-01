@@ -156,9 +156,11 @@ function stopAlarm() {
   }
 }
 
-  const refresh = useCallback(async () => {
+  // `fresh` skips the server-side snapshot used outside trading hours, so the
+  // Refresh button always returns live orders even when auto-refresh is paused.
+  const refresh = useCallback(async (fresh = false) => {
     try {
-      const res = await fetch(`/api/admin/orders?scope=${scope}`, { cache: "no-store" });
+      const res = await fetch(`/api/admin/orders?scope=${scope}${fresh ? "&fresh=1" : ""}`, { cache: "no-store" });
       if (res.status === 401) {
         window.location.href = "/admin/login";
         return;
@@ -307,7 +309,7 @@ localStorage.setItem("soundOn", String(next));
           {soundOn ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
           {soundOn ? "ORDER ALERTS ACTIVE" : "ENABLE ORDER ALERTS"}
         </button>
-        <button type="button" onClick={() => void refresh()} className="adm-btn" aria-label="Refresh orders">
+        <button type="button" onClick={() => void refresh(true)} className="adm-btn" aria-label="Refresh orders">
           <RefreshCw aria-hidden="true" />
           <span className="hidden sm:inline">{lastUpdated ? `Updated ${lastUpdated}` : "Refresh"}</span>
         </button>
