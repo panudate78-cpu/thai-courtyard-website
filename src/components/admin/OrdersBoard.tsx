@@ -9,6 +9,7 @@ import {
   Clock,
   Inbox,
   Mail,
+  Pause,
   Phone,
   Printer,
   RefreshCw,
@@ -19,6 +20,8 @@ import {
 } from "lucide-react";
 import { escapeHtml, formatPrice } from "@/lib/format";
 import { formatDateLong, fromMinutes, londonDateTime, londonNow, relativeDayLabel, toMinutes, type LondonNow } from "@/lib/hours";
+import { POLL_INTERVALS, SERVICE_WINDOW } from "@/lib/refresh-schedule";
+import { usePolling, useServiceWindow } from "@/lib/use-polling";
 import type { OrderStatus, OrderView } from "@/lib/types";
 
 const STATUS_STYLE: Record<OrderStatus, { label: string; className: string }> = {
@@ -188,13 +191,18 @@ if (incoming.length) {
     }
   }, [scope, router]);
 
+  // Auto-refresh only runs while the restaurant is trading and this tab is
+  // visible: every poll is a database query, and a timer that fires all day
+  // keeps the database awake (and billing compute) around the clock.
   useEffect(() => {
     const current = londonNow();
     setNow(current);
     setLastUpdated(fromMinutes(current.minutes));
-    const timer = setInterval(refresh, 15_000);
-    return () => clearInterval(timer);
-  }, [refresh]);
+  }, []);
+
+  usePolling(refresh, { intervalMs: POLL_INTERVALS.ordersMs });
+
+  const serviceWindow = useServiceWindow();
 
   useEffect(() => {
     const pending = orders.filter((o) => o.status === "new").length;
@@ -303,6 +311,23 @@ localStorage.setItem("soundOn", String(next));
           <RefreshCw aria-hidden="true" />
           <span className="hidden sm:inline">{lastUpdated ? `Updated ${lastUpdated}` : "Refresh"}</span>
         </button>
+        {serviceWindow.open === true ? (
+          <span
+            title={`Checks for new orders every ${POLL_INTERVALS.ordersMs / 1000} seconds while this tab is visible.`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 ring-1 ring-emerald-200"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+            Auto-refresh · every {POLL_INTERVALS.ordersMs / 1000}s
+          </span>
+        ) : serviceWindow.open === false ? (
+          <span
+            title={`Auto-refresh is switched off outside ${SERVICE_WINDOW.label} to save database compute. Press Refresh to check now.`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-black/5 px-2.5 py-1 text-[11px] font-semibold text-black/60 ring-1 ring-black/10"
+          >
+            <Pause className="h-3 w-3" aria-hidden="true" />
+            Auto-refresh paused · back {serviceWindow.resumes}
+          </span>
+        ) : null}
       </div>
 
       {error ? (
