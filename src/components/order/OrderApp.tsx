@@ -288,7 +288,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
               className="block w-full rounded-full border border-sand bg-white py-2.5 pr-4 pl-10 text-base shadow-sm placeholder:text-charcoal/40 focus:border-gold focus:ring-2 focus:ring-gold/30 focus:outline-none"
             />
           </div>
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-2" role="group" aria-label="Filter by category">
+          <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filter by category">
             <button
               type="button"
               onClick={() => setActiveCategory("all")}
