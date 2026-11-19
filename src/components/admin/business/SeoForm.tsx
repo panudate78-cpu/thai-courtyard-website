@@ -42,7 +42,7 @@ export function SeoForm({ pages, images, tablesReady }: { pages: SeoPageEditor[]
       }
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) throw new Error(data.error || "Could not save SEO overrides");
-      setNotice({ type: "ok", text: "SEO overrides saved" });
+      setNotice({ type: "ok", text: "SEO overrides saved — now live on the public site!" });
       router.refresh();
     } catch (error) {
       setNotice({ type: "error", text: error instanceof Error ? error.message : "Could not save SEO overrides" });
@@ -64,8 +64,8 @@ export function SeoForm({ pages, images, tablesReady }: { pages: SeoPageEditor[]
             <h2 className="font-semibold">
               {page.label} <span className="font-normal text-black/45">{page.path}</span>
             </h2>
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${page.hasOverride ? "bg-amber-100 text-amber-900" : "bg-emerald-50 text-emerald-800"}`}>
-              {page.hasOverride ? "Override saved · not published" : "Using live SEO"}
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${page.hasOverride ? "bg-emerald-50 text-emerald-800" : "bg-black/5 text-black/60"}`}>
+              {page.hasOverride ? "Override live on site ✓" : "Using default SEO"}
             </span>
           </div>
           <div className="mt-3 rounded-xl bg-cream p-3 text-sm">

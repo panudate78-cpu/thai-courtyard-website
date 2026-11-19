@@ -4,19 +4,51 @@ import Link from "next/link";
 import { Fragment } from "react";
 import { CalendarDays, Info, ShoppingBag } from "lucide-react";
 import { DeliverooButton, DietaryBadges, DietaryLegend, JsonLd, Ornament, PageHero } from "@/components/ui";
+import { FaqSection } from "@/components/site/SeoSections";
 import { formatPrice } from "@/lib/format";
 import { IMG, type SiteImage } from "@/lib/image-manifest";
 import { getMenu } from "@/lib/menu";
 import { hasPriceRange, startingPrice } from "@/lib/menu-utils";
-import { breadcrumbJsonLd, menuJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd, menuJsonLd } from "@/lib/seo";
 import type { MenuGroup } from "@/lib/types";
 
-export const metadata: Metadata = {
-  title: "Menu",
-  description:
-    "The Thai Courtyard menu: starters, Tom Yum and Tom Kha soups, red, green and Phanaeng curries, stir-fries, Thai salads, Pad Thai, noodles and chef's specials — with prices, protein choices and dietary information.",
-  alternates: { canonical: "/menu" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const { getResolvedSeo } = await import("@/lib/seo-resolve");
+    const seo = await getResolvedSeo("/menu");
+    if (seo) {
+      return {
+        title: seo.title,
+        description: seo.description,
+        alternates: { canonical: "/menu" },
+        openGraph: {
+          title: seo.ogTitle || seo.title,
+          description: seo.ogDescription || seo.description,
+          url: "/menu",
+          images: seo.ogImage ? [{ url: seo.ogImage }] : ["/opengraph-image", "/images/thai-spread.jpg"],
+        },
+        twitter: {
+          card: "summary_large_image",
+          title: seo.ogTitle || seo.title,
+          description: seo.ogDescription || seo.description,
+          images: seo.ogImage ? [seo.ogImage] : ["/opengraph-image"],
+        },
+      };
+    }
+  } catch {}
+  return {
+    title: "Menu",
+    description:
+      "The Thai Courtyard menu — starters, soups, curries, stir-fries, salads, noodles & chef's specials in East Molesey, Surrey KT8. Prices, protein choices, BYOB. Order for collection or dine in.",
+    alternates: { canonical: "/menu" },
+    openGraph: {
+      title: "Thai Courtyard Menu | East Molesey • Hampton Court",
+      description: "Freshly cooked Thai favourites: red, green & Phanaeng curries, Pad Thai, stir-fries, Thai salads. Dine in or order for collection.",
+      url: "/menu",
+      images: ["/opengraph-image", "/images/thai-spread.jpg"],
+    },
+  };
+}
 
 const PHOTO_BANDS: SiteImage[][] = [
   [IMG.satay, IMG.greenCurry, IMG.dumplings],
@@ -71,6 +103,14 @@ function PhotoBand({ images }: { images: SiteImage[] }) {
   );
 }
 
+const MENU_FAQS = [
+  { question: "Is Thai Courtyard BYOB?", answer: "Yes — we don't hold an alcohol licence, so you're welcome to bring your own beer, wine or spirits to enjoy with your meal. Corkage charges apply; ask our team for details." },
+  { question: "Can I order takeaway for collection?", answer: "Yes. Order online at /order, choose your dishes and collection time (ready from ~20 minutes), then pay in the restaurant by cash or card when you collect. You can also order for Deliveroo delivery." },
+  { question: "Do you have vegetarian, vegan and gluten-free options?", answer: "Many dishes can be made with tofu or vegetables and are marked V / VG / GF on the menu as a guide. Please tell us about allergies when ordering — our kitchen handles nuts, gluten, shellfish and more, so we can't guarantee any dish is completely allergen-free." },
+  { question: "What is the Express Lunch Menu?", answer: "Tuesday–Saturday, 12:00–15:00 — choose a curry, stir-fry, noodle or rice dish with prawn crackers and a soft drink from £9.95 (vegetable/tofu), £10.50 (chicken/pork) or £11.50 (beef/king prawns). See in store for full details." },
+  { question: "Where are you located?", answer: "105 Walton Road, East Molesey KT8 0DR — near Hampton Court Palace. Two minutes from Hampton Court Station and Bushy Park. Easy for Hampton, Thames Ditton, Esher, Walton and Surbiton." },
+];
+
 export default async function MenuPage() {
   const menu = await getMenu();
 
@@ -83,12 +123,14 @@ export default async function MenuPage() {
           { name: "Menu", path: "/menu" },
         ])}
       />
+      <JsonLd data={faqJsonLd(MENU_FAQS)} />
       <PageHero
         eyebrow="Our menu"
         title="Thai Courtyard Menu"
-        intro="Authentic Thai dishes, freshly prepared to order. Many dishes can be made with your choice of protein and spice level."
+        intro="Authentic Thai dishes, freshly prepared to order in East Molesey — near Hampton Court. Many dishes can be made with your choice of protein and spice level."
         image={IMG.thaiSpread}
       >
+        <p className="mx-auto mt-2 max-w-2xl text-sm text-cream/60">East Molesey • Hampton Court • Thames Ditton • Esher • Walton-on-Thames • KT8 • BYOB • Family-friendly</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link href="/order" className="btn btn-gold">
             <ShoppingBag aria-hidden="true" />
@@ -129,16 +171,16 @@ Please inform us of any allergies or dietary requirements before ordering and a 
     <p className="eyebrow">Express Lunch</p>
 
     <h2 className="mt-2 font-serif text-4xl font-semibold">
-      Express Lunch Menu
+      Express Lunch Menu — East Molesey
     </h2>
 
     <p className="mt-3 text-charcoal/75">
-      Available Tuesday to Saturday • 12:00pm – 3:00pm 
+      Available Tuesday to Saturday • 12:00pm – 3:00pm  • Dine-in & collection
     </p>
 
     <p className="mt-4 text-charcoal/75">
       Choice of select curries, stir-fries, noodle or rice dishes with complimentary
-      prawn crackers (2 pieces) and a soft drink. *See menu in store for more details.*
+      prawn crackers (2 pieces) and a soft drink. <em>See menu in store for more details.</em> Perfect for lunch near Hampton Court Palace.
     </p>
 
     <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -210,6 +252,8 @@ Please inform us of any allergies or dietary requirements before ordering and a 
         </Fragment>
       ))}
 
+      <FaqSection items={MENU_FAQS} heading="Menu & ordering FAQs" />
+
       <section className="relative isolate overflow-hidden bg-charcoal py-16 text-center text-cream lg:py-20">
         <div className="thai-pattern absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
         <div className="container-x">
@@ -217,7 +261,7 @@ Please inform us of any allergies or dietary requirements before ordering and a 
           <h2 className="mt-3 font-serif text-4xl font-semibold sm:text-5xl">Order for collection in under a minute</h2>
           <p className="mx-auto mt-4 max-w-xl text-cream/75">
             Choose your dishes and collection time online — pay in restaurant when you collect. Prefer delivery? Find us on
-            Deliveroo.
+            Deliveroo. BYOB welcome for dine-in.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link href="/order" className="btn btn-gold">
@@ -230,6 +274,9 @@ Please inform us of any allergies or dietary requirements before ordering and a 
             </Link>
             <DeliverooButton />
           </div>
+          <p className="mx-auto mt-6 max-w-xl text-xs leading-relaxed text-cream/50">
+            Serving East Molesey, Hampton Court, Thames Ditton, Hampton, Teddington, Esher & Walton-on-Thames. 105 Walton Road, KT8 0DR — Tue–Sat 12:00–21:00.
+          </p>
         </div>
       </section>
     </>
