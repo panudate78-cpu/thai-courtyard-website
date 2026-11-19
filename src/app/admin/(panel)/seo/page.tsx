@@ -14,7 +14,7 @@ export default async function SeoAdminPage() {
       <PageIntro
         eyebrow="Business"
         title="SEO"
-        description="What the public site already publishes, plus a place to store overrides. Saving an override does not change guest-facing titles until a later publish step."
+        description="Full SEO is live. Saving an override now updates the public site immediately — titles, descriptions and social images. Use it to target keywords like “Thai takeaway Hampton Court” or promote seasonal offers."
       />
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Sitemap status" description={SITEMAP_STATUS.status}>
@@ -53,7 +53,7 @@ export default async function SeoAdminPage() {
           </ul>
         </Panel>
       </div>
-      <Panel title="Open Graph defaults" description="The root layout sets locale en_GB, the site name and the default title and description. No social image is set in that layout yet — restaurant JSON-LD does include food photography.">
+      <Panel title="Open Graph defaults" description="Root layout sets locale en_GB, site name and branded OG image (1200×630 generated via /opengraph-image) plus food photography fallbacks. Overrides below let you A/B test titles for Google & social.">
         <p className="text-sm text-black/60">Choose a social image override per page below. Images are limited to files already in the website gallery.</p>
       </Panel>
       <SeoForm pages={seo.pages} images={SOCIAL_IMAGES.map(({ src, alt }) => ({ src, alt }))} tablesReady={seo.tablesReady} />

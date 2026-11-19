@@ -19,11 +19,14 @@ export const SITE = {
   fullName: "Thai Courtyard East Molesey",
   tagline: "Authentic Thai Cuisine in the Heart of East Molesey",
   description:
-    "Authentic Thai restaurant on Walton Road, East Molesey. Warm, cosy and family-friendly — Dine in, book a table or order online for collection and pay when you collect.",
+    "Authentic Thai restaurant on Walton Road, East Molesey — warm, cosy and family-friendly. Dine in, book a table or order Thai takeaway online for collection. Pay on collection. Near Hampton Court Palace, Surrey KT8.",
+  shortDescription:
+    "Authentic Thai restaurant in East Molesey, Surrey — dine in, takeaway collection & Deliveroo delivery. Fresh, fragrant Thai food cooked to order.",
   url: (process.env.NEXT_PUBLIC_SITE_URL || "https://www.thaicourtyardmolesey.co.uk").replace(/\/$/, ""),
   phoneDisplay: "020 8941 3595",
   phoneHref: "tel:+442089413595",
   phoneIntl: "+44 20 8941 3595",
+  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "info@thaicourtyardmolesey.co.uk",
   address: {
     street: "105 Walton Road",
     locality: "East Molesey",
@@ -33,6 +36,20 @@ export const SITE = {
   },
   addressLine: "105 Walton Road, East Molesey, KT8 0DR",
   geo: { lat: 51.40061537335302, lng: -0.35573498220902167 },
+  // Extended geo for local SEO
+  areaServed: [
+    "East Molesey",
+    "West Molesey",
+    "Hampton Court",
+    "Thames Ditton",
+    "Hampton",
+    "Teddington",
+    "Esher",
+    "Walton-on-Thames",
+    "Hersham",
+    "Surbiton",
+    "Kingston upon Thames",
+  ],
   deliverooUrl:
     "https://deliveroo.co.uk/menu/london/east-molesey-and-hampton-court/thai-courtyard-walton-road-105-walton-road",
   googleMapsUrl: placeId
@@ -51,6 +68,12 @@ export const SITE = {
   newManagement: "",
   hoursSummary: "Tuesday – Saturday, 12:00 – 21:00",
   hoursShort: "Tue – Sat · 12:00 – 21:00",
+  // Business identifiers for SEO trust
+  priceRange: "££",
+  currenciesAccepted: "GBP",
+  paymentAccepted: "Cash, Credit Card, Debit Card",
+  servesCuisine: ["Thai", "Asian"] as const,
+  foundingLocation: "East Molesey, Surrey",
 } as const;
 
 export const NAV_LINKS = [

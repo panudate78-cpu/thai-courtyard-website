@@ -3,16 +3,36 @@ import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, ChefHat, HeartHandshake, Leaf, ShoppingBag, Users } from "lucide-react";
 import { JsonLd, Ornament, PageHero, SectionHeading } from "@/components/ui";
+import { AreasServed, FaqSection } from "@/components/site/SeoSections";
 import { IMG } from "@/lib/image-manifest";
-import { breadcrumbJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "About Us",
-  description:
-    "The story of Thai Courtyard, East Molesey — a cosy Thai restaurant offering authentic cuisine, warm hospitality and freshly prepared dishes.",
-  alternates: { canonical: "/about" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const { getResolvedSeo } = await import("@/lib/seo-resolve");
+    const seo = await getResolvedSeo("/about");
+    if (seo) {
+      return {
+        title: seo.title,
+        description: seo.description,
+        alternates: { canonical: "/about" },
+        openGraph: {
+          title: seo.ogTitle || seo.title,
+          description: seo.ogDescription || seo.description,
+          url: "/about",
+          images: seo.ogImage ? [{ url: seo.ogImage }] : ["/opengraph-image"],
+        },
+      };
+    }
+  } catch {}
+  return {
+    title: "About Us — Our Story in East Molesey, Near Hampton Court",
+    description:
+      "The story of Thai Courtyard, East Molesey — cosy, family-friendly Thai restaurant near Hampton Court Palace. Freshly cooked authentic Thai food, BYOB, dine-in & takeaway collection.",
+    alternates: { canonical: "/about" },
+  };
+}
 
 const VALUES = [
   {
@@ -37,6 +57,12 @@ const VALUES = [
   },
 ];
 
+const ABOUT_FAQS = [
+  { question: "What makes Thai Courtyard different?", answer: "We're a cosy, family-friendly neighbourhood restaurant on Walton Road. Every dish is cooked fresh to order, balancing hot, sour, salty and sweet the traditional Thai way — not batch-cooked. Warm hospitality is as important as flavour." },
+  { question: "Are you near Hampton Court Palace?", answer: "Yes — we're a short stroll from Hampton Court Palace, minutes from Hampton Court Station and Bushy Park. Many visitors combine a palace or park visit with lunch or dinner here." },
+  { question: "Can I bring my own alcohol?", answer: "Yes. We're BYOB — bring your own alcoholic drinks and enjoy them with your meal. Corkage charges apply, please ask our team." },
+];
+
 export default function AboutPage() {
   return (
     <>
@@ -46,10 +72,11 @@ export default function AboutPage() {
           { name: "About", path: "/about" },
         ])}
       />
+      <JsonLd data={faqJsonLd(ABOUT_FAQS)} />
       <PageHero
         eyebrow="Our story"
         title="About Thai Courtyard"
-        intro="A cosy Thai restaurant offering authentic cuisine, warm hospitality and freshly prepared dishes."
+        intro="A cosy Thai restaurant on Walton Road, East Molesey — authentic cuisine, warm hospitality and freshly prepared dishes, minutes from Hampton Court Palace."
         image={IMG.thaiSpread}
       />
 
@@ -62,8 +89,7 @@ export default function AboutPage() {
             <Ornament className="mt-5" />
             <div className="mt-6 space-y-4 text-lg leading-relaxed text-charcoal/75">
               <p>
-                Thai Courtyard is a cosy Thai restaurant offering authentic
-                cuisine, warm hospitality and freshly prepared dishes.
+                Thai Courtyard is a cosy Thai restaurant offering authentic cuisine, warm hospitality and freshly prepared dishes — loved by locals across East Molesey, Hampton Court, Thames Ditton and beyond.
               </p>
               <p>
                 Tucked away on Walton Road, a short stroll from Hampton Court, our restaurant brings together traditional
@@ -71,9 +97,10 @@ export default function AboutPage() {
                 neighbours become regulars, and every guest is welcomed like family.
               </p>
               <p>
-                We honour the classic recipes our guests love, cook every dish
-                fresh, and make each visit feel special — whether you are joining us for a quiet weekday lunch, a family
-                celebration or picking up dinner on your way home.
+                We honour the classic recipes our guests love, cook every dish fresh, and make each visit feel special — whether you are joining us for a quiet weekday lunch near Bushy Park, a family celebration or picking up dinner on your way home via collection or Deliveroo.
+              </p>
+              <p className="text-sm text-charcoal/60">
+                Searching for <strong>Thai restaurant East Molesey</strong>, <strong>Thai takeaway Hampton Court</strong> or <strong>Thai food near me KT8</strong>? You&apos;re in the right place.
               </p>
             </div>
             <div className="mt-9 flex flex-wrap gap-3">
@@ -148,6 +175,8 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <AreasServed />
+
       <section className="py-20 lg:py-28">
         <div className="container-x">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -172,7 +201,7 @@ export default function AboutPage() {
               <a href={SITE.phoneHref} className="font-semibold text-teak hover:underline">
                 {SITE.phoneDisplay}
               </a>
-              .
+              . Near Hampton Court Palace, Surrey KT8.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link href="/menu" className="btn btn-dark">
@@ -185,6 +214,7 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+      <FaqSection items={ABOUT_FAQS} />
     </>
   );
 }

@@ -14,18 +14,48 @@ import {
   Users,
   UtensilsCrossed,
 } from "lucide-react";
-import { DeliverooButton, DietaryBadges, OpeningHours, Ornament, SectionHeading } from "@/components/ui";
+import { DeliverooButton, DietaryBadges, JsonLd, OpeningHours, Ornament, SectionHeading } from "@/components/ui";
+import { AreasServed, FaqSection, LocalTrustStrip, ReviewFunnel } from "@/components/site/SeoSections";
+import { NewsletterSignup } from "@/components/site/NewsletterSignup";
 import { formatPrice } from "@/lib/format";
 import { IMG, type SiteImage } from "@/lib/image-manifest";
 import { getMenu } from "@/lib/menu";
 import { hasPriceRange, startingPrice } from "@/lib/menu-utils";
+import { faqJsonLd, offersJsonLd } from "@/lib/seo";
 import { getSettingsSafe } from "@/lib/settings";
 import { SITE } from "@/lib/site";
 import type { MenuCategory } from "@/lib/types";
 import { getActiveOffers } from "@/lib/offers";
 
-export const metadata: Metadata = { alternates: { canonical: "/" } };
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  // Allow admin SEO overrides to flow through if present, otherwise use live copy
+  try {
+    const { getResolvedSeo } = await import("@/lib/seo-resolve");
+    const seo = await getResolvedSeo("/");
+    if (seo) {
+      return {
+        title: seo.title,
+        description: seo.description,
+        alternates: { canonical: "/" },
+        openGraph: {
+          title: seo.ogTitle || seo.title,
+          description: seo.ogDescription || seo.description,
+          url: "/",
+          images: seo.ogImage ? [{ url: seo.ogImage }] : ["/opengraph-image"],
+        },
+        twitter: {
+          card: "summary_large_image",
+          title: seo.ogTitle || seo.title,
+          description: seo.ogDescription || seo.description,
+          images: seo.ogImage ? [seo.ogImage] : ["/opengraph-image"],
+        },
+      };
+    }
+  } catch {}
+  return { alternates: { canonical: "/" } };
+}
 
 const GALLERY: { img: SiteImage; className: string }[] = [
   { img: IMG.noodles, className: "row-span-2" },
@@ -101,8 +131,39 @@ export default async function HomePage() {
     },
   ];
 
+  const HOME_FAQS: { question: string; answer: string }[] = [
+    {
+      question: "Where is Thai Courtyard located?",
+      answer: "Thai Courtyard is at 105 Walton Road, East Molesey, Surrey KT8 0DR — a two-minute walk from Hampton Court Palace, near Bushy Park and Molesey Heath. We're easy to find on Walton Road, the main route through East Molesey.",
+    },
+    {
+      question: "What are your opening hours?",
+      answer: "We're open Tuesday to Saturday, 12:00–21:00 for dine-in and takeaway collection. We are closed Sunday and Monday. Last orders for collection are shortly before 21:00 — we recommend ordering online for your preferred collection time.",
+    },
+    {
+      question: "Do you offer takeaway and delivery?",
+      answer: "Yes. Order online for collection at thaicourtyardmolesey.co.uk/order — choose your dishes and collection time, then pay in the restaurant by cash or card when you collect. For home delivery, find us on Deliveroo.",
+    },
+    {
+      question: "Are you BYOB? Do you serve alcohol?",
+      answer: "Thai Courtyard does not currently hold an alcohol licence. Guests are welcome to bring their own alcoholic beverages to enjoy with their meal — corkage charges apply, please ask our team for details.",
+    },
+    {
+      question: "Do you cater for vegetarians, vegans and allergies?",
+      answer: "Many dishes can be prepared vegetarian or vegan, and our menu shows dietary indicators (V, VG, GF, etc.) as a guide. However our kitchen handles nuts, gluten, shellfish, sesame, soya and other allergens and we cannot guarantee any dish is completely allergen-free. Please tell us about allergies when you order and we'll be happy to advise.",
+    },
+    {
+      question: "How do I book a table?",
+      answer: "Book online at thaicourtyardmolesey.co.uk/book or call 020 8941 3595. For same-day bookings, large parties (8+) or special celebrations, please call us and we'll do our best to accommodate you.",
+    },
+  ];
+
+  const offersData = offers.length ? offersJsonLd(offers) : null;
+
   return (
     <>
+      <JsonLd data={faqJsonLd(HOME_FAQS)} />
+      {offersData ? <JsonLd data={offersData} /> : null}
       {/* Hero */}
       <section className="relative isolate overflow-hidden bg-charcoal text-cream">
         <Image
@@ -243,7 +304,7 @@ export default async function HomePage() {
           <div>
             <p className="eyebrow-dark">Welcome to Thai Courtyard</p>
             <h2 className="mt-3 font-serif text-4xl leading-tight font-semibold sm:text-5xl">
-              
+              Traditional Thai hospitality in the heart of East Molesey
             </h2>
             <Ornament className="mt-5" />
             <p className="mt-6 text-lg leading-relaxed text-charcoal/75">
@@ -408,6 +469,10 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <LocalTrustStrip />
+      <AreasServed />
+      <FaqSection items={HOME_FAQS} />
+
       {/* Google / Visit */}
       <section className="py-20 lg:py-28">
         <div className="container-x grid gap-6 lg:grid-cols-[1.3fr_1fr]">
@@ -446,6 +511,23 @@ export default async function HomePage() {
             <Link href="/contact" className="btn btn-outline mt-6 w-full">
               Contact &amp; directions
             </Link>
+          </div>
+        </div>
+      </section>
+      <ReviewFunnel />
+      <section className="bg-cream-dark py-16">
+        <div className="container-x max-w-4xl text-center">
+          <p className="eyebrow-dark">Stay in the loop</p>
+          <h2 className="mt-3 font-serif text-3xl font-semibold sm:text-4xl">Get VIP offers & new-dish alerts</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-charcoal/65">
+            Join the Thai Courtyard VIP list — occasional email offers (never spam) for East Molesey locals. Unsubscribe anytime. Share with a friend who loves Thai food.
+          </p>
+          <div className="mx-auto mt-6 max-w-xl">
+            {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+            <div className="card p-4 sm:p-6">
+              <NewsletterSignup />
+              <p className="mt-3 text-xs text-charcoal/45">We respect your privacy. By joining you agree to receive occasional marketing emails. See our contact page for enquiries.</p>
+            </div>
           </div>
         </div>
       </section>

@@ -110,6 +110,22 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
           <PaymentNotice />
 
+          <div className="card p-6 text-center">
+            <h2 className="font-serif text-2xl font-semibold">Enjoyed ordering? Help us grow</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-charcoal/65">
+              Business is built on word of mouth. Share Thai Courtyard with a friend in East Molesey or Hampton Court, or leave a quick Google review after you collect — it helps locals find us and keeps our family-run kitchen thriving.
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
+              <a href={SITE.googleReviewUrl} target="_blank" rel="noopener noreferrer" className="btn btn-gold">
+                Leave a Google review
+              </a>
+              <a href={`https://wa.me/?text=${encodeURIComponent(`Thai Courtyard — authentic Thai in East Molesey, near Hampton Court. Order collection: ${SITE.url}/order`)}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+                Share on WhatsApp
+              </a>
+            </div>
+            <p className="mt-3 text-xs text-charcoal/45">Thank you — every review and share really counts while business is quieter.</p>
+          </div>
+
           <div className="card p-6 text-sm leading-relaxed text-charcoal/75">
             <h2 className="font-serif text-xl font-semibold text-charcoal">What happens next?</h2>
             <p className="mt-2">
