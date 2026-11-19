@@ -147,7 +147,7 @@ export default async function MenuPage() {
         aria-label="Menu sections"
         className="sticky top-16 z-20 border-b border-sand bg-cream/95 backdrop-blur lg:top-20"
       >
-        <div className="container-x no-scrollbar flex gap-2 overflow-x-auto py-3">
+        <div className="container-x flex flex-wrap gap-2 py-3">
           {menu.map((c) => (
             <a key={c.id} href={`#section-${c.id}`} className="chip">
               {c.name}
