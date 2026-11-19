@@ -67,13 +67,13 @@ export default async function OrderPage({ searchParams }: { searchParams: Promis
       <JsonLd data={faqJsonLd(ORDER_FAQS)} />
       <section className="relative isolate overflow-hidden bg-charcoal text-cream">
         <div className="thai-pattern absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
-        <div className="container-x py-9 sm:py-12">
+        <div className="container-x py-7 text-center sm:py-9 sm:text-left lg:py-10">
           <p className="eyebrow">Online collection ordering — East Molesey, near Hampton Court</p>
-          <h1 className="mt-2 font-serif text-4xl font-semibold sm:text-5xl">Order Thai Takeaway for Collection</h1>
-          <p className="mt-3 max-w-2xl text-cream/80">
+          <h1 className="mt-2 font-serif text-3xl font-semibold leading-tight sm:text-4xl">Order Thai Takeaway for Collection</h1>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-cream/80 sm:mx-0 sm:text-[15px]">
             Order authentic Thai food online — curries, stir-fries, Pad Thai, salads & chef&apos;s specials — pick a collection time, and we&apos;ll have it freshly prepared for you at 105 Walton Road, KT8 0DR.
           </p>
-          <ul className="mt-5 flex flex-wrap gap-2 text-xs font-medium sm:text-sm">
+          <ul className="mt-4 flex flex-wrap justify-center gap-2 text-xs font-medium sm:justify-start sm:text-sm">
             <li className="inline-flex items-center gap-2 rounded-full bg-cream/10 px-3 py-1.5 ring-1 ring-cream/15">
               <Clock className="h-4 w-4 text-gold-light" aria-hidden="true" />
               Ready from {settings.leadTimeMinutes} minutes
@@ -87,7 +87,7 @@ export default async function OrderPage({ searchParams }: { searchParams: Promis
               {SITE.addressLine} • Tue–Sat 12–21
             </li>
           </ul>
-          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
             <DeliverooButton className="px-5 py-2.5" />
             <span className="text-sm text-cream/60">Prefer delivery? We&apos;re on Deliveroo for Hampton Court & Molesey.</span>
           </div>

@@ -118,12 +118,14 @@ export function PageHero({
   intro,
   image,
   children,
+  compact = true,
 }: {
   eyebrow: string;
   title: string;
   intro?: string;
   image?: SiteImage;
   children?: ReactNode;
+  compact?: boolean;
 }) {
   return (
     <section className="relative isolate overflow-hidden bg-charcoal text-cream">
@@ -141,12 +143,30 @@ export function PageHero({
       ) : null}
       <div className="absolute inset-0 -z-10 bg-linear-to-b from-charcoal/70 via-charcoal/75 to-charcoal" aria-hidden="true" />
       <div className="thai-pattern absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
-      <div className="container-x py-16 text-center sm:py-20 lg:py-24">
+      <div className={compact ? "container-x py-8 text-center sm:py-10 lg:py-12" : "container-x py-16 text-center sm:py-20 lg:py-24"}>
         <p className="eyebrow">{eyebrow}</p>
-        <h1 className="mt-3 font-serif text-4xl leading-tight font-semibold text-cream sm:text-5xl lg:text-6xl">{title}</h1>
-        <Ornament className="mx-auto mt-5" />
-        {intro ? <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-cream/80 sm:text-lg">{intro}</p> : null}
-        {children}
+        <h1
+          className={
+            compact
+              ? "mt-2 font-serif text-3xl leading-tight font-semibold text-cream sm:text-4xl lg:text-[2.6rem]"
+              : "mt-3 font-serif text-4xl leading-tight font-semibold text-cream sm:text-5xl lg:text-6xl"
+          }
+        >
+          {title}
+        </h1>
+        <Ornament className={compact ? "mx-auto mt-3 h-3 w-32" : "mx-auto mt-5"} />
+        {intro ? (
+          <p
+            className={
+              compact
+                ? "mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-cream/80 sm:text-[15px]"
+                : "mx-auto mt-5 max-w-2xl text-base leading-relaxed text-cream/80 sm:text-lg"
+            }
+          >
+            {intro}
+          </p>
+        ) : null}
+        {children ? <div className={compact ? "mt-5" : "mt-8"}>{children}</div> : null}
       </div>
     </section>
   );
