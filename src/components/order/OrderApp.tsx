@@ -363,7 +363,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
       </div>
 
       <aside className="hidden lg:block" aria-label="Your basket">
-        <div className="sticky top-24 mt-4 max-h-[calc(100svh-7rem)] overflow-y-auto rounded-3xl bg-white shadow-xl ring-1 shadow-teak/5 ring-teak/10">
+        <div className="sticky top-24 mt-4 rounded-3xl bg-white shadow-xl ring-1 shadow-teak/5 ring-teak/10">
           <BasketPanel {...panelProps} idPrefix="desktop" showTitle />
         </div>
       </aside>
