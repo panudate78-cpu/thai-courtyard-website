@@ -1,11 +1,13 @@
 import type { MetadataRoute } from "next";
 import { SITE } from "@/lib/site";
+import { getRestaurantConfig } from "@/lib/restaurant";
 
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const cfg = await getRestaurantConfig().catch(() => null);
   return {
-    name: SITE.fullName,
-    short_name: SITE.name,
-    description: SITE.shortDescription,
+    name: cfg?.fullName || SITE.fullName,
+    short_name: cfg?.restaurantName || SITE.name,
+    description: cfg?.shortDescription || SITE.shortDescription,
     start_url: "/",
     display: "standalone",
     scope: "/",

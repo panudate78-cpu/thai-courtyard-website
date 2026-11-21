@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
 import { SITE } from "@/lib/site";
+import { getRestaurantConfig } from "@/lib/restaurant";
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const cfg = await getRestaurantConfig().catch(() => null);
+  const siteUrl = cfg?.siteUrl || SITE.url;
   return {
     rules: [
       {
@@ -18,7 +21,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: "/",
       },
     ],
-    sitemap: `${SITE.url}/sitemap.xml`,
-    host: SITE.url,
+    sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   };
 }

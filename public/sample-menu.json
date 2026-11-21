@@ -1,0 +1,19 @@
+{
+  "categories": [
+    {
+      "name": "Starters",
+      "items": [
+        { "name": "Vegetable Spring Rolls", "description": "Crispy rolls with sweet chilli dip", "price": 650, "dietary": ["vegan"] },
+        { "name": "Satay Chicken", "description": "Grilled chicken skewers with peanut sauce", "price": 780, "allergens": ["peanuts", "soya", "gluten"] }
+      ]
+    },
+    {
+      "name": "Mains",
+      "items": [
+        { "name": "Pad Thai", "description": "Stir-fried noodles with tamarind and peanuts", "price": 1150, "allergens": ["peanuts", "soya", "gluten", "egg", "fish", "crustaceans"] },
+        { "name": "Green Curry", "description": "Coconut curry with aubergine and basil", "price": 1250 },
+        { "name": "Som Tam", "description": "Green papaya salad — spicy and fresh", "price": 900, "dietary": ["vegan"] }
+      ]
+    }
+  ]
+}

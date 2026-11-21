@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE } from "@/lib/site";
+import { getRestaurantConfig } from "@/lib/restaurant";
 
 /**
  * Full SEO sitemap:
@@ -8,7 +9,9 @@ import { SITE } from "@/lib/site";
  * - lastModified is fresh for weekly pages, stable for monthly
  * - Excludes /admin, /api, /order/confirmation – handled in robots.ts
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const cfg = await getRestaurantConfig().catch(() => null);
+  const siteUrl = cfg?.siteUrl || SITE.url;
   const now = new Date();
   // Give crawlers a hint that menu and ordering change often
   const pages: {
@@ -27,7 +30,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   return pages.map((p) => ({
-    url: `${SITE.url}${p.path}`,
+    url: `${siteUrl}${p.path}`,
     lastModified: p.lastModified,
     changeFrequency: p.changeFrequency,
     priority: p.priority,
@@ -35,7 +38,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Next.js will ignore unknown fields, but we keep it standards-compliant.
     ...(p.path === "" || p.path === "/menu"
       ? {
-          images: [`${SITE.url}/images/hero-spread.jpg`, `${SITE.url}/images/thai-spread.jpg`, `${SITE.url}/images/pad-thai.jpg`],
+          images: [`${siteUrl}/images/hero-spread.jpg`, `${siteUrl}/images/thai-spread.jpg`, `${siteUrl}/images/pad-thai.jpg`],
         }
       : {}),
   }));

@@ -2,6 +2,7 @@ import nodemailer, { type Transporter } from "nodemailer";
 import { escapeHtml as e, formatPrice } from "./format";
 import { formatDateLong } from "./hours";
 import { SITE } from "./site";
+import { getRestaurantConfig } from "./restaurant";
 import type { BookingView, OrderView, Settings } from "./types";
 
 export type MailResult = "sent" | "logged" | "failed";
@@ -19,12 +20,39 @@ export function emailProvider(): "resend" | "smtp" | null {
 export function restaurantEmail(settings?: Pick<Settings, "notificationEmail"> | null) {
   return settings?.notificationEmail || process.env.RESTAURANT_EMAIL || process.env.ORDER_NOTIFICATION_EMAIL || null;
 }
+export async function restaurantEmailAsync(settings?: Pick<Settings, "notificationEmail"> | null): Promise<string | null> {
+  const fromSettings = settings?.notificationEmail || process.env.RESTAURANT_EMAIL || process.env.ORDER_NOTIFICATION_EMAIL;
+  if (fromSettings) return fromSettings;
+  try {
+    const cfg = await getRestaurantConfig();
+    return cfg.restaurantEmail || cfg.orderEmail || cfg.email || null;
+  } catch {
+    return null;
+  }
+}
 
-function fromAddress() {
+function fromAddressSync() {
   if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
   if (process.env.SMTP_FROM) return process.env.SMTP_FROM;
   if (process.env.SMTP_USER && process.env.SMTP_USER.includes("@")) return `Thai Courtyard <${process.env.SMTP_USER}>`;
   return "Thai Courtyard <onboarding@resend.dev>";
+}
+async function fromAddress(): Promise<string> {
+  try {
+    const cfg = await getRestaurantConfig();
+    if (cfg.emailFrom) return cfg.emailFrom;
+    if (cfg.restaurantName && cfg.restaurantName !== "Thai Courtyard") return `${cfg.restaurantName} <${cfg.email}>`;
+  } catch {}
+  return fromAddressSync();
+}
+function fromAddressForTemplate(cfgName?: string, cfgEmailFrom?: string | null, cfgEmail?: string | null) {
+  if (cfgEmailFrom) return cfgEmailFrom;
+  if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
+  if (process.env.SMTP_FROM) return process.env.SMTP_FROM;
+  const name = cfgName || "Thai Courtyard";
+  const email = cfgEmail || process.env.SMTP_USER || "onboarding@resend.dev";
+  const addr = email.includes("@") ? email : "onboarding@resend.dev";
+  return `${name} <${addr}>`;
 }
 
 export async function sendMail(mail: Mail): Promise<MailResult> {
@@ -39,7 +67,7 @@ export async function sendMail(mail: Mail): Promise<MailResult> {
         method: "POST",
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: fromAddress(),
+          from: await fromAddress(),
           to: [mail.to],
           subject: mail.subject,
           html: mail.html,
@@ -60,7 +88,7 @@ export async function sendMail(mail: Mail): Promise<MailResult> {
       });
     }
     await transport.sendMail({
-      from: fromAddress(),
+      from: await fromAddress(),
       to: mail.to,
       subject: mail.subject,
       html: mail.html,
@@ -76,13 +104,17 @@ export async function sendMail(mail: Mail): Promise<MailResult> {
 
 /* ----------------------------- Templates ----------------------------- */
 
-function shell(heading: string, body: string) {
+function shell(heading: string, body: string, cfg?: { restaurantName?: string; addressLine?: string; phoneDisplay?: string } | null) {
+  const name = cfg?.restaurantName || "Thai Courtyard";
+  const locality = cfg?.addressLine ? cfg.addressLine.split(",").slice(1).join(",").trim() || "East Molesey" : "East Molesey";
+  const addr = cfg?.addressLine || SITE.addressLine;
+  const phone = cfg?.phoneDisplay || SITE.phoneDisplay;
   return `<!doctype html><html><body style="margin:0;background:#f4eee3;font-family:Arial,Helvetica,sans-serif;color:#1d1b1a">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4eee3;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:14px;overflow:hidden">
-<tr><td style="background:#1d1b1a;padding:22px 26px"><div style="font-family:Georgia,serif;font-size:24px;color:#e3c77f">Thai Courtyard</div><div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#faf6ee;opacity:.7;margin-top:4px">East Molesey</div></td></tr>
+<tr><td style="background:#1d1b1a;padding:22px 26px"><div style="font-family:Georgia,serif;font-size:24px;color:#e3c77f">${name}</div><div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#faf6ee;opacity:.7;margin-top:4px">${locality}</div></td></tr>
 <tr><td style="padding:26px"><h1 style="font-family:Georgia,serif;font-size:24px;margin:0 0 16px;color:#1d1b1a">${heading}</h1>${body}</td></tr>
-<tr><td style="padding:16px 26px;background:#faf6ee;font-size:12px;color:#6b4226">${SITE.addressLine} · ${SITE.phoneDisplay}</td></tr>
+<tr><td style="padding:16px 26px;background:#faf6ee;font-size:12px;color:#6b4226">${addr} · ${phone}</td></tr>
 </table></td></tr></table></body></html>`;
 }
 

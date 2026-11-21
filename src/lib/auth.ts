@@ -27,10 +27,45 @@ function safeEqual(a: string, b: string) {
   return ab.length === bb.length && crypto.timingSafeEqual(ab, bb);
 }
 
+/**
+ * Check password against DB hash (bcrypt) first, then fallback to env ADMIN_PASSWORD.
+ * Keeps Thai Courtyard live working with env, while white-label clients set their own password via /setup wizard (stored hashed in restaurant_config).
+ */
+export async function checkPasswordAsync(input: string): Promise<boolean> {
+  try {
+    const { getRestaurantConfig } = await import("./restaurant");
+    const cfg = await getRestaurantConfig();
+    if (cfg.adminPasswordHash) {
+      try {
+        const bcrypt = await import("bcryptjs");
+        if (await bcrypt.compare(input, cfg.adminPasswordHash)) return true;
+      } catch {}
+      // Fallback: legacy sha256 hex hash (if bcrypt not available)
+      try {
+        const hex = crypto.createHash("sha256").update(input).digest("hex");
+        if (hex === cfg.adminPasswordHash) return true;
+      } catch {}
+      return false;
+    }
+  } catch {}
+  // Fallback to env-based check (Thai Courtyard default)
+  return checkPassword(input);
+}
+
 export function checkPassword(input: string) {
   const a = crypto.createHash("sha256").update(input).digest();
   const b = crypto.createHash("sha256").update(adminPassword()).digest();
   return crypto.timingSafeEqual(a, b);
+}
+
+export async function hashPassword(input: string): Promise<string> {
+  try {
+    const bcrypt = await import("bcryptjs");
+    return await bcrypt.hash(input, 10);
+  } catch {
+    // Fallback if bcryptjs missing — sha256 hex (not bcrypt-strength but functional until bcrypt installed)
+    return crypto.createHash("sha256").update(input).digest("hex");
+  }
 }
 
 export function createSessionToken() {

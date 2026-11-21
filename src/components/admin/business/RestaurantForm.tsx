@@ -349,6 +349,21 @@ export function RestaurantForm({ initial }: { initial: BusinessSettingsView }) {
           Save restaurant settings
         </button>
       </div>
+      <section className="adm-card border border-amber-200 bg-amber-50 p-5">
+        <h2 className="font-semibold text-amber-950">Setup Wizard</h2>
+        <p className="mt-1 text-sm text-amber-900/70">Re-open the white-label setup wizard (/setup) to change branding, hours, SEO areas, menu, images, or admin password. Requires SETUP_TOKEN if set.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <a href="/setup" target="_blank" rel="noopener noreferrer" className="adm-btn bg-white">Open /setup</a>
+          <button type="button" className="adm-btn" onClick={async () => {
+            const token = window.prompt("Enter SETUP_TOKEN (leave blank if none set)");
+            if (token === null) return;
+            const res = await fetch("/api/setup/reopen", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: token || undefined }) });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) { setNotice({ type: "ok", text: "Setup wizard re-opened — /setup is now unlocked until you complete it again." }); }
+            else setNotice({ type: "error", text: (data as { error?: string }).error || "Could not re-open setup" });
+          }}>Re-open Setup Wizard (unlock)</button>
+        </div>
+      </section>
       <Notice notice={notice} onClose={() => setNotice(null)} />
     </form>
   );

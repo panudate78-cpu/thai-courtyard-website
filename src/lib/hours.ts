@@ -1,4 +1,5 @@
 import { OPENING_HOURS } from "./site";
+import type { OpeningHoursMap } from "./restaurant";
 
 export const TIME_ZONE = "Europe/London";
 
@@ -78,7 +79,8 @@ export function fromMinutes(total: number) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-export function hoursFor(date: string) {
+export function hoursFor(date: string, openingHours?: OpeningHoursMap | null) {
+  if (openingHours) return (openingHours as Record<string, { open: string; close: string } | null>)[String(weekdayOf(date))] ?? null;
   return OPENING_HOURS[weekdayOf(date)] ?? null;
 }
 
@@ -105,11 +107,11 @@ export function londonDateTime(iso: string) {
 }
 
 /** Collection slots for a given date, honouring opening hours, lead time and closures. */
-export function getSlotsForDate(date: string, cfg: SlotConfig, now: LondonNow = londonNow(), graceMinutes = 0) {
+export function getSlotsForDate(date: string, cfg: SlotConfig, now: LondonNow = londonNow(), graceMinutes = 0, openingHours?: OpeningHoursMap | null) {
   if (!isValidDateString(date) || date < now.date) return [];
   if (date > addDays(now.date, Math.max(1, cfg.maxDaysAhead) - 1)) return [];
   if (cfg.closedDates.includes(date)) return [];
-  const hours = hoursFor(date);
+  const hours = hoursFor(date, openingHours);
   if (!hours) return [];
   const interval = Math.min(60, Math.max(5, cfg.slotIntervalMinutes));
   const open = toMinutes(hours.open);
@@ -124,11 +126,11 @@ export function getSlotsForDate(date: string, cfg: SlotConfig, now: LondonNow = 
   return slots;
 }
 
-export function getCollectionDays(cfg: SlotConfig, now: LondonNow = londonNow()): SlotDay[] {
+export function getCollectionDays(cfg: SlotConfig, now: LondonNow = londonNow(), openingHours?: OpeningHoursMap | null): SlotDay[] {
   const days: SlotDay[] = [];
   for (let i = 0; i < Math.max(1, cfg.maxDaysAhead); i++) {
     const date = addDays(now.date, i);
-    const times = getSlotsForDate(date, cfg, now);
+    const times = getSlotsForDate(date, cfg, now, 0, openingHours);
     if (times.length) days.push({ date, label: relativeDayLabel(date, now.date), times });
   }
   return days;
@@ -138,16 +140,17 @@ export function isValidCollectionSlot(
   date: string,
   time: string,
   cfg: SlotConfig,
-  graceMinutes = 10
+  graceMinutes = 10,
+  openingHours?: OpeningHoursMap | null
 ) {
   if (!/^\d{2}:\d{2}$/.test(time)) return false;
-  return getSlotsForDate(date, cfg, londonNow(), graceMinutes).includes(time);
+  return getSlotsForDate(date, cfg, londonNow(), graceMinutes, openingHours).includes(time);
 }
 
 /** Table booking times: every 30 minutes from opening until an hour before closing. */
-export function bookingTimesFor(date: string, closedDates: string[] = [], now: LondonNow = londonNow()) {
+export function bookingTimesFor(date: string, closedDates: string[] = [], now: LondonNow = londonNow(), openingHours?: OpeningHoursMap | null) {
   if (!isValidDateString(date) || date < now.date || closedDates.includes(date)) return [];
-  const hours = hoursFor(date);
+  const hours = hoursFor(date, openingHours);
   if (!hours) return [];
   const times: string[] = [];
   for (let t = toMinutes(hours.open); t <= toMinutes(hours.close) - 60; t += 30) {

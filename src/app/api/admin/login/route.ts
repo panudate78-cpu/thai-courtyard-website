@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { ADMIN_COOKIE, checkPassword, createSessionToken } from "@/lib/auth";
+import { ADMIN_COOKIE, checkPasswordAsync, createSessionToken } from "@/lib/auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { readJson } from "@/lib/validation";
 
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   }
   const body = (await readJson(req)) as { password?: unknown } | null;
   const password = typeof body?.password === "string" ? body.password : "";
-  if (!password || !checkPassword(password)) {
+  if (!password || !(await checkPasswordAsync(password))) {
     await new Promise((resolve) => setTimeout(resolve, 400));
     return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
   }

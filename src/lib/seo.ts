@@ -1,59 +1,107 @@
 import { IMG } from "./image-manifest";
 import { DAY_NAMES, OPENING_HOURS, SITE } from "./site";
 import type { MenuCategory } from "./types";
+import type { RestaurantConfig } from "./restaurant";
+
+/** Resolve SITE-like values from a DB config if provided, otherwise fallback to hardcoded SITE. */
+function resolveSite(cfg?: RestaurantConfig | null) {
+  if (!cfg) return SITE as unknown as Record<string, unknown> & typeof SITE;
+  return {
+    name: cfg.restaurantName,
+    fullName: cfg.fullName,
+    description: cfg.description,
+    shortDescription: cfg.shortDescription,
+    url: cfg.siteUrl,
+    phoneDisplay: cfg.phoneDisplay,
+    phoneHref: cfg.phoneHref,
+    phoneIntl: cfg.phoneIntl,
+    email: cfg.email,
+    address: {
+      street: cfg.addressStreet,
+      locality: cfg.addressLocality,
+      region: cfg.addressRegion,
+      postcode: cfg.addressPostcode,
+      country: cfg.addressCountry,
+    },
+    addressLine: cfg.addressLine,
+    geo: { lat: cfg.geoLat, lng: cfg.geoLng },
+    areaServed: cfg.areaServed,
+    deliverooUrl: cfg.deliverooUrl,
+    googleMapsUrl: cfg.googleMapsUrl,
+    googleDirectionsUrl: cfg.googleDirectionsUrl,
+    googleReviewUrl: cfg.googleReviewUrl,
+    googleMapsEmbedUrl: cfg.googleMapsEmbedUrl,
+    paymentNotice: cfg.paymentNotice,
+    hoursSummary: cfg.hoursSummary,
+    hoursShort: cfg.hoursShort,
+    priceRange: cfg.priceRange,
+    currenciesAccepted: cfg.currenciesAccepted,
+    paymentAccepted: cfg.paymentAccepted,
+    servesCuisine: cfg.servesCuisine as unknown as typeof SITE.servesCuisine,
+    foundingLocation: cfg.foundingLocation,
+    tagline: cfg.tagline,
+  } as unknown as typeof SITE;
+}
+
+function resolveHours(cfg?: RestaurantConfig | null) {
+  if (cfg?.openingHours) return cfg.openingHours as unknown as typeof OPENING_HOURS;
+  return OPENING_HOURS;
+}
 
 // -- Core JSON-LD builders ----------------------------------------------------
 
-export function restaurantJsonLd() {
+export function restaurantJsonLd(cfg?: RestaurantConfig | null) {
+  const hours = resolveHours(cfg);
+  const site = resolveSite(cfg);
   const openingHoursSpecification = [0, 1, 2, 3, 4, 5, 6]
-    .filter((d) => OPENING_HOURS[d])
+    .filter((d) => (hours as Record<number, unknown>)[d])
     .map((d) => ({
       "@type": "OpeningHoursSpecification",
-      dayOfWeek: `https://schema.org/${DAY_NAMES[d]}`,
-      opens: OPENING_HOURS[d]!.open,
-      closes: OPENING_HOURS[d]!.close,
+      dayOfWeek: `https://schema.org/${DAY_NAMES[d as number]}`,
+      opens: (hours as Record<number, { open: string; close: string }>)[d]!.open,
+      closes: (hours as Record<number, { open: string; close: string }>)[d]!.close,
     }));
 
   return {
     "@context": "https://schema.org",
     "@type": "Restaurant",
-    "@id": `${SITE.url}/#restaurant`,
-    name: SITE.name,
-    alternateName: SITE.fullName,
+    "@id": `${site.url}/#restaurant`,
+    name: site.name,
+    alternateName: (site as unknown as typeof SITE).fullName,
     slogan: "Simply Delicious",
-    description: SITE.description,
-    url: SITE.url,
-    telephone: SITE.phoneIntl,
-    email: SITE.email,
+    description: site.description,
+    url: site.url,
+    telephone: (site as unknown as typeof SITE).phoneIntl,
+    email: site.email,
     image: [
       IMG.heroSpread.src,
       IMG.thaiSpread.src,
       IMG.greenCurry.src,
       IMG.padThai.src,
       IMG.satay.src,
-    ].map((src) => `${SITE.url}${src}`),
-    logo: `${SITE.url}${IMG.logo.src}`,
-    servesCuisine: [...SITE.servesCuisine],
-    priceRange: SITE.priceRange,
-    currenciesAccepted: SITE.currenciesAccepted,
-    paymentAccepted: SITE.paymentAccepted,
-    acceptsReservations: `${SITE.url}/book`,
-    hasMenu: `${SITE.url}/menu`,
+    ].map((src) => `${site.url}${src}`),
+    logo: `${site.url}${IMG.logo.src}`,
+    servesCuisine: [...((site as unknown as typeof SITE).servesCuisine as unknown as string[])],
+    priceRange: (site as unknown as typeof SITE).priceRange,
+    currenciesAccepted: (site as unknown as typeof SITE).currenciesAccepted,
+    paymentAccepted: (site as unknown as typeof SITE).paymentAccepted,
+    acceptsReservations: `${site.url}/book`,
+    hasMenu: `${site.url}/menu`,
     address: {
       "@type": "PostalAddress",
-      streetAddress: SITE.address.street,
-      addressLocality: SITE.address.locality,
-      addressRegion: SITE.address.region,
-      postalCode: SITE.address.postcode,
-      addressCountry: SITE.address.country,
+      streetAddress: (site as unknown as typeof SITE).address.street,
+      addressLocality: (site as unknown as typeof SITE).address.locality,
+      addressRegion: (site as unknown as typeof SITE).address.region,
+      postalCode: (site as unknown as typeof SITE).address.postcode,
+      addressCountry: (site as unknown as typeof SITE).address.country,
     },
-    geo: { "@type": "GeoCoordinates", latitude: SITE.geo.lat, longitude: SITE.geo.lng },
-    hasMap: SITE.googleMapsUrl,
+    geo: { "@type": "GeoCoordinates", latitude: (site as unknown as typeof SITE).geo.lat, longitude: (site as unknown as typeof SITE).geo.lng },
+    hasMap: (site as unknown as typeof SITE).googleMapsUrl,
     openingHoursSpecification,
     // Human-readable openingHours for older parsers + SEO snippets
     openingHours: ["Tu-Sa 12:00-21:00"],
-    areaServed: SITE.areaServed.map((area) => ({ "@type": "City", name: area })),
-    sameAs: [SITE.googleMapsUrl, SITE.deliverooUrl],
+    areaServed: (site as unknown as typeof SITE).areaServed.map((area: string) => ({ "@type": "City", name: area })),
+    sameAs: [(site as unknown as typeof SITE).googleMapsUrl, (site as unknown as typeof SITE).deliverooUrl],
     // Bring-your-own-alcohol, family-friendly, dine-in + takeaway
     amenityFeature: [
       { "@type": "LocationFeatureSpecification", name: "Bring your own alcohol (BYOB) – corkage applies", value: true },
@@ -74,7 +122,7 @@ export function restaurantJsonLd() {
         "@type": "OrderAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: `${SITE.url}/order`,
+          urlTemplate: `${site.url}/order`,
           inLanguage: "en-GB",
           actionPlatform: ["https://schema.org/DesktopWebPlatform", "https://schema.org/MobileWebPlatform"],
         },
@@ -84,7 +132,7 @@ export function restaurantJsonLd() {
         "@type": "ReserveAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: `${SITE.url}/book`,
+          urlTemplate: `${site.url}/book`,
           inLanguage: "en-GB",
           actionPlatform: ["https://schema.org/DesktopWebPlatform", "https://schema.org/MobileWebPlatform"],
         },
@@ -94,56 +142,59 @@ export function restaurantJsonLd() {
   };
 }
 
-export function websiteJsonLd() {
+export function websiteJsonLd(cfg?: RestaurantConfig | null) {
+  const site = resolveSite(cfg);
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "@id": `${SITE.url}/#website`,
-    url: SITE.url,
-    name: SITE.fullName,
-    alternateName: SITE.name,
-    description: SITE.description,
+    "@id": `${site.url}/#website`,
+    url: site.url,
+    name: (site as unknown as typeof SITE).fullName,
+    alternateName: site.name,
+    description: site.description,
     inLanguage: "en-GB",
-    publisher: { "@id": `${SITE.url}/#restaurant` },
+    publisher: { "@id": `${site.url}/#restaurant` },
     potentialAction: {
       "@type": "SearchAction",
-      target: `${SITE.url}/menu?search={search_term_string}`,
+      target: `${site.url}/menu?search={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
   };
 }
 
-export function organizationJsonLd() {
+export function organizationJsonLd(cfg?: RestaurantConfig | null) {
+  const site = resolveSite(cfg);
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "@id": `${SITE.url}/#organization`,
-    name: SITE.name,
-    url: SITE.url,
-    logo: `${SITE.url}${IMG.logo.src}`,
-    image: `${SITE.url}${IMG.logo.src}`,
-    telephone: SITE.phoneIntl,
-    email: SITE.email,
+    "@id": `${site.url}/#organization`,
+    name: site.name,
+    url: site.url,
+    logo: `${site.url}${IMG.logo.src}`,
+    image: `${site.url}${IMG.logo.src}`,
+    telephone: (site as unknown as typeof SITE).phoneIntl,
+    email: site.email,
     address: {
       "@type": "PostalAddress",
-      streetAddress: SITE.address.street,
-      addressLocality: SITE.address.locality,
-      addressRegion: SITE.address.region,
-      postalCode: SITE.address.postcode,
-      addressCountry: SITE.address.country,
+      streetAddress: (site as unknown as typeof SITE).address.street,
+      addressLocality: (site as unknown as typeof SITE).address.locality,
+      addressRegion: (site as unknown as typeof SITE).address.region,
+      postalCode: (site as unknown as typeof SITE).address.postcode,
+      addressCountry: (site as unknown as typeof SITE).address.country,
     },
-    sameAs: [SITE.googleMapsUrl, SITE.deliverooUrl],
+    sameAs: [(site as unknown as typeof SITE).googleMapsUrl, (site as unknown as typeof SITE).deliverooUrl],
   };
 }
 
-export function menuJsonLd(menu: MenuCategory[]) {
+export function menuJsonLd(menu: MenuCategory[], cfg?: RestaurantConfig | null) {
+  const site = resolveSite(cfg);
   return {
     "@context": "https://schema.org",
     "@type": "Menu",
-    name: "Thai Courtyard Menu",
-    url: `${SITE.url}/menu`,
+    name: `${site.name} Menu`,
+    url: `${site.url}/menu`,
     inLanguage: "en-GB",
-    mainEntityOfPage: `${SITE.url}/menu`,
+    mainEntityOfPage: `${site.url}/menu`,
     hasMenuSection: menu.map((c) => ({
       "@type": "MenuSection",
       name: c.name,
@@ -168,7 +219,8 @@ export function menuJsonLd(menu: MenuCategory[]) {
   };
 }
 
-export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
+export function breadcrumbJsonLd(items: { name: string; path: string }[], cfg?: RestaurantConfig | null) {
+  const site = resolveSite(cfg);
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -176,16 +228,17 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: `${SITE.url}${item.path}`,
+      item: `${site.url}${item.path}`,
     })),
   };
 }
 
-export function faqJsonLd(items: { question: string; answer: string }[]) {
+export function faqJsonLd(items: { question: string; answer: string }[], cfg?: RestaurantConfig | null) {
+  const site = resolveSite(cfg);
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "@id": `${SITE.url}/#faq`,
+    "@id": `${site.url}/#faq`,
     mainEntity: items.map((item) => ({
       "@type": "Question",
       name: item.question,
@@ -196,7 +249,9 @@ export function faqJsonLd(items: { question: string; answer: string }[]) {
 
 export function offersJsonLd(
   offers: { id: number; title: string; description: string; ctaText: string; ctaLink: string; startsOn: string; endsOn: string }[],
+  cfg?: RestaurantConfig | null,
 ) {
+  const site = resolveSite(cfg);
   if (!offers.length) return null;
   return {
     "@context": "https://schema.org",
@@ -209,12 +264,12 @@ export function offersJsonLd(
         "@type": "Offer",
         name: offer.title,
         description: offer.description,
-        url: offer.ctaLink.startsWith("http") ? offer.ctaLink : `${SITE.url}${offer.ctaLink}`,
+        url: offer.ctaLink.startsWith("http") ? offer.ctaLink : `${site.url}${offer.ctaLink}`,
         priceCurrency: "GBP",
         availability: "https://schema.org/InStock",
         validFrom: offer.startsOn,
         validThrough: offer.endsOn,
-        seller: { "@id": `${SITE.url}/#restaurant` },
+        seller: { "@id": `${site.url}/#restaurant` },
       },
     })),
   };
@@ -224,16 +279,17 @@ export function offersJsonLd(
 
 export const DEFAULT_OG_IMAGE = "/images/hero-spread.jpg";
 
-export function absoluteUrl(path: string) {
-  if (!path) return SITE.url;
+export function absoluteUrl(path: string, cfg?: RestaurantConfig | null) {
+  const site = resolveSite(cfg);
+  if (!path) return site.url;
   if (path.startsWith("http")) return path;
-  return `${SITE.url}${path.startsWith("/") ? path : `/${path}`}`;
+  return `${site.url}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 // Canonical + open graph defaults for any page
-export function pageSeoDefaults(path: string, overrides?: { title?: string | null; description?: string | null; ogImage?: string | null }) {
-  const abs = absoluteUrl(path);
-  const ogImage = overrides?.ogImage ? absoluteUrl(overrides.ogImage) : absoluteUrl(DEFAULT_OG_IMAGE);
+export function pageSeoDefaults(path: string, overrides?: { title?: string | null; description?: string | null; ogImage?: string | null }, cfg?: RestaurantConfig | null) {
+  const abs = absoluteUrl(path, cfg);
+  const ogImage = overrides?.ogImage ? absoluteUrl(overrides.ogImage, cfg) : absoluteUrl(DEFAULT_OG_IMAGE, cfg);
   return {
     canonical: abs,
     ogImage,
