@@ -1,3 +1,4 @@
+import type { AllergenKey } from "./allergens";
 import type { DietaryKey } from "./dietary";
 
 export type MenuChoice = { id: number; name: string; pricePence: number; available: boolean };
@@ -20,6 +21,7 @@ export type MenuItem = {
   description: string | null;
   pricePence: number;
   dietary: DietaryKey[];
+  allergens: AllergenKey[];
   available: boolean;
   visible: boolean;
   featured: boolean;

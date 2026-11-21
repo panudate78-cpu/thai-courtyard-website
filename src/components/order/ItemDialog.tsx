@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Minus, Plus, X } from "lucide-react";
-import { DietaryBadges } from "@/components/ui";
+import { AllergenBadges, DietaryBadges } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
 import type { MenuGroup, MenuItem } from "@/lib/types";
 import type { BasketOption } from "./basket";
@@ -135,6 +135,15 @@ export function ItemDialog({ item, onClose, onAdd }: Props) {
         <div className="flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 py-5">
           {item.description ? <p className="text-sm leading-relaxed text-charcoal/75">{item.description}</p> : null}
           <DietaryBadges tags={item.dietary} />
+          <AllergenBadges allergens={item.allergens} />
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium leading-relaxed text-amber-900 ring-1 ring-amber-200">
+            ⚠️ Due to possible cross contamination, any allergen could be present in any dish — even if not badge-listed. Please tell us about any allergy.
+          </p>
+          {!item.allergens?.length ? (
+            <p className="text-xs italic text-charcoal/50">Allergen badges show ingredients where known. With cross-contact risk, we advise caution for severe allergies.</p>
+          ) : (
+            <p className="text-xs text-charcoal/50">Badges show ingredients (e.g. P11=Peanuts, F5=Fish). Cross-contact means traces of any allergen may still be present.</p>
+          )}
           {item.groups.map((group) => {
             const max = Math.max(1, group.maxSelect);
             const useRadio = max === 1 && group.required;

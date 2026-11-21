@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { ensureDatabase } from "@/db/bootstrap";
 import { menuCategories, menuItems, optionChoices, optionGroups } from "@/db/schema";
 import { adminGuard } from "@/lib/auth";
+import { isAllergenKey } from "@/lib/allergens";
 import { isDietaryKey } from "@/lib/dietary";
 import { readJson } from "@/lib/validation";
 
@@ -14,7 +15,8 @@ const direction = z.enum(["up", "down"]);
 const name = z.string().trim().min(1, "Please enter a name").max(100, "Name is too long");
 const description = z.string().trim().max(600, "Description is too long").nullable().optional();
 const price = z.number().int().min(0, "Price can't be negative").max(100000, "That price looks too high");
-const dietary = z.array(z.string()).max(10).optional();
+const dietary = z.array(z.string()).max(14).optional();
+const allergens = z.array(z.string()).max(14).optional();
 
 const schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("createCategory"), name, description, visible: z.boolean().optional() }),
@@ -28,6 +30,7 @@ const schema = z.discriminatedUnion("action", [
     description,
     pricePence: price,
     dietary,
+    allergens,
     available: z.boolean().optional(),
     visible: z.boolean().optional(),
     featured: z.boolean().optional(),
@@ -40,6 +43,7 @@ const schema = z.discriminatedUnion("action", [
     description,
     pricePence: price.optional(),
     dietary,
+    allergens,
     available: z.boolean().optional(),
     visible: z.boolean().optional(),
     featured: z.boolean().optional(),
@@ -96,6 +100,7 @@ export async function POST(req: Request) {
 
   try {
     await ensureDatabase();
+    try { const { ensureAllergensColumn } = await import("@/db/ensure-allergens"); await ensureAllergensColumn(); } catch {}
     switch (input.action) {
       case "createCategory": {
         const existing = await db.select({ id: menuCategories.id }).from(menuCategories);
@@ -151,6 +156,7 @@ export async function POST(req: Request) {
             description: input.description || null,
             pricePence: input.pricePence,
             dietary: (input.dietary ?? []).filter(isDietaryKey),
+            allergens: (input.allergens ?? []).filter(isAllergenKey) as string[],
             available: input.available ?? true,
             visible: input.visible ?? true,
             featured: input.featured ?? false,
@@ -165,6 +171,7 @@ export async function POST(req: Request) {
         if (input.description !== undefined) set.description = input.description || null;
         if (input.pricePence !== undefined) set.pricePence = input.pricePence;
         if (input.dietary !== undefined) set.dietary = input.dietary.filter(isDietaryKey);
+        if (input.allergens !== undefined) (set as Record<string, unknown>).allergens = input.allergens.filter(isAllergenKey);
         if (input.available !== undefined) set.available = input.available;
         if (input.visible !== undefined) set.visible = input.visible;
         if (input.featured !== undefined) set.featured = input.featured;
