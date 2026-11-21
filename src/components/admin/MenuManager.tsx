@@ -350,12 +350,10 @@ function ItemRow({
             </span>
           ))}
           {item.allergens?.length ? (
-            <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 ring-1 ring-amber-200" title={item.allergens.map((a) => `${ALLERGENS[a].label} (${ALLERGENS[a].number})`).join(", ")}>
-              {item.allergens.map((a) => `${ALLERGENS[a].short}${ALLERGENS[a].number}`).join(" ")}
+            <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 ring-1 ring-amber-200" title={item.allergens.map((a) => ALLERGENS[a].label).join(", ")}>
+              {item.allergens.map((a) => ALLERGENS[a].label).join(" · ")}
             </span>
-          ) : (
-            <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-800 ring-1 ring-amber-100">Allergens: ask</span>
-          )}
+          ) : null}
         </div>
         {item.description ? <p className="mt-0.5 line-clamp-1 text-sm text-black/55">{item.description}</p> : null}
         {item.ownGroups.length ? (
@@ -455,7 +453,7 @@ function ItemEditor({
   const [price, setPrice] = useState(item ? (item.pricePence / 100).toFixed(2) : "");
   const [categoryId, setCategoryId] = useState<number>(item ? item.categoryId : target.mode === "create" ? target.categoryId : 0);
   const [dietary, setDietary] = useState<DietaryKey[]>(item?.dietary ?? []);
-  const [allergens, setAllergens] = useState<AllergenKey[]>(item?.allergens?.length ? item.allergens : ALLERGEN_KEYS);
+  const [allergens, setAllergens] = useState<AllergenKey[]>(item?.allergens ?? []);
   const [available, setAvailable] = useState(item?.available ?? true);
   const [visible, setVisible] = useState(item?.visible ?? true);
   const [featured, setFeatured] = useState(item?.featured ?? false);
@@ -545,7 +543,7 @@ function ItemEditor({
           </div>
         </fieldset>
         <fieldset>
-          <legend className="adm-label">Allergens — tick all that apply (numbers match public menu) — if unsure, leave blank and add a note to ask staff</legend>
+          <legend className="adm-label">Allergens — tick only the allergens definitely present as ingredients</legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {ALLERGEN_KEYS.map((key) => (
               <label key={key} className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/40 px-3 py-2 text-sm">
@@ -556,10 +554,7 @@ function ItemEditor({
                   className="mt-0.5 h-4 w-4 accent-amber-600"
                 />
                 <span className="min-w-0">
-                  <span className="font-bold">
-                    {ALLERGENS[key].number}. {ALLERGENS[key].label}{" "}
-                    <span className="font-normal text-black/60">({ALLERGENS[key].short})</span>
-                  </span>
+                  <span className="font-bold">{ALLERGENS[key].label}</span>
                   <span className="block text-xs leading-relaxed text-black/55">{ALLERGENS[key].description}</span>
                 </span>
               </label>
@@ -567,15 +562,14 @@ function ItemEditor({
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <button type="button" className="adm-btn" onClick={() => setAllergens(ALLERGEN_KEYS)}>
-              ✓ Select all 14 (cross-contamination)
+              Select all
             </button>
             <button type="button" className="adm-btn" onClick={() => setAllergens([])}>
               Clear all
             </button>
-            <span className="self-center text-xs text-black/50">Due to possible cross contamination, leaving all 14 ticked is the safest default — you can untick after confirming with the kitchen.</span>
           </div>
           <p className="mt-2 text-xs text-black/50">
-            Tip: Fish sauce = <b>Fish (5)</b>, soy sauce/tofu = <b>Soya (13) + Gluten (2)</b>, oyster sauce = <b>Molluscs (8)</b>, peanut sauce/satay = <b>Peanuts (11)</b>. When in doubt, leave it ticked — better to over-warn than miss. Cross-contamination means any allergen could be present even if not an ingredient.
+            Only tick allergens that are definitely in the dish as ingredients. Don&apos;t tick for possible cross-contact — that&apos;s covered by the general notice at the bottom of the menu.
           </p>
         </fieldset>
         <div className="grid gap-2 sm:grid-cols-3">
