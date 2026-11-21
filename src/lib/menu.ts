@@ -2,6 +2,7 @@ import { asc } from "drizzle-orm";
 import { db } from "@/db";
 import { ensureDatabase } from "@/db/bootstrap";
 import { menuCategories, menuItems, optionChoices, optionGroups } from "@/db/schema";
+import { isAllergenKey } from "./allergens";
 import { isDietaryKey } from "./dietary";
 import type { MenuCategory, MenuChoice, MenuGroup, MenuItem } from "./types";
 
@@ -10,6 +11,11 @@ const byGroupOrder = (a: MenuGroup, b: MenuGroup) =>
 
 export async function getMenu(options: { includeHidden?: boolean } = {}): Promise<MenuCategory[]> {
   await ensureDatabase();
+  try {
+    const { ensureAllergensColumn } = await import("@/db/ensure-allergens");
+    await ensureAllergensColumn();
+  } catch {}
+
   const includeHidden = options.includeHidden ?? false;
   const [cats, items, groups, choices] = await Promise.all([
     db.select().from(menuCategories).orderBy(asc(menuCategories.sortOrder), asc(menuCategories.id)),
@@ -55,6 +61,7 @@ export async function getMenu(options: { includeHidden?: boolean } = {}): Promis
           description: i.description,
           pricePence: i.pricePence,
           dietary: (i.dietary ?? []).filter(isDietaryKey),
+          allergens: ((i as unknown as { allergens?: unknown }).allergens as string[] ?? []).filter(isAllergenKey),
           available: i.available,
           visible: i.visible,
           featured: i.featured,

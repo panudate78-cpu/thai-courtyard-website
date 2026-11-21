@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, ChevronDown, Eye, EyeOff, Loader2, Pencil, Plus, Search, Settings2, Star, Trash2 } from "lucide-react";
+import { ALLERGENS, ALLERGEN_KEYS, type AllergenKey } from "@/lib/allergens";
 import { DIETARY, DIETARY_KEYS, type DietaryKey } from "@/lib/dietary";
 import { formatPrice, poundsToPence } from "@/lib/format";
 import type { MenuCategory, MenuGroup, MenuItem } from "@/lib/types";
@@ -348,6 +349,13 @@ function ItemRow({
               {DIETARY[d].short}
             </span>
           ))}
+          {item.allergens?.length ? (
+            <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 ring-1 ring-amber-200" title={item.allergens.map((a) => `${ALLERGENS[a].label} (${ALLERGENS[a].number})`).join(", ")}>
+              {item.allergens.map((a) => `${ALLERGENS[a].short}${ALLERGENS[a].number}`).join(" ")}
+            </span>
+          ) : (
+            <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-800 ring-1 ring-amber-100">Allergens: ask</span>
+          )}
         </div>
         {item.description ? <p className="mt-0.5 line-clamp-1 text-sm text-black/55">{item.description}</p> : null}
         {item.ownGroups.length ? (
@@ -447,6 +455,7 @@ function ItemEditor({
   const [price, setPrice] = useState(item ? (item.pricePence / 100).toFixed(2) : "");
   const [categoryId, setCategoryId] = useState<number>(item ? item.categoryId : target.mode === "create" ? target.categoryId : 0);
   const [dietary, setDietary] = useState<DietaryKey[]>(item?.dietary ?? []);
+  const [allergens, setAllergens] = useState<AllergenKey[]>(item?.allergens?.length ? item.allergens : ALLERGEN_KEYS);
   const [available, setAvailable] = useState(item?.available ?? true);
   const [visible, setVisible] = useState(item?.visible ?? true);
   const [featured, setFeatured] = useState(item?.featured ?? false);
@@ -458,7 +467,7 @@ function ItemEditor({
     const pricePence = poundsToPence(price);
     if (!name.trim()) return setError("Please enter a dish name.");
     if (!Number.isFinite(pricePence) || pricePence < 0) return setError("Please enter a valid price, e.g. 11.50");
-    const fields = { name: name.trim(), description: description.trim() || null, pricePence, categoryId, dietary, available, visible, featured };
+    const fields = { name: name.trim(), description: description.trim() || null, pricePence, categoryId, dietary, allergens, available, visible, featured };
     const ok = await run(item ? { action: "updateItem", id: item.id, ...fields } : { action: "createItem", ...fields }, item ? "Dish saved" : "Dish added");
     if (ok) onClose();
   }
@@ -534,6 +543,40 @@ function ItemEditor({
               </label>
             ))}
           </div>
+        </fieldset>
+        <fieldset>
+          <legend className="adm-label">Allergens — tick all that apply (numbers match public menu) — if unsure, leave blank and add a note to ask staff</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {ALLERGEN_KEYS.map((key) => (
+              <label key={key} className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/40 px-3 py-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={allergens.includes(key)}
+                  onChange={(e) => setAllergens((a) => (e.target.checked ? [...a, key] : a.filter((x) => x !== key)))}
+                  className="mt-0.5 h-4 w-4 accent-amber-600"
+                />
+                <span className="min-w-0">
+                  <span className="font-bold">
+                    {ALLERGENS[key].number}. {ALLERGENS[key].label}{" "}
+                    <span className="font-normal text-black/60">({ALLERGENS[key].short})</span>
+                  </span>
+                  <span className="block text-xs leading-relaxed text-black/55">{ALLERGENS[key].description}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" className="adm-btn" onClick={() => setAllergens(ALLERGEN_KEYS)}>
+              ✓ Select all 14 (cross-contamination)
+            </button>
+            <button type="button" className="adm-btn" onClick={() => setAllergens([])}>
+              Clear all
+            </button>
+            <span className="self-center text-xs text-black/50">Due to possible cross contamination, leaving all 14 ticked is the safest default — you can untick after confirming with the kitchen.</span>
+          </div>
+          <p className="mt-2 text-xs text-black/50">
+            Tip: Fish sauce = <b>Fish (5)</b>, soy sauce/tofu = <b>Soya (13) + Gluten (2)</b>, oyster sauce = <b>Molluscs (8)</b>, peanut sauce/satay = <b>Peanuts (11)</b>. When in doubt, leave it ticked — better to over-warn than miss. Cross-contamination means any allergen could be present even if not an ingredient.
+          </p>
         </fieldset>
         <div className="grid gap-2 sm:grid-cols-3">
           <label className="flex items-center gap-2 text-sm">

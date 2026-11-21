@@ -34,6 +34,7 @@ export const menuItems = pgTable(
     description: text("description"),
     pricePence: integer("price_pence").notNull(),
     dietary: text("dietary").array().notNull().default(sql`'{}'::text[]`),
+    allergens: text("allergens").array().notNull().default(sql`'{}'::text[]`),
     available: boolean("available").notNull().default(true),
     visible: boolean("visible").notNull().default(true),
     featured: boolean("featured").notNull().default(false),

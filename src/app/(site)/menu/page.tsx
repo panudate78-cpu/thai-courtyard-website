@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
 import { CalendarDays, Info, ShoppingBag } from "lucide-react";
-import { DeliverooButton, DietaryBadges, DietaryLegend, JsonLd, Ornament, PageHero } from "@/components/ui";
+import { AllergenBadges, AllergenLegend, DeliverooButton, DietaryBadges, DietaryLegend, JsonLd, Ornament, PageHero } from "@/components/ui";
 import { FaqSection } from "@/components/site/SeoSections";
 import { formatPrice } from "@/lib/format";
 import { IMG, type SiteImage } from "@/lib/image-manifest";
@@ -156,15 +156,32 @@ export default async function MenuPage() {
         </div>
       </nav>
 
-      <section className="container-x pt-10" aria-label="Dietary key">
+      <section className="container-x pt-10" aria-label="Dietary and allergen keys">
         <DietaryLegend />
         <p className="mx-auto mt-5 flex max-w-3xl items-start justify-center gap-2 text-center text-xs leading-relaxed text-charcoal/60">
           <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          Dietary indicators are provided as a guide only.
-Some dishes may contain fish sauce, oyster sauce, nuts, gluten, shellfish, sesame, soya, eggs, milk and other allergens.
-Our kitchen handles nuts, gluten, shellfish and other allergens, so we cannot guarantee that any dish is completely allergen free.
-Please inform us of any allergies or dietary requirements before ordering and a member of our team will be happy to advise.
+          Dietary indicators (V, VG, etc.) are a guide only. Full allergen information is below.
         </p>
+
+        <div className="mx-auto mt-10 max-w-5xl">
+          <div className="rounded-2xl border border-amber-200 bg-white p-6 shadow-sm ring-1 ring-amber-100 sm:p-8">
+            <h2 className="font-serif text-2xl font-semibold sm:text-3xl">Allergens — the 14 major allergens</h2>
+            <div className="mt-3 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white shadow-sm">
+              ⚠️ Due to possible cross contamination, any allergen could be present in any dish — even if not listed. Please tell us about any allergy when ordering.
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-charcoal/65">
+              Thai cooking frequently uses fish sauce (Fish 5), soy sauce/tofu (Soya 13, Gluten 2), shrimp paste/oyster sauce
+              (Crustaceans 3, Molluscs 8), peanuts (Peanuts 11), sesame oil (Sesame 12), eggs (Egg 4) and more. Badges on each
+              dish show allergens present as ingredients. Cross-contact in our kitchen means traces of any allergen may be present even when not badge-marked.
+            </p>
+            <div className="mt-6">
+              <AllergenLegend />
+            </div>
+            <p className="mt-4 text-xs leading-relaxed text-charcoal/55">
+              Numbers shown on dish badges match the numbered list above (e.g. <span className="font-semibold">P11</span> = Peanuts, <span className="font-semibold">F5</span> = Fish). Tell us about any allergy when ordering and we&apos;ll advise on alternatives.
+            </p>
+          </div>
+        </div>
       </section>
       <section className="container-x py-8">
   <div className="rounded-2xl border border-gold/30 bg-cream-dark p-8">
@@ -230,6 +247,14 @@ Please inform us of any allergies or dietary requirements before ordering and a 
                       </p>
                     </div>
                     <DietaryBadges tags={item.dietary} className="mt-2" />
+                    <AllergenBadges allergens={item.allergens} className="mt-2" />
+                    {!item.allergens?.length ? (
+                      <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium leading-relaxed text-amber-900 ring-1 ring-amber-200">
+                        ⚠️ Due to possible cross contamination, this dish may contain any of the 14 allergens. Please inform staff of any allergy before ordering.
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs text-charcoal/45">Allergen badges show ingredients. Due to cross contamination, traces of any allergen could still be present.</p>
+                    )}
                     {item.description ? (
                       <p className="mt-2 text-sm leading-relaxed text-charcoal/70">{item.description}</p>
                     ) : null}

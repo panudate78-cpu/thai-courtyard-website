@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Leaf, Plus, Search, ShoppingBag, X } from "lucide-react";
-import { DietaryBadges } from "@/components/ui";
+import { AllergenBadges, DietaryBadges } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
 import { getCollectionDays, type SlotConfig, type SlotDay } from "@/lib/hours";
 import { hasPriceRange, requiredChoiceHint, startingPrice } from "@/lib/menu-utils";
@@ -42,6 +42,8 @@ function ItemCard({ item, quantity, onAdd }: { item: MenuItem; quantity: number;
         </p>
       </div>
       <DietaryBadges tags={item.dietary} className="mt-2" />
+      <AllergenBadges allergens={item.allergens} className="mt-2" />
+      <p className="mt-1.5 text-[11px] leading-relaxed text-amber-800/80">Due to possible cross contamination, any allergen could be present — please tell us about allergies.</p>
       {item.description ? <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-charcoal/65">{item.description}</p> : null}
       <div className="mt-auto flex items-center justify-between gap-3 pt-4">
         <p className="text-xs text-charcoal/55">
@@ -318,6 +320,9 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
               Vegetarian options
             </button>
           </div>
+          <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium leading-relaxed text-amber-900 ring-1 ring-amber-200">
+            ⚠️ Due to possible cross contamination, any of the 14 allergens could be present in any dish. Please inform staff of any allergy before ordering.
+          </p>
         </div>
 
         {!orderingEnabled ? (
