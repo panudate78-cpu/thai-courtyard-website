@@ -67,10 +67,10 @@ function choiceList(group: MenuGroup) {
 function ChoicesPanel({ groups }: { groups: MenuGroup[] }) {
   if (!groups.length) return null;
   return (
-    <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-gold/35 bg-white/80 p-5 text-sm shadow-sm">
+    <div className="mx-auto mt-5 max-w-3xl rounded-xl border border-gold/30 bg-white/80 p-3 text-xs shadow-sm sm:p-4 sm:text-sm">
       {groups.map((g) => (
-        <div key={g.id} className="py-1.5 sm:flex sm:gap-4">
-          <p className="shrink-0 font-semibold text-charcoal sm:w-44">
+        <div key={g.id} className="py-1 sm:flex sm:gap-3">
+          <p className="shrink-0 font-semibold text-charcoal sm:w-40">
             {g.name}
             {!g.required ? <span className="font-normal text-charcoal/50"> (optional)</span> : null}
           </p>
@@ -156,86 +156,63 @@ export default async function MenuPage() {
         </div>
       </nav>
 
-      <section className="container-x pt-8" aria-label="Dietary key">
+      <section className="container-x pt-6 sm:pt-7" aria-label="Dietary key">
         <DietaryLegend />
-        <p className="mx-auto mt-4 flex max-w-3xl items-start justify-center gap-2 text-center text-xs leading-relaxed text-charcoal/60">
-          <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        <p className="mx-auto mt-3 flex max-w-3xl items-start justify-center gap-1.5 text-center text-xs leading-relaxed text-charcoal/60">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           Dietary indicators (V, VG, etc.) are a guide only. Allergen badges are shown on each dish where relevant —{" "}
           <a href="#allergens" className="font-semibold text-teak underline decoration-teak/30 underline-offset-4 hover:text-charcoal">
             full allergen list at the bottom ↓
           </a>
         </p>
       </section>
-      <section className="container-x py-8">
-  <div className="rounded-2xl border border-gold/30 bg-cream-dark p-8">
-    <p className="eyebrow">Express Lunch</p>
-
-    <h2 className="mt-2 font-serif text-4xl font-semibold">
-      Express Lunch Menu — East Molesey
-    </h2>
-
-    <p className="mt-3 text-charcoal/75">
-      Available Tuesday to Saturday • 12:00pm – 3:00pm  • Dine-in & collection
+      <section className="container-x py-6 sm:py-7">
+  <div className="rounded-2xl border border-gold/30 bg-cream-dark p-5 sm:p-6">
+    <p className="eyebrow text-xs">Express Lunch</p>
+    <h2 className="mt-1 font-serif text-2xl font-semibold sm:text-3xl">Express Lunch — East Molesey</h2>
+    <p className="mt-1.5 text-xs text-charcoal/70 sm:text-sm">Tue–Sat • 12:00–15:00 • Dine-in & collection</p>
+    <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
+      Choice of select curries, stir-fries, noodle or rice dishes with prawn crackers (2 pcs) and a soft drink. <em>See menu in store for more details.</em>
     </p>
-
-    <p className="mt-4 text-charcoal/75">
-      Choice of select curries, stir-fries, noodle or rice dishes with complimentary
-      prawn crackers (2 pieces) and a soft drink. <em>See menu in store for more details.</em> Perfect for lunch near Hampton Court Palace.
-    </p>
-
-    <div className="mt-6 grid gap-3 sm:grid-cols-3">
-      <div className="rounded-xl bg-white p-4">
-        <strong>Vegetable or Tofu</strong>
-        <br />
-        £9.95
-      </div>
-
-      <div className="rounded-xl bg-white p-4">
-        <strong>Chicken or Pork</strong>
-        <br />
-        £10.50
-      </div>
-
-      <div className="rounded-xl bg-white p-4">
-        <strong>Beef or King Prawns</strong>
-        <br />
-        £11.50
-      </div>
+    <div className="mt-4 grid gap-2 sm:grid-cols-3 sm:gap-3">
+      <div className="rounded-xl bg-white p-3 text-sm sm:p-4"><strong>Vegetable or Tofu</strong><br />£9.95</div>
+      <div className="rounded-xl bg-white p-3 text-sm sm:p-4"><strong>Chicken or Pork</strong><br />£10.50</div>
+      <div className="rounded-xl bg-white p-3 text-sm sm:p-4"><strong>Beef or King Prawns</strong><br />£11.50</div>
     </div>
   </div>
 </section>
       {menu.map((category, index) => (
         <Fragment key={category.id}>
-          <section id={`section-${category.id}`} aria-labelledby={`heading-${category.id}`} className="scroll-mt-36 py-12 lg:py-16">
+          <section id={`section-${category.id}`} aria-labelledby={`heading-${category.id}`} className="scroll-mt-28 py-8 sm:py-10 lg:py-12">
             <div className="container-x">
               <div className="text-center">
-                <h2 id={`heading-${category.id}`} className="font-serif text-4xl font-semibold sm:text-5xl">
+                <h2 id={`heading-${category.id}`} className="font-serif text-2xl font-semibold sm:text-3xl lg:text-4xl">
                   {category.name}
                 </h2>
-                <Ornament className="mx-auto mt-4" />
+                <Ornament className="mx-auto mt-3 h-3 w-28 sm:mt-4 sm:h-4 sm:w-40" />
                 {category.description ? (
-                  <p className="mx-auto mt-4 max-w-2xl text-charcoal/70">{category.description}</p>
+                  <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-charcoal/70">{category.description}</p>
                 ) : null}
               </div>
               <ChoicesPanel groups={category.groups} />
-              <ul className="mt-10 grid gap-x-14 gap-y-7 md:grid-cols-2">
+              <ul className="mt-6 grid gap-x-8 gap-y-5 sm:mt-8 sm:gap-x-10 sm:gap-y-6 md:grid-cols-2 lg:gap-x-14">
                 {category.items.map((item) => (
                   <li key={item.id} className={item.available ? "" : "opacity-60"}>
-                    <div className="flex items-baseline gap-3">
-                      <h3 className="font-serif text-xl font-semibold text-charcoal sm:text-2xl">{item.name}</h3>
-                      <span className="min-w-6 flex-1 translate-y-[-4px] border-b border-dotted border-teak/35" aria-hidden="true" />
-                      <p className="shrink-0 font-semibold text-teak">
+                    <div className="flex items-baseline gap-2 sm:gap-3">
+                      <h3 className="font-serif text-base font-semibold text-charcoal sm:text-lg lg:text-xl">{item.name}</h3>
+                      <span className="min-w-4 flex-1 translate-y-[-3px] border-b border-dotted border-teak/30" aria-hidden="true" />
+                      <p className="shrink-0 text-sm font-semibold text-teak sm:text-[15px]">
                         {hasPriceRange(item) ? <span className="mr-1 text-xs font-normal text-charcoal/50">from</span> : null}
                         {formatPrice(startingPrice(item))}
                       </p>
                     </div>
-                    <DietaryBadges tags={item.dietary} className="mt-2" />
-                    <AllergenBadges allergens={item.allergens} className="mt-2" />
+                    <DietaryBadges tags={item.dietary} className="mt-1.5" />
+                    <AllergenBadges allergens={item.allergens} className="mt-1.5" />
                     {item.description ? (
-                      <p className="mt-2 text-sm leading-relaxed text-charcoal/70">{item.description}</p>
+                      <p className="mt-1.5 text-xs leading-relaxed text-charcoal/70 sm:text-sm">{item.description}</p>
                     ) : null}
                     {item.ownGroups.map((g) => (
-                      <p key={g.id} className="mt-1.5 text-xs leading-relaxed text-charcoal/60">
+                      <p key={g.id} className="mt-1 text-xs leading-relaxed text-charcoal/60">
                         <span className="font-semibold text-charcoal/75">{g.name}:</span> {choiceList(g)}
                       </p>
                     ))}
@@ -253,38 +230,21 @@ export default async function MenuPage() {
         </Fragment>
       ))}
 
-      <section id="allergens" aria-labelledby="allergens-heading" className="container-x scroll-mt-36 pt-6">
-        <details className="group mx-auto max-w-5xl rounded-2xl border border-amber-200 bg-white shadow-sm ring-1 ring-amber-100">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 sm:px-6">
-            <span className="flex items-center gap-3">
-              <span className="hidden h-8 w-8 place-items-center rounded-full bg-amber-500 text-xs font-bold text-white sm:grid">14</span>
-              <span>
-                <span id="allergens-heading" className="font-serif text-lg font-semibold leading-none sm:text-xl">
-                  Allergens
-                </span>
-                <span className="mt-1 block text-xs leading-relaxed text-charcoal/60">
-                  Tap to expand — the 14 major allergens.
-                </span>
-              </span>
-            </span>
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-sand bg-cream text-charcoal transition group-open:rotate-180" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            </span>
-          </summary>
-          <div className="border-t border-amber-100 px-5 pb-5 pt-4 sm:px-6">
-            <p className="text-sm leading-relaxed text-charcoal/65">
-              Badges on each dish show allergens definitely present as ingredients. Please inform our team of any allergy before ordering — we&apos;ll advise on suitable options.
-            </p>
-            <div className="mt-4">
-              <AllergenLegend compact />
-            </div>
+      <section id="allergens" aria-labelledby="allergens-heading" className="container-x scroll-mt-28 pt-6 sm:pt-8">
+        <div className="mx-auto max-w-5xl rounded-2xl border border-amber-200 bg-white p-4 shadow-sm ring-1 ring-amber-100 sm:p-5">
+          <h2 id="allergens-heading" className="font-serif text-lg font-semibold sm:text-xl">Allergens — the 14 major allergens</h2>
+          <p className="mt-1.5 text-xs leading-relaxed text-charcoal/60 sm:text-sm">
+            Badges on each dish show allergens definitely present as ingredients. Please inform our team of any allergy before ordering — we&apos;ll advise on suitable options.
+          </p>
+          <div className="mt-3 sm:mt-4">
+            <AllergenLegend compact />
           </div>
-        </details>
+        </div>
       </section>
 
       <FaqSection items={MENU_FAQS} heading="Menu & ordering FAQs" />
 
-      <section className="relative isolate overflow-hidden bg-charcoal py-16 text-center text-cream lg:py-20">
+      <section className="relative isolate overflow-hidden bg-charcoal py-12 text-center text-cream sm:py-14 lg:py-16">
         <div className="thai-pattern absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
         <div className="container-x">
           <p className="eyebrow">Hungry already?</p>
