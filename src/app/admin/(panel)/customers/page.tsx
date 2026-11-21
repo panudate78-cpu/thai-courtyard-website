@@ -6,8 +6,8 @@ import {
 
 
 function getCustomerTier(orderCount: number) {
-  if (orderCount >= 25) return "👑 VIP";
-  if (orderCount >= 10) return "⭐ Gold";
+  if (orderCount >= 10) return "👑 VIP";
+  if (orderCount >= 5) return "⭐ Gold";
   if (orderCount >= 3) return "🟢 Regular";
   return "Customer";
 }

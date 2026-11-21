@@ -261,9 +261,9 @@ export async function getCustomerDashboard(): Promise<CustomerDashboard> {
     const total = people.length;
     const returning = people.filter((person) => person.orders >= 2).length;
     const tiers = [
-      { name: "VIP · 25+ orders", value: people.filter((person) => person.orders >= 25).length },
-      { name: "Gold · 10–24", value: people.filter((person) => person.orders >= 10 && person.orders < 25).length },
-      { name: "Regular · 3–9", value: people.filter((person) => person.orders >= 3 && person.orders < 10).length },
+      { name: "VIP · 10+ orders", value: people.filter((person) => person.orders >= 10).length },
+      { name: "Gold · 5–9", value: people.filter((person) => person.orders >= 5 && person.orders < 10).length },
+      { name: "Regular · 3–4", value: people.filter((person) => person.orders >= 3 && person.orders < 5).length },
       { name: "Under 3 orders", value: people.filter((person) => person.orders < 3).length },
     ];
     const months = Array.from({ length: 12 }, (_, index) => monthShift(today, index - 11));

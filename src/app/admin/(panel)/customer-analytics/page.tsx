@@ -23,7 +23,7 @@ export default async function CustomerAnalyticsPage() {
       />
       <OriginBanner origin={customers.origin} warning={customers.warning} note={customers.methodNote} />
       <MetricGrid metrics={customers.metrics} />
-      <Panel title="Customer retention" description="Tiers match the customer list: VIP at 25 orders, Gold at 10, Regular at 3. Returning on the cards above means 2 or more orders.">
+      <Panel title="Customer retention" description="Tiers match the customer list: VIP at 10 orders, Gold at 5, Regular at 3. Returning on the cards above means 2 or more orders.">
         <RankBars rows={customers.tiers} />
       </Panel>
       <div className="grid gap-4 xl:grid-cols-2">
