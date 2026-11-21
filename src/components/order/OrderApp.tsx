@@ -30,22 +30,22 @@ function ItemCard({ item, quantity, onAdd }: { item: MenuItem; quantity: number;
   const hint = item.available ? requiredChoiceHint(item) : "Currently unavailable";
   return (
     <article
-      className={`flex flex-col rounded-2xl bg-white p-4 ring-1 transition ${
+      className={`flex flex-col rounded-xl bg-white p-3 ring-1 transition sm:rounded-2xl sm:p-4 ${
         quantity > 0 ? "shadow-md ring-gold/60" : "ring-teak/10 hover:shadow-md hover:ring-gold/40"
       } ${item.available ? "" : "opacity-60"}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="font-serif text-xl leading-tight font-semibold text-charcoal">{item.name}</h3>
-        <p className="shrink-0 font-semibold text-teak">
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
+        <h3 className="font-serif text-base leading-tight font-semibold text-charcoal sm:text-lg">{item.name}</h3>
+        <p className="shrink-0 text-sm font-semibold text-teak sm:text-[15px]">
           {hasPriceRange(item) ? <span className="mr-1 text-xs font-normal text-charcoal/50">from</span> : null}
           {formatPrice(startingPrice(item))}
         </p>
       </div>
-      <DietaryBadges tags={item.dietary} className="mt-2" />
-      <AllergenBadges allergens={item.allergens} className="mt-2" />
-      {item.description ? <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-charcoal/65">{item.description}</p> : null}
-      <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-        <p className="text-xs text-charcoal/55">
+      <DietaryBadges tags={item.dietary} className="mt-1.5" />
+      <AllergenBadges allergens={item.allergens} className="mt-1.5" />
+      {item.description ? <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-charcoal/65 sm:text-sm">{item.description}</p> : null}
+      <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:gap-3 sm:pt-4">
+        <p className="text-[11px] leading-tight text-charcoal/55 sm:text-xs">
           {hint}
           {quantity > 0 ? <span className="font-semibold text-gold-deep">{hint ? " · " : ""}{quantity} in basket</span> : null}
         </p>
@@ -53,10 +53,10 @@ function ItemCard({ item, quantity, onAdd }: { item: MenuItem; quantity: number;
           type="button"
           onClick={onAdd}
           disabled={!item.available}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-charcoal px-4 py-2.5 text-sm font-semibold text-cream transition hover:bg-teak disabled:cursor-not-allowed disabled:bg-charcoal/30"
+          className="inline-flex shrink-0 items-center gap-1 rounded-full bg-charcoal px-3 py-1.5 text-xs font-semibold text-cream transition hover:bg-teak disabled:cursor-not-allowed disabled:bg-charcoal/30 sm:gap-1.5 sm:px-4 sm:py-2.5 sm:text-sm"
           aria-label={`Add ${item.name} to basket`}
         >
-          <Plus className="h-4 w-4" aria-hidden="true" />
+          <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
           Add
         </button>
       </div>
@@ -272,7 +272,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
   };
 
   return (
-    <div className="container-x grid gap-8 pt-2 pb-32 lg:grid-cols-[minmax(0,1fr)_380px] lg:pb-16 xl:grid-cols-[minmax(0,1fr)_410px]">
+    <div className="container-x grid gap-6 pt-2 pb-32 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:pb-16 xl:grid-cols-[minmax(0,1fr)_410px]">
       <div className="min-w-0">
         <div className="sticky top-16 z-20 -mx-4 border-b border-sand bg-cream/95 px-4 pt-3 pb-3 backdrop-blur sm:-mx-6 sm:px-6 lg:top-20 lg:mx-0 lg:px-0">
           <div className="relative">
@@ -345,14 +345,14 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
           </div>
         ) : (
           visibleCategories.map((category) => (
-            <section key={category.id} aria-labelledby={`order-cat-${category.id}`} className="mt-8">
-              <div className="mb-4 border-b border-sand pb-3">
-                <h2 id={`order-cat-${category.id}`} className="font-serif text-3xl font-semibold">
+            <section key={category.id} aria-labelledby={`order-cat-${category.id}`} className="mt-6 sm:mt-8">
+              <div className="mb-3 border-b border-sand pb-2 sm:mb-4 sm:pb-3">
+                <h2 id={`order-cat-${category.id}`} className="font-serif text-2xl font-semibold sm:text-3xl">
                   {category.name}
                 </h2>
-                {category.description ? <p className="mt-1 text-sm text-charcoal/65">{category.description}</p> : null}
+                {category.description ? <p className="mt-1 text-xs text-charcoal/65 sm:text-sm">{category.description}</p> : null}
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2 sm:gap-3 sm:grid-cols-2">
                 {category.items.map((item) => (
                   <ItemCard key={item.id} item={item} quantity={quantityByItem.get(item.id) ?? 0} onAdd={() => handleAdd(item)} />
                 ))}
