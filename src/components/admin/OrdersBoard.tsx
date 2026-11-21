@@ -105,7 +105,7 @@ function printTicket(order: OrderView) {
       `<h1>THAI COURTYARD</h1><div>COLLECTION ORDER <b>#${order.number}</b></div><hr>` +
       `<div><b>Collect:</b> ${e(formatDateLong(order.collectionDate))} at ${e(order.collectionTime)}</div>` +
       `<div><b>Name:</b> ${e(order.customerName)}</div><div><b>Tel:</b> ${e(order.phone)}</div><hr>` +
-      `<table>${rows}</table><hr><table><tr><td><b>TOTAL - PAY ON COLLECTION</b></td><td style="text-align:right"><b>${formatPrice(
+      `<table>${rows}</table><hr><table><tr><td><b>TOTAL - ${order.paymentMethod === "stripe_online" ? (order.paymentStatus === "paid" ? "PAID ONLINE (Stripe)" : "AWAITING PAYMENT") : "PAY ON COLLECTION"}</b></td><td style="text-align:right"><b>${formatPrice(
         order.subtotalPence,
       )}</b></td></tr></table>` +
       (order.instructions ? `<hr><div><b>NOTES:</b> ${e(order.instructions)}</div>` : "") +
@@ -428,16 +428,29 @@ localStorage.setItem("soundOn", String(next));
                     <b>Instructions:</b> {o.instructions}
                   </p>
                 ) : null}
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {o.paymentMethod === "stripe_online" ? (
+                    o.paymentStatus === "paid" ? (
+                      <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-900 ring-1 ring-emerald-300">✓ Paid online (Stripe)</span>
+                    ) : (
+                      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-900 ring-1 ring-amber-300">Awaiting online payment</span>
+                    )
+                  ) : (
+                    <span className="rounded-full bg-black/5 px-2.5 py-1 text-xs font-semibold text-black/70 ring-1 ring-black/10">Pay on collection</span>
+                  )}
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${o.paymentStatus === "paid" ? "bg-emerald-50 text-emerald-800 ring-emerald-200" : "bg-amber-50 text-amber-800 ring-amber-200"}`}>{o.paymentStatus === "paid" ? "Paid" : "Unpaid"}</span>
+                </div>
                 <div className="mt-3 flex items-end justify-between gap-3 text-xs text-black/50">
                   <span>
                     Placed {placed.time}
                     {placed.date !== todayDate ? ` · ${relativeDayLabel(placed.date, todayDate)}` : ""}
                     <br />
                     {EMAIL_STATUS[o.emailStatus] ?? o.emailStatus}
+                    {o.stripeSessionId ? <><br /><span className="font-mono text-[11px]">Stripe: {o.stripeSessionId.slice(0, 12)}…</span></> : null}
                   </span>
                   <span className="text-right">
                     <span className="block text-lg font-bold text-charcoal">{formatPrice(o.subtotalPence)}</span>
-                    Pay on collection
+                    {o.paymentMethod === "stripe_online" ? (o.paymentStatus === "paid" ? "Paid online" : "Unpaid — Stripe") : "Pay on collection"}
                   </span>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">

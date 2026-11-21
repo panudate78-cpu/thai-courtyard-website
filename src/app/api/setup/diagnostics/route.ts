@@ -71,6 +71,30 @@ export async function GET(req: NextRequest) {
     hint: siteUrl ? "NEXT_PUBLIC_SITE_URL is set" : "Set NEXT_PUBLIC_SITE_URL to your canonical domain (e.g. https://www.example.co.uk)",
   };
 
+  // Stripe
+  try {
+    const { getStripeEnvStatus } = await import("@/lib/stripe");
+    const s = getStripeEnvStatus();
+    checks.stripe = {
+      ok: s.configured || false,
+      hasSecret: s.hasSecret,
+      hasPublishable: s.hasPublishable,
+      hasWebhookSecret: s.hasWebhookSecret,
+      hint: s.hint,
+      mode: (() => { try { return process.env.STRIPE_SECRET_KEY ? (process.env.STRIPE_SECRET_KEY.startsWith("sk_live_") ? "live" : process.env.STRIPE_SECRET_KEY.startsWith("sk_test_") ? "test" : "unknown") : "none"; } catch { return "unknown"; }})(),
+    };
+  } catch (e) {
+    checks.stripe = { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+
+  // Payment mode from DB
+  try {
+    const { rows } = await pool.query(`SELECT payment_mode FROM restaurant_config WHERE id=1`);
+    checks.paymentMode = { ok: true, paymentMode: rows[0]?.payment_mode ?? "pay_on_collection" };
+  } catch (e) {
+    checks.paymentMode = { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+
   // Setup completed
   try {
     const { rows } = await pool.query(`SELECT setup_completed, restaurant_name FROM restaurant_config WHERE id=1`);
@@ -87,6 +111,9 @@ export async function GET(req: NextRequest) {
     NEXT_PUBLIC_SITE_URL: Boolean(process.env.NEXT_PUBLIC_SITE_URL),
     SETUP_TOKEN: Boolean(process.env.SETUP_TOKEN),
     ADMIN_PASSWORD: Boolean(process.env.ADMIN_PASSWORD),
+    STRIPE_SECRET_KEY: Boolean(process.env.STRIPE_SECRET_KEY),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY),
+    STRIPE_WEBHOOK_SECRET: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
   };
 
   return NextResponse.json(checks);

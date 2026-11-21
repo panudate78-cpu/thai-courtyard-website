@@ -67,6 +67,9 @@ export type OrderLineView = {
   options: OrderOption[];
 };
 
+export type PaymentMethod = "pay_on_collection" | "stripe_online";
+export type PaymentStatus = "unpaid" | "paid";
+
 export type OrderView = {
   id: number;
   number: number;
@@ -81,6 +84,10 @@ export type OrderView = {
   itemCount: number;
   status: OrderStatus;
   emailStatus: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  stripeSessionId: string | null;
+  paidAt: string | null;
   createdAt: string;
   items: OrderLineView[];
 

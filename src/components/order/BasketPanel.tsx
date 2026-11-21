@@ -6,7 +6,6 @@ import { PaymentNotice } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
 import type { SlotDay } from "@/lib/hours";
 import { SITE } from "@/lib/site";
-const openNow = isRestaurantOpenNow();
 import type { BasketLine } from "./basket";
 import { isRestaurantOpenNow } from "@/lib/opening-hours";
 export type CheckoutDetails = { name: string; phone: string; email: string; instructions: string; company: string };
@@ -30,6 +29,9 @@ type Props = {
   submitting: boolean;
   error: string | null;
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  paymentMode: "pay_on_collection" | "stripe_online" | "customer_choice";
+  paymentMethod: "pay_on_collection" | "stripe_online";
+  onPaymentMethod: (m: "pay_on_collection" | "stripe_online") => void;
 };
 
 export function BasketPanel(props: Props) {
@@ -51,7 +53,11 @@ export function BasketPanel(props: Props) {
     submitting,
     error,
     onSubmit,
+    paymentMode,
+    paymentMethod,
+    onPaymentMethod,
   } = props;
+  const openNow = isRestaurantOpenNow();
   const uid = useId();
   const fieldId = (name: string) => `${idPrefix}-${uid}-${name}`;
   const selectedDay = days.find((d) => d.date === slot.date);
@@ -246,7 +252,26 @@ export function BasketPanel(props: Props) {
           />
         </div>
 
-        <PaymentNotice compact />
+        {paymentMode === "customer_choice" ? (
+          <div className="rounded-xl border border-sand p-3">
+            <p className="text-sm font-semibold">How would you like to pay?</p>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <label className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm ${paymentMethod === "pay_on_collection" ? "border-gold bg-gold/10" : "border-sand bg-white"}`}>
+                <input type="radio" name={`${idPrefix}-pay`} value="pay_on_collection" checked={paymentMethod === "pay_on_collection"} onChange={() => onPaymentMethod("pay_on_collection")} />
+                Pay on collection
+              </label>
+              <label className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm ${paymentMethod === "stripe_online" ? "border-gold bg-gold/10" : "border-sand bg-white"}`}>
+                <input type="radio" name={`${idPrefix}-pay`} value="stripe_online" checked={paymentMethod === "stripe_online"} onChange={() => onPaymentMethod("stripe_online")} />
+                Pay online (Stripe)
+              </label>
+            </div>
+            {paymentMethod === "stripe_online" ? <p className="mt-2 text-xs text-charcoal/60">You’ll be redirected to Stripe to pay securely. Email required for receipt.</p> : <p className="mt-2 text-xs text-charcoal/60">Pay with cash or card when you collect.</p>}
+          </div>
+        ) : paymentMode === "stripe_online" ? (
+          <div className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900 ring-1 ring-emerald-200">Pay online securely via Stripe — you’ll be redirected at checkout.</div>
+        ) : (
+          <PaymentNotice compact />
+        )}
 
         {!orderingEnabled ? (
           <p role="alert" className="rounded-xl bg-chili/10 p-3 text-sm font-medium text-chili">
@@ -266,10 +291,10 @@ export function BasketPanel(props: Props) {
         >
           {submitting ? (
             <>
-              <Loader2 className="animate-spin" aria-hidden="true" /> Placing your order…
+              <Loader2 className="animate-spin" aria-hidden="true" /> {paymentMethod === "stripe_online" && paymentMode !== "pay_on_collection" ? "Redirecting to Stripe…" : "Placing your order…"}
             </>
           ) : (
-            <>Place collection order{basket.length ? ` · ${formatPrice(subtotal)}` : ""}</>
+            <>{paymentMethod === "stripe_online" && paymentMode !== "pay_on_collection" ? `Pay online · ${formatPrice(subtotal)}` : `Place collection order${basket.length ? ` · ${formatPrice(subtotal)}` : ""}`}</>
           )}
         </button>
         <p className="text-center text-xs leading-relaxed text-charcoal/55">

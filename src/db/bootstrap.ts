@@ -5,6 +5,7 @@ import { ensureCustomersTable } from "./ensure-customers";
 import { ensureVisitsTable } from "./visits-migration";
 import { ensureAllergensColumn } from "./ensure-allergens";
 import { ensureRestaurantConfig } from "./ensure-restaurant-config";
+import { ensurePaymentColumns } from "./ensure-payment-columns";
 import { ensureOffersTable } from "./offers-migration";
 import { MIGRATION_STATEMENTS } from "./migration-sql";
 import { menuCategories, menuItems, optionChoices, optionGroups, siteSettings } from "./schema";
@@ -62,6 +63,7 @@ async function bootstrap() {
   await seedMenuIfEmpty();
   await ensureCustomersTable();
   try { await ensureRestaurantConfig(); } catch (e) { console.warn("[db] restaurant_config skipped", e); }
+  try { await ensurePaymentColumns(); } catch (e) { console.warn("[db] payment columns skipped", e); }
   try { await ensureAllergensColumn(); } catch {}
   await ensureBusinessTables();
   await ensureVisitsTable();

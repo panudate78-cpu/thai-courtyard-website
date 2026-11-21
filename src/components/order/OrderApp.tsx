@@ -24,6 +24,7 @@ type Props = {
   orderingEnabled: boolean;
   pausedMessage: string | null;
   initialItemId: number | null;
+  paymentMode: "pay_on_collection" | "stripe_online" | "customer_choice";
 };
 
 function ItemCard({ item, quantity, onAdd }: { item: MenuItem; quantity: number; onAdd: () => void }) {
@@ -64,7 +65,7 @@ function ItemCard({ item, quantity, onAdd }: { item: MenuItem; quantity: number;
   );
 }
 
-export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled, pausedMessage, initialItemId }: Props) {
+export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled, pausedMessage, initialItemId, paymentMode }: Props) {
   const router = useRouter();
   const itemsById = useMemo(() => {
     const map = new Map<number, MenuItem>();
@@ -87,6 +88,9 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
   const [days, setDays] = useState<SlotDay[]>(initialDays);
   const [slot, setSlot] = useState<Slot>(() => ({ date: initialDays[0]?.date ?? "", time: initialDays[0]?.times[0] ?? "" }));
   const [details, setDetails] = useState<CheckoutDetails>(EMPTY_DETAILS);
+  const [paymentMethod, setPaymentMethod] = useState<"pay_on_collection" | "stripe_online">(
+    paymentMode === "stripe_online" ? "stripe_online" : "pay_on_collection",
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -218,6 +222,12 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
       setError("Please choose a collection time.");
       return;
     }
+    // Stripe online requires email for receipt
+    const effectivePaymentMethod = paymentMode === "pay_on_collection" ? "pay_on_collection" as const : paymentMode === "stripe_online" ? "stripe_online" as const : paymentMethod;
+    if (effectivePaymentMethod === "stripe_online" && !details.email.trim()) {
+      setError("Email is required for online payment — we send your receipt there.");
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch("/api/orders", {
@@ -232,11 +242,20 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
           email: details.email,
           instructions: details.instructions,
           company: details.company,
+          paymentMethod: effectivePaymentMethod,
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { publicId?: string; error?: string };
+      const data = (await res.json().catch(() => ({}))) as { publicId?: string; checkoutUrl?: string; error?: string };
       if (!res.ok || !data.publicId) {
         throw new Error(data.error || "Sorry, we couldn't place your order. Please try again or call us.");
+      }
+      // Stripe flow: redirect to Checkout
+      if (data.checkoutUrl) {
+        try {
+          localStorage.setItem(DETAILS_KEY, JSON.stringify({ name: details.name, phone: details.phone, email: details.email }));
+        } catch {}
+        window.location.href = data.checkoutUrl;
+        return;
       }
       try {
         localStorage.setItem(DETAILS_KEY, JSON.stringify({ name: details.name, phone: details.phone, email: details.email }));
@@ -269,6 +288,9 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
     submitting,
     error,
     onSubmit: submitOrder,
+    paymentMode,
+    paymentMethod: paymentMode === "pay_on_collection" ? "pay_on_collection" as const : paymentMode === "stripe_online" ? "stripe_online" as const : paymentMethod,
+    onPaymentMethod: setPaymentMethod,
   };
 
   return (

@@ -61,6 +61,7 @@ export function SetupWizard({ initialConfig, token }: Props) {
   const [maxDaysAhead, setMaxDaysAhead] = useState(String(initialConfig?.maxDaysAhead ?? 7));
   const [paymentNotice, setPaymentNotice] = useState(initialConfig?.paymentNotice ?? "Payment will be taken in restaurant when you collect your order. We accept cash and card.");
   const [announcement, setAnnouncement] = useState(initialConfig?.announcement ?? "");
+  const [paymentMode, setPaymentMode] = useState<string>((initialConfig as unknown as { paymentMode?: string })?.paymentMode ?? "pay_on_collection");
 
   // Step 3
   const [areaServed, setAreaServed] = useState<string[]>(initialConfig?.areaServed ?? ["East Molesey", "Hampton Court", "Thames Ditton"]);
@@ -132,8 +133,10 @@ export function SetupWizard({ initialConfig, token }: Props) {
   }
 
   async function handleStep2() {
-    await save(
-      {
+    const res = await fetch("/api/setup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(token ? { "x-setup-token": token } : {}) },
+      body: JSON.stringify({
         step: 2,
         openingHours,
         slotIntervalMinutes: Number(slotInterval),
@@ -141,9 +144,16 @@ export function SetupWizard({ initialConfig, token }: Props) {
         maxDaysAhead: Number(maxDaysAhead),
         paymentNotice,
         announcement: announcement || null,
-      },
-      "Hours & ordering saved",
-    );
+        paymentMode,
+        token,
+      }),
+    });
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setError(data.error || "Save failed — if Stripe mode was chosen, check Stripe keys");
+      return;
+    }
+    setNotice("Hours & ordering saved");
     setStep(3);
   }
 
@@ -429,6 +439,18 @@ export function SetupWizard({ initialConfig, token }: Props) {
                 <span className="text-xs font-semibold">Max days ahead</span>
                 <input type="number" value={maxDaysAhead} onChange={(e) => setMaxDaysAhead(e.target.value)} className="w-full rounded-lg border border-sand px-3 py-2" />
               </label>
+            </div>
+            <div className="rounded-xl border border-sand bg-cream p-4">
+              <p className="text-sm font-semibold">Payment mode for collection orders</p>
+              <p className="mt-1 text-xs text-charcoal/60">Pay on collection is the default — no Stripe needed. Choose Stripe online or let the customer choose at checkout.</p>
+              <select value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)} className="mt-2 w-full rounded-lg border border-sand bg-white px-3 py-2 text-sm">
+                <option value="pay_on_collection">Pay on collection (default — no Stripe)</option>
+                <option value="stripe_online">Pay online now (Stripe Checkout — all orders)</option>
+                <option value="customer_choice">Customer chooses at checkout (Pay on collection or Pay online)</option>
+              </select>
+              {paymentMode !== "pay_on_collection" ? (
+                <p className="mt-2 rounded-lg bg-amber-50 p-2 text-xs text-amber-900 ring-1 ring-amber-200">Stripe mode selected — set <code>STRIPE_SECRET_KEY</code>, <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> and <code>STRIPE_WEBHOOK_SECRET</code> in Vercel + <code>.env.local</code>. Without them checkout will return a clear error and orders stay on Pay on collection. Diagnostics in Step 6 validates them.</p>
+              ) : null}
             </div>
             <label className="space-y-1">
               <span className="text-xs font-semibold">Payment notice</span>

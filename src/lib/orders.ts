@@ -54,6 +54,8 @@ function toView(
   items: OrderItemRow[],
   customerStatus?: string,
 ): OrderView {
+const payMethod = (o.paymentMethod as string) === "stripe_online" ? "stripe_online" as const : "pay_on_collection" as const;
+const payStatus = (o.paymentStatus as string) === "paid" ? "paid" as const : "unpaid" as const;
 return {
   id: o.id,
   number: orderNumber(o.id),
@@ -68,6 +70,10 @@ return {
   itemCount: o.itemCount,
   status: toStatus(o.status),
   emailStatus: o.emailStatus,
+  paymentMethod: payMethod,
+  paymentStatus: payStatus,
+  stripeSessionId: (o.stripeSessionId as string | null) ?? null,
+  paidAt: o.paidAt ? (o.paidAt as Date).toISOString() : null,
   createdAt: o.createdAt.toISOString(),
 
   customerStatus,
@@ -137,8 +143,11 @@ if (customer?.orders && customer.orders >= 25) {
 });
 }
 
-/** Validates the basket against the live menu (server-side pricing) and stores the order. */
-export async function createOrder(input: OrderInput): Promise<{ order: OrderView; settings: Settings }> {
+/** Validates the basket against the live menu (server-side pricing) and stores the order.
+ * For pay_on_collection this is instant and considered paid (no Stripe).
+ * For Stripe pending, use createPendingStripeOrder below.
+ */
+export async function createOrder(input: OrderInput, opts?: { paymentMethod?: "pay_on_collection" | "stripe_online"; stripeSessionId?: string | null }): Promise<{ order: OrderView; settings: Settings }> {
   const settings = await getSettings();
   if (!settings.orderingEnabled) {
     throw new OrderError(settings.pausedMessage || "Online ordering is currently paused. Please call us to place your order.", 409);
@@ -195,6 +204,11 @@ console.log("Customer found:", existingCustomer);
   const subtotalPence = lines.reduce((sum, l) => sum + l.lineTotalPence, 0);
   const itemCount = lines.reduce((sum, l) => sum + l.quantity, 0);
   const publicId = crypto.randomBytes(12).toString("base64url");
+  const paymentMethod = opts?.paymentMethod ?? "pay_on_collection";
+  const isStripe = paymentMethod === "stripe_online";
+  const stripeSessionId = opts?.stripeSessionId ?? null;
+  const paymentStatus = isStripe ? "unpaid" : "paid";
+  const paidAt = isStripe ? null : new Date();
 
   const order = await db.transaction(async (tx) => {
   const [row] = await tx
@@ -209,6 +223,10 @@ console.log("Customer found:", existingCustomer);
       collectionTime: input.collectionTime,
       subtotalPence,
       itemCount,
+      paymentMethod,
+      paymentStatus,
+      stripeSessionId,
+      paidAt,
     })
     .returning();
 
@@ -248,6 +266,62 @@ console.log("Customer found:", existingCustomer);
 
 return { order, settings };
 }
+
+/**
+ * Create a Stripe Checkout Session for an already-created unpaid order.
+ * Uses server-computed line totals (never client total). Returns checkout URL.
+ */
+export async function createStripeCheckoutSession(order: OrderView, origin: string) {
+  const status = await import("./stripe").then((m) => m.getStripeEnvStatus());
+  if (!status.configured) throw new OrderError("Online payment is not configured — please choose Pay on collection or contact us.", 500);
+  const stripe = await import("./stripe").then((m) => m.getStripe());
+  if (!stripe) throw new OrderError("Stripe is not available right now.", 500);
+  const cfg = await import("./restaurant").then((m) => m.getRestaurantConfig());
+  const siteUrl = cfg.siteUrl || origin;
+  const lineItems = order.items.map((i) => {
+    const nameParts = [i.name, ...i.options.map((o) => o.choice)].join(" — ");
+    return {
+      price_data: {
+        currency: "gbp",
+        product_data: { name: nameParts },
+        unit_amount: i.unitPricePence,
+      },
+      quantity: i.quantity,
+    };
+  });
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    payment_method_types: ["card"],
+    line_items: lineItems,
+    customer_email: order.email || undefined,
+    client_reference_id: order.publicId,
+    metadata: {
+      orderPublicId: order.publicId,
+      orderId: String(order.id),
+      collectionDate: order.collectionDate,
+      collectionTime: order.collectionTime,
+    },
+    success_url: `${siteUrl}/order/confirmation/${order.publicId}?paid=1`,
+    cancel_url: `${siteUrl}/order?cancelled=1`,
+  });
+  await db.update(orders).set({ stripeSessionId: session.id, updatedAt: new Date() }).where(eq(orders.id, order.id));
+  return { sessionId: session.id, url: session.url! };
+}
+
+export async function confirmStripeOrderBySessionId(stripeSessionId: string): Promise<OrderView | null> {
+  await ensureDatabase();
+  const rows = await db.select().from(orders).where(eq(orders.stripeSessionId, stripeSessionId)).limit(1);
+  const existing = rows[0];
+  if (!existing) return null;
+  if (existing.paymentStatus === "paid") {
+    const [view] = await withItems(rows);
+    return view ?? null;
+  }
+  const updated = await db.update(orders).set({ paymentStatus: "paid", paidAt: new Date(), updatedAt: new Date() }).where(eq(orders.id, existing.id)).returning();
+  const [view] = await withItems(updated);
+  return view ?? null;
+}
+
 export async function sendOrderNotifications(order: OrderView, settings: Settings) {
   const to = restaurantEmail(settings);
   const restaurantMail = orderRestaurantEmail(order);

@@ -9,6 +9,8 @@ import { SITE as FALLBACK_SITE, OPENING_HOURS as FALLBACK_HOURS, DAY_NAMES } fro
 
 export type OpeningHoursMap = Record<string, { open: string; close: string } | null>;
 
+export type PaymentMode = "pay_on_collection" | "stripe_online" | "customer_choice";
+
 export type RestaurantConfig = {
   id: number;
   setupCompleted: boolean;
@@ -66,6 +68,7 @@ export type RestaurantConfig = {
   siteUrl: string;
   emailFrom: string | null;
   restaurantEmail: string | null;
+  paymentMode: PaymentMode;
   adminPasswordHash: string | null;
   raw: Record<string, unknown> | null;
 };
@@ -109,6 +112,9 @@ function buildDerived(row: Record<string, unknown> | null): RestaurantConfig | n
   const openingRaw = row["opening_hours"] as OpeningHoursMap | null;
   const openingHours: OpeningHoursMap = openingRaw && typeof openingRaw === "object" ? openingRaw : (FALLBACK_HOURS as unknown as OpeningHoursMap);
 
+  const rawMode = typeof row["payment_mode"] === "string" ? (row["payment_mode"] as string) : "pay_on_collection";
+  const paymentMode: PaymentMode = rawMode === "stripe_online" || rawMode === "customer_choice" ? (rawMode as PaymentMode) : "pay_on_collection";
+
   const area = Array.isArray(row["area_served"]) ? (row["area_served"] as string[]) : FALLBACK_SITE.areaServed.slice();
   const cuisine = Array.isArray(row["serves_cuisine"]) ? (row["serves_cuisine"] as string[]) : [...FALLBACK_SITE.servesCuisine];
 
@@ -150,6 +156,7 @@ function buildDerived(row: Record<string, unknown> | null): RestaurantConfig | n
     hoursShort: get("hours_short", FALLBACK_SITE.hoursShort),
     paymentNotice: get("payment_notice", FALLBACK_SITE.paymentNotice),
     announcement: (row["announcement"] as string) || null,
+    paymentMode,
     themePrimary: get("theme_primary", "#1a2a3a"),
     themeAccent: get("theme_accent", "#c9a86a"),
     fontPreset: get("font_preset", "serif-sans"),
@@ -206,6 +213,7 @@ export const getRestaurantConfig = cache(async (): Promise<RestaurantConfig> => 
     google_review_url: "",
     area_served: FALLBACK_SITE.areaServed,
     site_url: FALLBACK_SITE.url,
+    payment_mode: "pay_on_collection",
   } as Record<string, unknown>);
 
   try {

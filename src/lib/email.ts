@@ -144,6 +144,22 @@ function itemsText(order: OrderView) {
 }
 
 const notice = `<p style="background:#f8f0dc;border:1px solid #e6cf97;border-radius:10px;padding:12px 14px;font-size:13px;margin:0">${SITE.paymentNotice}</p>`;
+function paymentBadge(order: OrderView): string {
+  const method = (order as unknown as { paymentMethod?: string }).paymentMethod || "pay_on_collection";
+  const status = (order as unknown as { paymentStatus?: string }).paymentStatus || "paid";
+  if (method === "stripe_online") {
+    if (status === "paid") return `<span style="display:inline-block;background:#dcfce7;border:1px solid #86efac;color:#14532d;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700">✓ Paid online (Stripe)</span>`;
+    return `<span style="display:inline-block;background:#fef9c3;border:1px solid #fde047;color:#713f12;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700">Awaiting online payment</span>`;
+  }
+  return `<span style="display:inline-block;background:#f3f4f6;border:1px solid #d1d5db;color:#111827;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700">Pay on collection (cash/card)</span>`;
+}
+function paymentNoticeFor(order: OrderView): string {
+  const method = (order as unknown as { paymentMethod?: string }).paymentMethod || "pay_on_collection";
+  const status = (order as unknown as { paymentStatus?: string }).paymentStatus || "paid";
+  if (method === "stripe_online" && status === "paid") return `<p style="background:#dcfce7;border:1px solid #86efac;border-radius:10px;padding:12px 14px;font-size:13px;margin:0">✓ This order was <strong>paid online via Stripe</strong> — no payment needed on collection.</p>`;
+  if (method === "stripe_online") return `<p style="background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:12px 14px;font-size:13px;margin:0">Awaiting online payment — this order will be confirmed once Stripe payment succeeds.</p>`;
+  return notice;
+}
 
 export function orderRestaurantEmail(order: OrderView) {
   const when = `${formatDateLong(order.collectionDate)} at ${order.collectionTime}`;
@@ -155,15 +171,16 @@ export function orderRestaurantEmail(order: OrderView) {
     )}${row("Telephone", `<a href="tel:${e(order.phone.replace(/\s/g, ""))}">${e(order.phone)}</a>`)}${row(
       "Email",
       order.email ? e(order.email) : "—",
-    )}${order.instructions ? row("Special instructions", `<strong style="color:#a12d24">${e(order.instructions)}</strong>`) : ""}</table>${itemsTable(
+    )}${row("Payment", paymentBadge(order))}${order.instructions ? row("Special instructions", `<strong style="color:#a12d24">${e(order.instructions)}</strong>`) : ""}</table>${itemsTable(
       order,
-    )}${notice}<p style="margin:20px 0 0"><a href="${SITE.url}/admin/orders" style="display:inline-block;background:#c9a14a;color:#1d1b1a;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:999px">Open admin dashboard</a></p>`,
+    )}${paymentNoticeFor(order)}<p style="margin:20px 0 0"><a href="${SITE.url}/admin/orders" style="display:inline-block;background:#c9a14a;color:#1d1b1a;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:999px">Open admin dashboard</a></p>`,
   );
-  const text = `NEW COLLECTION ORDER #${order.number}\nCollection: ${when}\nCustomer: ${order.customerName}\nTelephone: ${order.phone}\nEmail: ${
+  const paymentText = (order as unknown as { paymentMethod?: string }).paymentMethod === "stripe_online" ? ((order as unknown as { paymentStatus?: string }).paymentStatus === "paid" ? "PAID ONLINE (Stripe)" : "AWAITING ONLINE PAYMENT") : "PAY ON COLLECTION";
+  const text = `NEW COLLECTION ORDER #${order.number} [${paymentText}]\nCollection: ${when}\nCustomer: ${order.customerName}\nTelephone: ${order.phone}\nEmail: ${
     order.email ?? "-"
-  }\n${order.instructions ? `Special instructions: ${order.instructions}\n` : ""}\n${itemsText(order)}\n\nTOTAL (pay on collection): ${formatPrice(
+  }\n${order.instructions ? `Special instructions: ${order.instructions}\n` : ""}\n${itemsText(order)}\n\nTOTAL: ${formatPrice(
     order.subtotalPence,
-  )}\n\nManage orders: ${SITE.url}/admin/orders`;
+  )} — ${paymentText}\n\nManage orders: ${SITE.url}/admin/orders`;
   return {
     subject: `New collection order #${order.number} · ${order.collectionTime} ${formatDateLong(order.collectionDate)} · ${order.customerName}`,
     html,
@@ -173,9 +190,13 @@ export function orderRestaurantEmail(order: OrderView) {
 
 export function orderCustomerEmail(order: OrderView) {
   const when = `${formatDateLong(order.collectionDate)} at ${order.collectionTime}`;
+  const isStripePaid = (order as unknown as { paymentMethod?: string }).paymentMethod === "stripe_online" && (order as unknown as { paymentStatus?: string }).paymentStatus === "paid";
+  const heading = isStripePaid ? `Thank you, ${e(order.customerName)} — your order is confirmed and paid` : `Thank you, ${e(order.customerName)} — we've received your order`;
+  const introPaid = `<p style="font-size:15px;line-height:1.6;margin:0 0 12px">Your collection order <strong>#${order.number}</strong> is <strong>paid online</strong> and has been sent to our kitchen.</p>`;
+  const introPayOnCollection = `<p style="font-size:15px;line-height:1.6;margin:0 0 12px">Your collection order <strong>#${order.number}</strong> has been sent to our kitchen.</p>`;
 const html = shell(
-`Thank you, ${e(order.customerName)} — we've received your order`,
-`<p style="font-size:15px;line-height:1.6;margin:0 0 12px">Your collection order <strong>#${order.number}</strong> has been sent to our kitchen.</p>
+heading,
+`${isStripePaid ? introPaid : introPayOnCollection}
  
 <p style="font-size:15px;line-height:1.6;margin:0 0 12px">We aim to have collection orders ready within approximately 30 minutes.</p>
  
@@ -189,12 +210,13 @@ ${row(
 ${row("Collect from", e(SITE.addressLine))}
 </table>
 ${itemsTable(order)}
-${notice}
-<p style="font-size:13px;color:#6f6a64;margin:18px 0 0">
+${paymentNoticeFor(order)}
+<p style="font-size:13px;color:#6f6a64;margin:18px 0 0">${paymentBadge(order)}<br>
 Need to change something? Call us on
 <a href="${SITE.phoneHref}">${SITE.phoneDisplay}</a>.</p>`,
   );  
-const text = `Thank you, ${order.customerName}! We've received your collection order #${order.number}.
+const paymentText2 = (order as unknown as { paymentMethod?: string }).paymentMethod === "stripe_online" && (order as unknown as { paymentStatus?: string }).paymentStatus === "paid" ? "Paid online via Stripe — no payment needed on collection." : SITE.paymentNotice;
+  const text = `Thank you, ${order.customerName}! We've received your collection order #${order.number}.
 
 We aim to have collection orders ready within approximately 30 minutes.
 
@@ -206,7 +228,7 @@ Collect from: ${SITE.addressLine}
 ${itemsText(order)}
 
 Total: ${formatPrice(order.subtotalPence)}
-${SITE.paymentNotice}
+${paymentText2}
 
 Questions? Call ${SITE.phoneDisplay}.`;
   return { subject: `Your Thai Courtyard order #${order.number} — collection ${order.collectionTime}`, html, text };

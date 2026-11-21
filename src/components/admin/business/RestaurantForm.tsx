@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { DAY_NAMES, SITE } from "@/lib/site";
@@ -16,6 +16,17 @@ export function RestaurantForm({ initial }: { initial: BusinessSettingsView }) {
   const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useNotice();
+  const [paymentMode, setPaymentMode] = useState<string>("pay_on_collection");
+  const [paymentSaving, setPaymentSaving] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/restaurant-config", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: { paymentMode?: string }) => {
+        if (d.paymentMode && ["pay_on_collection", "stripe_online", "customer_choice"].includes(d.paymentMode)) setPaymentMode(d.paymentMode);
+      })
+      .catch(() => {});
+  }, []);
   const [holidayDate, setHolidayDate] = useState("");
   const [eventTitle, setEventTitle] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -67,6 +78,29 @@ export function RestaurantForm({ initial }: { initial: BusinessSettingsView }) {
           The new settings tables are not available in this database yet. You can review the form, but saving needs the additive migration.
         </p>
       ) : null}
+
+      <section className="adm-card border-l-4 border-l-teal-600 p-5">
+        <h2 className="font-semibold">Collection payments</h2>
+        <p className="mt-1 text-sm text-black/55">Choose how guests pay for collection orders. Pay on collection is the default and needs no Stripe. Stripe modes need STRIPE_SECRET_KEY + NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (+ STRIPE_WEBHOOK_SECRET for webhooks) in env.</p>
+        <label htmlFor="paymentMode" className="adm-label mt-3">Payment mode</label>
+        <select id="paymentMode" value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)} className="adm-input">
+          <option value="pay_on_collection">Pay on collection — no online payment</option>
+          <option value="stripe_online">Pay online only — Stripe Checkout for every order</option>
+          <option value="customer_choice">Customer choice — guest picks Pay on collection or Pay online at checkout</option>
+        </select>
+        {paymentMode !== "pay_on_collection" ? (
+          <p className="mt-2 rounded-lg bg-amber-50 p-2 text-xs text-amber-900 ring-1 ring-amber-200">Stripe enabled — ensure STRIPE_SECRET_KEY, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY and STRIPE_WEBHOOK_SECRET are set in Vercel + .env.local. Diagnostics (/setup → Step 6) and the webhook at <code>/api/webhooks/stripe</code> validate them.</p>
+        ) : null}
+        <button type="button" className="adm-btn mt-3" disabled={paymentSaving} onClick={async () => {
+          setPaymentSaving(true);
+          try {
+            const res = await fetch("/api/admin/restaurant-config", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paymentMode }) });
+            const data = await res.json().catch(() => ({})) as { error?: string };
+            if (!res.ok) throw new Error(data.error || "Could not save payment mode");
+            setNotice({ type: "ok", text: `Payment mode saved: ${paymentMode.replaceAll("_", " ")}` });
+          } catch (e) { setNotice({ type: "error", text: e instanceof Error ? e.message : String(e) }); } finally { setPaymentSaving(false); }
+        }}>{paymentSaving ? <Loader2 className="animate-spin" aria-hidden="true" /> : null} Save payment mode</button>
+      </section>
 
       <section className="adm-card border-l-4 border-l-gold p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">

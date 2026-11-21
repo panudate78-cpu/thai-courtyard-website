@@ -83,6 +83,8 @@ export const restaurantConfig = pgTable("restaurant_config", {
   leadTimeMinutes: integer("lead_time_minutes").notNull().default(20),
   maxDaysAhead: integer("max_days_ahead").notNull().default(7),
   closedDates: text("closed_dates").array().notNull().default(sql`'{}'::text[]`),
+  // Payments
+  paymentMode: text("payment_mode").notNull().default("pay_on_collection"),
   // Site / email
   siteUrl: text("site_url").notNull().default("https://www.thaicourtyardmolesey.co.uk"),
   emailFrom: text("email_from"),

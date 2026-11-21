@@ -66,6 +66,7 @@ async function apply() {
       "lead_time_minutes" integer NOT NULL DEFAULT 20,
       "max_days_ahead" integer NOT NULL DEFAULT 7,
       "closed_dates" text[] NOT NULL DEFAULT '{}'::text[],
+      "payment_mode" text NOT NULL DEFAULT 'pay_on_collection',
       "site_url" text NOT NULL DEFAULT 'https://www.thaicourtyardmolesey.co.uk',
       "email_from" text,
       "restaurant_email" text,

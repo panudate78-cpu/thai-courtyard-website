@@ -107,9 +107,17 @@ export async function POST(req: NextRequest) {
       const maxDaysAhead = Number(body.maxDaysAhead) || 7;
       const paymentNotice = typeof body.paymentNotice === "string" ? body.paymentNotice : "";
       const announcement = typeof body.announcement === "string" ? body.announcement : null;
+      const rawMode = typeof body.paymentMode === "string" ? (body.paymentMode as string) : "pay_on_collection";
+      const paymentMode = ["pay_on_collection", "stripe_online", "customer_choice"].includes(rawMode) ? rawMode : "pay_on_collection";
+      // Validate Stripe when online payments are enabled — keep pay_on_collection completely optional
+      if (paymentMode !== "pay_on_collection") {
+        const { validateStripeForMode } = await import("@/lib/stripe");
+        const v = await validateStripeForMode(paymentMode);
+        if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 });
+      }
       await pool.query(
-        `UPDATE restaurant_config SET opening_hours=$1::jsonb, slot_interval_minutes=$2, lead_time_minutes=$3, max_days_ahead=$4, payment_notice=$5, announcement=$6, updated_at=now() WHERE id=1`,
-        [JSON.stringify(openingHours || {}), slotIntervalMinutes, leadTimeMinutes, maxDaysAhead, paymentNotice, announcement],
+        `UPDATE restaurant_config SET opening_hours=$1::jsonb, slot_interval_minutes=$2, lead_time_minutes=$3, max_days_ahead=$4, payment_notice=$5, announcement=$6, payment_mode=$7, updated_at=now() WHERE id=1`,
+        [JSON.stringify(openingHours || {}), slotIntervalMinutes, leadTimeMinutes, maxDaysAhead, paymentNotice, announcement, paymentMode],
       );
       // Also keep site_settings in sync (legacy)
       await pool.query(

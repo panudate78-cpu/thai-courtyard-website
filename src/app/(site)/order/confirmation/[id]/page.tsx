@@ -39,7 +39,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
           <CheckCircle2 className="mx-auto h-12 w-12 text-gold-light" aria-hidden="true" />
           <h1 className="mt-3 font-serif text-3xl font-semibold sm:text-4xl">Thank you, {firstName}!</h1>
           <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-cream/80 sm:text-[15px]">
-            Your collection order has been sent to Thai Courtyard. We&apos;ll have it freshly prepared for you.
+            {order.paymentMethod === "stripe_online" && order.paymentStatus === "paid" ? "Your order is paid online and has been sent to Thai Courtyard. We’ll have it freshly prepared for you." : order.paymentMethod === "stripe_online" ? "Your Stripe payment is being confirmed — we’ll email you once it succeeds." : "Your collection order has been sent to Thai Courtyard. We’ll have it freshly prepared for you."}
           </p>
           <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-cream/10 px-4 py-1.5 text-sm ring-1 ring-cream/20">
             Order number <strong className="text-lg text-gold-light">#{order.number}</strong>
@@ -81,6 +81,18 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
                 <h2 className="font-serif text-2xl font-semibold">Your order</h2>
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${status.tone}`}>{status.label}</span>
               </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {order.paymentMethod === "stripe_online" ? (
+                  order.paymentStatus === "paid" ? (
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900 ring-1 ring-emerald-300">✓ Paid online (Stripe)</span>
+                  ) : (
+                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900 ring-1 ring-amber-300">Awaiting online payment</span>
+                  )
+                ) : (
+                  <span className="rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-black/70 ring-1 ring-black/10">Pay on collection — cash/card</span>
+                )}
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${order.paymentStatus === "paid" ? "bg-emerald-50 text-emerald-800 ring-emerald-200" : "bg-amber-50 text-amber-800 ring-amber-200"}`}>{order.paymentStatus === "paid" ? "Paid" : "Unpaid"}</span>
+              </div>
               <ul className="mt-4 divide-y divide-sand">
                 {order.items.map((item) => (
                   <li key={item.id} className="flex justify-between gap-4 py-3">
@@ -97,7 +109,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
                 ))}
               </ul>
               <div className="mt-2 flex items-center justify-between border-t border-sand pt-4 text-lg font-semibold">
-                <span>Total to pay on collection</span>
+                <span>{order.paymentMethod === "stripe_online" ? (order.paymentStatus === "paid" ? "Total — paid online" : "Total — unpaid") : "Total to pay on collection"}</span>
                 <span>{formatPrice(order.subtotalPence)}</span>
               </div>
               {order.instructions ? (

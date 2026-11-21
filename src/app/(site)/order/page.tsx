@@ -6,6 +6,7 @@ import { FaqSection } from "@/components/site/SeoSections";
 import { getCollectionDays } from "@/lib/hours";
 import { getMenu } from "@/lib/menu";
 import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
+import { getRestaurantConfig } from "@/lib/restaurant";
 import { getSettings, toSlotConfig } from "@/lib/settings";
 import { SITE } from "@/lib/site";
 
@@ -51,8 +52,9 @@ const ORDER_FAQS = [
 
 export default async function OrderPage({ searchParams }: { searchParams: Promise<{ item?: string | string[] }> }) {
   const params = await searchParams;
-  const [menu, settings] = await Promise.all([getMenu(), getSettings()]);
+  const [menu, settings, restaurantConfig] = await Promise.all([getMenu(), getSettings(), getRestaurantConfig().catch(() => null)]);
   const slotConfig = toSlotConfig(settings);
+  const paymentMode = (restaurantConfig?.paymentMode as string) || "pay_on_collection";
   const itemParam = Array.isArray(params.item) ? params.item[0] : params.item;
   const initialItemId = itemParam && /^\d+$/.test(itemParam) ? Number(itemParam) : null;
 
@@ -80,7 +82,7 @@ export default async function OrderPage({ searchParams }: { searchParams: Promis
             </li>
             <li className="inline-flex items-center gap-2 rounded-full bg-cream/10 px-3 py-1.5 ring-1 ring-cream/15">
               <Banknote className="h-4 w-4 text-gold-light" aria-hidden="true" />
-              Pay on collection · cash &amp; card
+              {paymentMode === "stripe_online" ? "Pay online (Stripe)" : paymentMode === "customer_choice" ? "Pay on collection or online" : "Pay on collection · cash & card"}
             </li>
             <li className="inline-flex items-center gap-2 rounded-full bg-cream/10 px-3 py-1.5 ring-1 ring-cream/15">
               <MapPin className="h-4 w-4 text-gold-light" aria-hidden="true" />
@@ -100,6 +102,7 @@ export default async function OrderPage({ searchParams }: { searchParams: Promis
         orderingEnabled={settings.orderingEnabled}
         pausedMessage={settings.pausedMessage}
         initialItemId={initialItemId}
+        paymentMode={paymentMode as "pay_on_collection" | "stripe_online" | "customer_choice"}
       />
       <FaqSection items={ORDER_FAQS} heading="Ordering FAQs — collection takeaway" />
       <section className="py-10">
