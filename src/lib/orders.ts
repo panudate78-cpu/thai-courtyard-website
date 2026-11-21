@@ -121,9 +121,9 @@ console.log(
 );
 let customerStatus = "🆕 NEW CUSTOMER";
 
-if (customer?.orders && customer.orders >= 25) {
+if (customer?.orders && customer.orders >= 10) {
   customerStatus = "👑 VIP CUSTOMER";
-} else if (customer?.orders && customer.orders >= 10) {
+} else if (customer?.orders && customer.orders >= 5) {
   customerStatus = "⭐ GOLD CUSTOMER";
 } else if (customer?.orders && customer.orders >= 2) {
   customerStatus = "🟢 RETURNING CUSTOMER";
