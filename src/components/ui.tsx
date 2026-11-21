@@ -95,24 +95,48 @@ export function AllergenBadges({ allergens, className = "" }: { allergens: Aller
 
 export function AllergenLegend({ compact = false }: { compact?: boolean }) {
   const entries = Object.entries(ALLERGENS) as Array<[AllergenKey, typeof ALLERGENS[AllergenKey]]>;
-  return (
-    <div className={compact ? "text-xs" : "text-sm"}>
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-2">
-        {entries
-          .sort((a, b) => a[1].number - b[1].number)
-          .map(([key, info]) => (
-            <div key={key} className="flex gap-2 rounded-xl border border-amber-100 bg-amber-50/50 p-3 ring-1 ring-amber-50">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white">
+  const sorted = entries.sort((a, b) => a[1].number - b[1].number);
+  if (compact) {
+    return (
+      <div className="text-xs">
+        <div className="grid gap-1.5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+          {sorted.map(([key, info]) => (
+            <div
+              key={key}
+              title={`${info.label} — ${info.description}`}
+              className="flex items-center gap-2 rounded-lg border border-amber-100 bg-amber-50/50 px-2.5 py-2 ring-1 ring-amber-50/50"
+            >
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold leading-none text-white">
                 {info.number}
               </span>
-              <div className="min-w-0">
-                <p className="font-semibold leading-none text-amber-950">
-                  {info.label} <span className="font-normal text-amber-800">({info.short})</span>
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-amber-900/80">{info.description}</p>
-              </div>
+              <span className="min-w-0 truncate text-xs font-semibold leading-none text-amber-950">
+                {info.label} <span className="font-normal text-amber-800">({info.short})</span>
+              </span>
             </div>
           ))}
+        </div>
+        <p className="mt-3 rounded-lg bg-amber-100 px-3 py-2 text-xs font-semibold leading-relaxed text-amber-900 ring-1 ring-amber-300">
+          ⚠️ Due to possible cross contamination, <span className="underline">any of the 14 allergens could be present in any dish</span>, even if not listed. Inform staff of any allergy — we cannot guarantee allergen-free.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="text-sm">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-2">
+        {sorted.map(([key, info]) => (
+          <div key={key} className="flex gap-2 rounded-xl border border-amber-100 bg-amber-50/50 p-3 ring-1 ring-amber-50">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white">
+              {info.number}
+            </span>
+            <div className="min-w-0">
+              <p className="font-semibold leading-none text-amber-950">
+                {info.label} <span className="font-normal text-amber-800">({info.short})</span>
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-amber-900/80">{info.description}</p>
+            </div>
+          </div>
+        ))}
       </div>
       <p className="mt-4 rounded-xl bg-amber-100 p-3 text-xs font-semibold leading-relaxed text-amber-900 ring-1 ring-amber-300">
         ⚠️ Due to possible cross contamination, <span className="underline">any of the 14 allergens could be present in any dish</span>, even if not listed as an ingredient. Please inform our team of any allergy before ordering — we cannot guarantee any dish is completely free from allergens.

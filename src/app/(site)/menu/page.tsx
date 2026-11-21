@@ -156,32 +156,18 @@ export default async function MenuPage() {
         </div>
       </nav>
 
-      <section className="container-x pt-10" aria-label="Dietary and allergen keys">
+      <section className="container-x pt-8" aria-label="Dietary key">
         <DietaryLegend />
-        <p className="mx-auto mt-5 flex max-w-3xl items-start justify-center gap-2 text-center text-xs leading-relaxed text-charcoal/60">
+        <p className="mx-auto mt-4 flex max-w-3xl items-start justify-center gap-2 text-center text-xs leading-relaxed text-charcoal/60">
           <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          Dietary indicators (V, VG, etc.) are a guide only. Full allergen information is below.
+          Dietary indicators (V, VG, etc.) are a guide only. Allergen badges (<span className="font-semibold">F5</span>=Fish, <span className="font-semibold">P11</span>=Peanuts…) are shown on each dish —{" "}
+          <a href="#allergens" className="font-semibold text-teak underline decoration-teak/30 underline-offset-4 hover:text-charcoal">
+            full 14-allergen list at the bottom ↓
+          </a>
         </p>
-
-        <div className="mx-auto mt-10 max-w-5xl">
-          <div className="rounded-2xl border border-amber-200 bg-white p-6 shadow-sm ring-1 ring-amber-100 sm:p-8">
-            <h2 className="font-serif text-2xl font-semibold sm:text-3xl">Allergens — the 14 major allergens</h2>
-            <div className="mt-3 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white shadow-sm">
-              ⚠️ Due to possible cross contamination, any allergen could be present in any dish — even if not listed. Please tell us about any allergy when ordering.
-            </div>
-            <p className="mt-3 text-sm leading-relaxed text-charcoal/65">
-              Thai cooking frequently uses fish sauce (Fish 5), soy sauce/tofu (Soya 13, Gluten 2), shrimp paste/oyster sauce
-              (Crustaceans 3, Molluscs 8), peanuts (Peanuts 11), sesame oil (Sesame 12), eggs (Egg 4) and more. Badges on each
-              dish show allergens present as ingredients. Cross-contact in our kitchen means traces of any allergen may be present even when not badge-marked.
-            </p>
-            <div className="mt-6">
-              <AllergenLegend />
-            </div>
-            <p className="mt-4 text-xs leading-relaxed text-charcoal/55">
-              Numbers shown on dish badges match the numbered list above (e.g. <span className="font-semibold">P11</span> = Peanuts, <span className="font-semibold">F5</span> = Fish). Tell us about any allergy when ordering and we&apos;ll advise on alternatives.
-            </p>
-          </div>
-        </div>
+        <p className="mx-auto mt-3 max-w-3xl rounded-lg bg-amber-50 px-3 py-2 text-center text-xs font-medium leading-relaxed text-amber-900 ring-1 ring-amber-200">
+          ⚠️ Due to possible cross contamination, any allergen could be present in any dish — please inform staff of any allergy before ordering.
+        </p>
       </section>
       <section className="container-x py-8">
   <div className="rounded-2xl border border-gold/30 bg-cream-dark p-8">
@@ -276,6 +262,35 @@ export default async function MenuPage() {
           ) : null}
         </Fragment>
       ))}
+
+      <section id="allergens" aria-labelledby="allergens-heading" className="container-x scroll-mt-36 pt-6">
+        <details className="group mx-auto max-w-5xl rounded-2xl border border-amber-200 bg-white shadow-sm ring-1 ring-amber-100">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 sm:px-6">
+            <span className="flex items-center gap-3">
+              <span className="hidden h-8 w-8 place-items-center rounded-full bg-amber-500 text-xs font-bold text-white sm:grid">14</span>
+              <span>
+                <span id="allergens-heading" className="font-serif text-lg font-semibold leading-none sm:text-xl">
+                  Allergens — the 14 major allergens
+                </span>
+                <span className="mt-1 block text-xs leading-relaxed text-charcoal/60">
+                  Tap to expand — numbers on dish badges (e.g. <span className="font-semibold">P11</span>=Peanuts, <span className="font-semibold">F5</span>=Fish) match the list below.
+                </span>
+              </span>
+            </span>
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-sand bg-cream text-charcoal transition group-open:rotate-180" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </summary>
+          <div className="border-t border-amber-100 px-5 pb-5 pt-4 sm:px-6">
+            <p className="text-sm leading-relaxed text-charcoal/65">
+              Thai cooking frequently uses fish sauce (<span className="font-semibold">Fish 5</span>), soy sauce/tofu (<span className="font-semibold">Soya 13, Gluten 2</span>), shrimp paste/oyster sauce (<span className="font-semibold">Crustaceans 3, Molluscs 8</span>), peanuts (<span className="font-semibold">Peanuts 11</span>), sesame oil (<span className="font-semibold">Sesame 12</span>), eggs (<span className="font-semibold">Egg 4</span>) and more. Badges on each dish show ingredients; cross-contact means traces of any allergen may still be present.
+            </p>
+            <div className="mt-4">
+              <AllergenLegend compact />
+            </div>
+          </div>
+        </details>
+      </section>
 
       <FaqSection items={MENU_FAQS} heading="Menu & ordering FAQs" />
 
