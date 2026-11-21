@@ -80,12 +80,10 @@ export function AllergenBadges({ allergens, className = "" }: { allergens: Aller
         return (
           <li
             key={key}
-            title={`${info.label} (${info.number}) — ${info.description}`}
-            className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold tracking-wide text-amber-900 ring-1 ring-inset ring-amber-300"
+            title={`${info.label} — ${info.description}`}
+            className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900 ring-1 ring-inset ring-amber-200"
           >
-            <span aria-hidden="true">{info.short}</span>
-            <span className="text-[10px] font-normal text-amber-800">{info.number}</span>
-            <span className="sr-only">{info.label} (Allergen {info.number})</span>
+            {info.label}
           </li>
         );
       })}
@@ -103,20 +101,15 @@ export function AllergenLegend({ compact = false }: { compact?: boolean }) {
           {sorted.map(([key, info]) => (
             <div
               key={key}
-              title={`${info.label} — ${info.description}`}
-              className="flex items-center gap-2 rounded-lg border border-amber-100 bg-amber-50/50 px-2.5 py-2 ring-1 ring-amber-50/50"
+              title={`${info.description}`}
+              className="flex items-center rounded-lg border border-amber-100 bg-amber-50/50 px-2.5 py-2 ring-1 ring-amber-50/50"
             >
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold leading-none text-white">
-                {info.number}
-              </span>
-              <span className="min-w-0 truncate text-xs font-semibold leading-none text-amber-950">
-                {info.label} <span className="font-normal text-amber-800">({info.short})</span>
-              </span>
+              <span className="truncate text-xs font-semibold text-amber-950">{info.label}</span>
             </div>
           ))}
         </div>
-        <p className="mt-3 rounded-lg bg-amber-100 px-3 py-2 text-xs font-semibold leading-relaxed text-amber-900 ring-1 ring-amber-300">
-          ⚠️ Due to possible cross contamination, <span className="underline">any of the 14 allergens could be present in any dish</span>, even if not listed. Inform staff of any allergy — we cannot guarantee allergen-free.
+        <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-charcoal/60">
+          Please inform our team of any allergy before ordering — we&apos;ll advise on suitable options.
         </p>
       </div>
     );
@@ -126,23 +119,15 @@ export function AllergenLegend({ compact = false }: { compact?: boolean }) {
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-2">
         {sorted.map(([key, info]) => (
           <div key={key} className="flex gap-2 rounded-xl border border-amber-100 bg-amber-50/50 p-3 ring-1 ring-amber-50">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white">
-              {info.number}
-            </span>
             <div className="min-w-0">
-              <p className="font-semibold leading-none text-amber-950">
-                {info.label} <span className="font-normal text-amber-800">({info.short})</span>
-              </p>
+              <p className="font-semibold leading-none text-amber-950">{info.label}</p>
               <p className="mt-1 text-xs leading-relaxed text-amber-900/80">{info.description}</p>
             </div>
           </div>
         ))}
       </div>
-      <p className="mt-4 rounded-xl bg-amber-100 p-3 text-xs font-semibold leading-relaxed text-amber-900 ring-1 ring-amber-300">
-        ⚠️ Due to possible cross contamination, <span className="underline">any of the 14 allergens could be present in any dish</span>, even if not listed as an ingredient. Please inform our team of any allergy before ordering — we cannot guarantee any dish is completely free from allergens.
-      </p>
-      <p className="mt-2 rounded-xl bg-red-50 p-3 text-xs leading-relaxed text-red-900 ring-1 ring-red-200">
-        If you have a severe allergy, please speak to a member of staff before ordering and we&apos;ll advise on safest options. Your safety is our priority.
+      <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-charcoal/60">
+        Please inform our team of any allergy before ordering — we&apos;ll advise on suitable options. Our kitchen handles all 14 allergens, so we cannot guarantee any dish is completely allergen free.
       </p>
     </div>
   );

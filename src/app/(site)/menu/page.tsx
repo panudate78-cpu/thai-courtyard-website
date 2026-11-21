@@ -160,13 +160,10 @@ export default async function MenuPage() {
         <DietaryLegend />
         <p className="mx-auto mt-4 flex max-w-3xl items-start justify-center gap-2 text-center text-xs leading-relaxed text-charcoal/60">
           <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          Dietary indicators (V, VG, etc.) are a guide only. Allergen badges (<span className="font-semibold">F5</span>=Fish, <span className="font-semibold">P11</span>=Peanuts…) are shown on each dish —{" "}
+          Dietary indicators (V, VG, etc.) are a guide only. Allergen badges are shown on each dish where relevant —{" "}
           <a href="#allergens" className="font-semibold text-teak underline decoration-teak/30 underline-offset-4 hover:text-charcoal">
-            full 14-allergen list at the bottom ↓
+            full allergen list at the bottom ↓
           </a>
-        </p>
-        <p className="mx-auto mt-3 max-w-3xl rounded-lg bg-amber-50 px-3 py-2 text-center text-xs font-medium leading-relaxed text-amber-900 ring-1 ring-amber-200">
-          ⚠️ Due to possible cross contamination, any allergen could be present in any dish — please inform staff of any allergy before ordering.
         </p>
       </section>
       <section className="container-x py-8">
@@ -234,13 +231,6 @@ export default async function MenuPage() {
                     </div>
                     <DietaryBadges tags={item.dietary} className="mt-2" />
                     <AllergenBadges allergens={item.allergens} className="mt-2" />
-                    {!item.allergens?.length ? (
-                      <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium leading-relaxed text-amber-900 ring-1 ring-amber-200">
-                        ⚠️ Due to possible cross contamination, this dish may contain any of the 14 allergens. Please inform staff of any allergy before ordering.
-                      </p>
-                    ) : (
-                      <p className="mt-1 text-xs text-charcoal/45">Allergen badges show ingredients. Due to cross contamination, traces of any allergen could still be present.</p>
-                    )}
                     {item.description ? (
                       <p className="mt-2 text-sm leading-relaxed text-charcoal/70">{item.description}</p>
                     ) : null}
@@ -270,10 +260,10 @@ export default async function MenuPage() {
               <span className="hidden h-8 w-8 place-items-center rounded-full bg-amber-500 text-xs font-bold text-white sm:grid">14</span>
               <span>
                 <span id="allergens-heading" className="font-serif text-lg font-semibold leading-none sm:text-xl">
-                  Allergens — the 14 major allergens
+                  Allergens
                 </span>
                 <span className="mt-1 block text-xs leading-relaxed text-charcoal/60">
-                  Tap to expand — numbers on dish badges (e.g. <span className="font-semibold">P11</span>=Peanuts, <span className="font-semibold">F5</span>=Fish) match the list below.
+                  Tap to expand — the 14 major allergens.
                 </span>
               </span>
             </span>
@@ -283,7 +273,7 @@ export default async function MenuPage() {
           </summary>
           <div className="border-t border-amber-100 px-5 pb-5 pt-4 sm:px-6">
             <p className="text-sm leading-relaxed text-charcoal/65">
-              Thai cooking frequently uses fish sauce (<span className="font-semibold">Fish 5</span>), soy sauce/tofu (<span className="font-semibold">Soya 13, Gluten 2</span>), shrimp paste/oyster sauce (<span className="font-semibold">Crustaceans 3, Molluscs 8</span>), peanuts (<span className="font-semibold">Peanuts 11</span>), sesame oil (<span className="font-semibold">Sesame 12</span>), eggs (<span className="font-semibold">Egg 4</span>) and more. Badges on each dish show ingredients; cross-contact means traces of any allergen may still be present.
+              Badges on each dish show allergens definitely present as ingredients. Please inform our team of any allergy before ordering — we&apos;ll advise on suitable options.
             </p>
             <div className="mt-4">
               <AllergenLegend compact />

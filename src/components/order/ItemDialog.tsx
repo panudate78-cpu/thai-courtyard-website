@@ -136,14 +136,6 @@ export function ItemDialog({ item, onClose, onAdd }: Props) {
           {item.description ? <p className="text-sm leading-relaxed text-charcoal/75">{item.description}</p> : null}
           <DietaryBadges tags={item.dietary} />
           <AllergenBadges allergens={item.allergens} />
-          <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium leading-relaxed text-amber-900 ring-1 ring-amber-200">
-            ⚠️ Due to possible cross contamination, any allergen could be present in any dish — even if not badge-listed. Please tell us about any allergy.
-          </p>
-          {!item.allergens?.length ? (
-            <p className="text-xs italic text-charcoal/50">Allergen badges show ingredients where known. With cross-contact risk, we advise caution for severe allergies.</p>
-          ) : (
-            <p className="text-xs text-charcoal/50">Badges show ingredients (e.g. P11=Peanuts, F5=Fish). Cross-contact means traces of any allergen may still be present.</p>
-          )}
           {item.groups.map((group) => {
             const max = Math.max(1, group.maxSelect);
             const useRadio = max === 1 && group.required;

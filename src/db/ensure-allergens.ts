@@ -14,17 +14,6 @@ export function ensureAllergensColumn(): Promise<void> {
 
 async function applyAllergensColumn() {
   // Add allergens column to menu_items if it doesn't exist. Existing rows keep default '{}'.
+  // Only definite allergens are stored per dish — no auto pre-tick of all 14.
   await pool.query(`ALTER TABLE "menu_items" ADD COLUMN IF NOT EXISTS "allergens" text[] NOT NULL DEFAULT '{}'`);
-  // Pre-tick: due to possible cross contamination, set any dish that has no allergen data to all 14 allergens.
-  // This is the safest default — kitchen can later untick after confirming with allergen matrix.
-  try {
-    const all = ["celery","gluten","crustaceans","egg","fish","lupin","milk","molluscs","mustard","nuts","peanuts","sesame","soya","sulphites"];
-    // Use ARRAY literal
-    await pool.query(
-      `UPDATE "menu_items" SET "allergens" = $1::text[] WHERE "allergens" = '{}'::text[] OR array_length("allergens",1) IS NULL`,
-      [all]
-    );
-  } catch (e) {
-    console.warn("[db] allergens backfill skipped", e);
-  }
 }
