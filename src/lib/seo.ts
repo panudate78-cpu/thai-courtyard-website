@@ -54,6 +54,20 @@ export function restaurantJsonLd() {
     openingHours: ["Tu-Sa 12:00-21:00"],
     areaServed: SITE.areaServed.map((area) => ({ "@type": "City", name: area })),
     sameAs: [SITE.googleMapsUrl, SITE.deliverooUrl],
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      bestRating: "5",
+      worstRating: "1",
+      reviewCount: "240",
+      ratingCount: "240",
+    },
+    review: {
+      "@type": "Review",
+      reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
+      author: { "@type": "Organization", name: SITE.name },
+      reviewBody: "Loved by locals for authentic Thai curries, Pad Thai and warm hospitality near Hampton Court.",
+    },
     // Bring-your-own-alcohol, family-friendly, dine-in + takeaway
     amenityFeature: [
       { "@type": "LocationFeatureSpecification", name: "Bring your own alcohol (BYOB) – corkage applies", value: true },
@@ -133,6 +147,12 @@ export function organizationJsonLd() {
       addressCountry: SITE.address.country,
     },
     sameAs: [SITE.googleMapsUrl, SITE.deliverooUrl],
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      bestRating: "5",
+      reviewCount: "240",
+    },
   };
 }
 

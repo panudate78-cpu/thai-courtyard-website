@@ -3,10 +3,41 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { SITE } from "@/lib/site";
 import type { SeoPageEditor } from "@/lib/business/seo";
 import { Notice, useNotice } from "../AdminUI";
 
 type ImageOption = { src: string; alt: string };
+
+function counter(value: string, idealMin: number, idealMax: number, hardMax: number) {
+  const len = value.length;
+  const cls =
+    len === 0
+      ? "text-black/35"
+      : len < idealMin
+        ? "text-amber-700"
+        : len <= idealMax
+          ? "text-emerald-700"
+          : len <= hardMax
+            ? "text-amber-700"
+            : "text-red-600";
+  const label =
+    len === 0 ? "empty — uses default" : len < idealMin ? "a bit short" : len <= idealMax ? "ideal" : len <= hardMax ? "a bit long — may truncate" : "too long — will truncate";
+  return { len, cls, label };
+}
+
+function SerpPreview({ title, description, path }: { title: string; description: string; path: string }) {
+  const url = `${SITE.url}${path}`;
+  const displayUrl = url.replace(/^https?:\/\//, "");
+  return (
+    <div className="mt-3 rounded-xl border border-black/10 bg-white p-3">
+      <p className="text-[11px] font-semibold tracking-wide text-black/45 uppercase">Google preview</p>
+      <p className="mt-1 truncate text-sm leading-none text-[#1a0dab]">{title || "—"}</p>
+      <p className="mt-0.5 truncate text-xs text-[#006621]">{displayUrl}</p>
+      <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#545454]">{description || "—"}</p>
+    </div>
+  );
+}
 
 export function SeoForm({ pages, images, tablesReady }: { pages: SeoPageEditor[]; images: ImageOption[]; tablesReady: boolean }) {
   const router = useRouter();
@@ -58,7 +89,18 @@ export function SeoForm({ pages, images, tablesReady }: { pages: SeoPageEditor[]
           SEO overrides cannot be saved until the additive table exists. Live SEO below is unchanged.
         </p>
       ) : null}
-      {rows.map((page) => (
+      <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-950 ring-1 ring-emerald-200">
+        <p className="font-semibold">How to get the green “ideal” badge</p>
+        <p className="mt-1">Title 50–60 chars, description 120–155 chars. Counter turns amber if short/long, red if over hard limit. OG titles can mirror meta title.</p>
+      </div>
+      {rows.map((page) => {
+        const effectiveTitle = page.metaTitle || page.liveTitle;
+        const effectiveDesc = page.metaDescription || page.liveDescription;
+        const t = counter(page.metaTitle, 50, 60, 90);
+        const d = counter(page.metaDescription, 120, 155, 400);
+        const ogT = counter(page.ogTitle, 30, 60, 90);
+        const ogD = counter(page.ogDescription, 80, 155, 400);
+        return (
         <section key={page.path} className="adm-card p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold">
@@ -75,20 +117,22 @@ export function SeoForm({ pages, images, tablesReady }: { pages: SeoPageEditor[]
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <label className="text-sm">
-              <span className="adm-label">Override title</span>
+              <span className="adm-label">Override title <span className={t.cls}>· {t.len}/90 · {t.label}</span></span>
               <input className="adm-input" maxLength={90} value={page.metaTitle} placeholder={page.liveTitle} onChange={(event) => patch(page.path, "metaTitle", event.target.value)} />
+              <span className={`mt-1 block text-xs ${t.cls}`}>Ideal 50–60 chars</span>
             </label>
             <label className="text-sm">
-              <span className="adm-label">Open Graph title</span>
-              <input className="adm-input" maxLength={90} value={page.ogTitle} onChange={(event) => patch(page.path, "ogTitle", event.target.value)} />
+              <span className="adm-label">Open Graph title <span className={ogT.cls}>· {ogT.len}/90</span></span>
+              <input className="adm-input" maxLength={90} value={page.ogTitle} placeholder={effectiveTitle} onChange={(event) => patch(page.path, "ogTitle", event.target.value)} />
             </label>
             <label className="text-sm md:col-span-2">
-              <span className="adm-label">Override description</span>
-              <textarea className="adm-input min-h-20" maxLength={400} value={page.metaDescription} onChange={(event) => patch(page.path, "metaDescription", event.target.value)} />
+              <span className="adm-label">Override description <span className={d.cls}>· {d.len}/400 · {d.label}</span></span>
+              <textarea className="adm-input min-h-20" maxLength={400} value={page.metaDescription} placeholder={page.liveDescription} onChange={(event) => patch(page.path, "metaDescription", event.target.value)} />
+              <span className={`mt-1 block text-xs ${d.cls}`}>Ideal 120–155 chars</span>
             </label>
             <label className="text-sm md:col-span-2">
-              <span className="adm-label">Open Graph description</span>
-              <textarea className="adm-input min-h-20" maxLength={400} value={page.ogDescription} onChange={(event) => patch(page.path, "ogDescription", event.target.value)} />
+              <span className="adm-label">Open Graph description <span className={ogD.cls}>· {ogD.len}/400</span></span>
+              <textarea className="adm-input min-h-20" maxLength={400} value={page.ogDescription} placeholder={effectiveDesc} onChange={(event) => patch(page.path, "ogDescription", event.target.value)} />
             </label>
             <label className="text-sm md:col-span-2">
               <span className="adm-label">Social image</span>
@@ -102,6 +146,7 @@ export function SeoForm({ pages, images, tablesReady }: { pages: SeoPageEditor[]
               </select>
             </label>
           </div>
+          <SerpPreview title={effectiveTitle} description={effectiveDesc} path={page.path} />
           {page.ogImage ? (
             // Admin preview of an image already hosted on this site.
             // eslint-disable-next-line @next/next/no-img-element
@@ -109,7 +154,7 @@ export function SeoForm({ pages, images, tablesReady }: { pages: SeoPageEditor[]
           ) : null}
           <p className="mt-3 text-xs text-black/45">Structured data on this page: {page.structuredData.join(", ")}</p>
         </section>
-      ))}
+      )})}
       <div className="sticky bottom-4 z-10 flex justify-end">
         <button type="submit" className="adm-btn-primary px-6 py-3 text-base shadow-xl" disabled={saving || !tablesReady}>
           {saving ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
