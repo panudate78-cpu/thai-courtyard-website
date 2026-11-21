@@ -24,11 +24,11 @@ const TONES: Record<DietaryTone, string> = {
   gold: "bg-gold/15 text-gold-deep ring-gold/35",
 };
 
-export function DietaryBadges({ tags, className = "" }: { tags: DietaryKey[]; className?: string }) {
+export function DietaryBadges({ tags, className = "", small = false }: { tags: DietaryKey[]; className?: string; small?: boolean }) {
   const shown = tags.includes("vegan") ? tags.filter((t) => t !== "vegetarian") : tags;
   if (!shown.length) return null;
   return (
-    <ul className={`flex flex-wrap gap-1.5 ${className}`} aria-label="Dietary information">
+    <ul className={`flex flex-wrap ${small ? "gap-1" : "gap-1.5"} ${className}`} aria-label="Dietary information">
       {shown.map((tag) => {
         const info = DIETARY[tag];
         const Icon = DIETARY_ICONS[tag];
@@ -36,9 +36,9 @@ export function DietaryBadges({ tags, className = "" }: { tags: DietaryKey[]; cl
           <li
             key={tag}
             title={info.label}
-            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${TONES[info.tone]}`}
+            className={`inline-flex items-center gap-1 rounded-full font-semibold ring-1 ring-inset ${small ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-[11px]"} ${TONES[info.tone]}`}
           >
-            <Icon aria-hidden="true" className="h-3 w-3" />
+            <Icon aria-hidden="true" className={small ? "h-2.5 w-2.5" : "h-3 w-3"} />
             <span aria-hidden="true">{info.short}</span>
             <span className="sr-only">{info.label}</span>
           </li>
@@ -71,17 +71,17 @@ export function DietaryLegend({ className = "" }: { className?: string }) {
   );
 }
 
-export function AllergenBadges({ allergens, className = "" }: { allergens: AllergenKey[]; className?: string }) {
+export function AllergenBadges({ allergens, className = "", compact = false }: { allergens: AllergenKey[]; className?: string; compact?: boolean }) {
   if (!allergens.length) return null;
   return (
-    <ul className={`flex flex-wrap gap-1.5 ${className}`} aria-label="Allergens present">
+    <ul className={`flex flex-wrap ${compact ? "gap-1" : "gap-1.5"} ${className}`} aria-label="Allergens present">
       {allergens.map((key) => {
         const info = ALLERGENS[key];
         return (
           <li
             key={key}
             title={`${info.label} — ${info.description}`}
-            className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900 ring-1 ring-inset ring-amber-200"
+            className={`inline-flex items-center rounded-full bg-amber-50 font-semibold text-amber-900 ring-1 ring-inset ring-amber-200 ${compact ? "px-1.5 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs"}`}
           >
             {info.label}
           </li>

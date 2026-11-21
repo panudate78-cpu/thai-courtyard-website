@@ -6,9 +6,8 @@ import { PaymentNotice } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
 import type { SlotDay } from "@/lib/hours";
 import { SITE } from "@/lib/site";
-const openNow = isRestaurantOpenNow();
-import type { BasketLine } from "./basket";
 import { isRestaurantOpenNow } from "@/lib/opening-hours";
+import type { BasketLine } from "./basket";
 export type CheckoutDetails = { name: string; phone: string; email: string; instructions: string; company: string };
 export type Slot = { date: string; time: string };
 
@@ -33,6 +32,7 @@ type Props = {
 };
 
 export function BasketPanel(props: Props) {
+  const openNow = isRestaurantOpenNow();
   const {
     idPrefix,
     showTitle,
@@ -57,10 +57,10 @@ export function BasketPanel(props: Props) {
   const selectedDay = days.find((d) => d.date === slot.date);
 
   return (
-    <div className="p-5 sm:p-6">
+    <div className="p-4 sm:p-4">
       {showTitle ? (
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-serif text-2xl font-semibold">Your collection order</h2>
+          <h2 className="font-serif text-xl font-semibold">Your collection order</h2>
           {count > 0 ? (
             <span className="rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold-deep">
               {count} item{count === 1 ? "" : "s"}
@@ -70,8 +70,8 @@ export function BasketPanel(props: Props) {
       ) : null}
 
       {basket.length === 0 ? (
-        <div className={`rounded-2xl border border-dashed border-sand p-6 text-center ${showTitle ? "mt-4" : ""}`}>
-          <ShoppingBag className="mx-auto h-8 w-8 text-gold" aria-hidden="true" />
+        <div className={`rounded-xl border border-dashed border-sand p-4 text-center ${showTitle ? "mt-4" : ""}`}>
+          <ShoppingBag className="mx-auto h-6 w-6 text-gold" aria-hidden="true" />
           <p className="mt-2 font-semibold">Your basket is empty</p>
           <p className="mt-1 text-sm text-charcoal/60">Tap “Add” on any dish to start your order.</p>
         </div>
@@ -133,7 +133,7 @@ export function BasketPanel(props: Props) {
   Collection Orders
 </legend>
           {!openNow ? (
-  <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm">
+  <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs">
     <p className="font-semibold text-red-800">
       🔴 Online Ordering Closed
     </p>
@@ -147,7 +147,7 @@ export function BasketPanel(props: Props) {
     </p>
   </div>
 ) : (
-  <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm">
+  <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-xs">
     <p className="font-semibold text-green-800">
       🟢 Online Ordering Open
     </p>
