@@ -4,6 +4,7 @@ import { clampPeriod, currentPeriod, formatGrowth, formatMonthLabel } from "@/li
 import { money } from "@/lib/business/present";
 import { ColumnChart, GroupedColumnChart, LineChart } from "@/components/admin/business/charts";
 import { PeriodSelect } from "@/components/admin/business/PeriodSelect";
+import Link from "next/link";
 import { DataTable, MetricGrid, OriginBanner, PageIntro, Panel } from "@/components/admin/business/widgets";
 
 export const metadata: Metadata = { title: "Sales" };
@@ -80,6 +81,36 @@ export default async function SalesPage({
 
       <Panel title="Yearly revenue trend" description="The current year is year to date, so it is not compared as a full year.">
         <LineChart points={sales.yearly} label="Yearly revenue trend" format={(value) => money(value)} />
+      </Panel>
+
+      <Panel
+        title="Accounting exports — QuickBooks / Xero / Sage / FreeAgent"
+        description={`One-click CSVs for the same period (${sales.rangeLabel}). Sales-only, per-order, VAT-split 20%. Cancelled excluded.`}
+        action={
+          <Link href={`/admin/accounting?start=${sales.month === 1 ? `${sales.year - 1}-12-01` : `${sales.year}-${String(sales.month).padStart(2, "0")}-01`}&end=${sales.year}-${String(sales.month).padStart(2, "0")}-${String(new Date(sales.year, sales.month, 0).getDate()).padStart(2, "0")}`} className="adm-btn-primary">
+            Open Accounting →
+          </Link>
+        }
+      >
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { p: "quickbooks", l: "QuickBooks" },
+            { p: "xero", l: "Xero" },
+            { p: "sage", l: "Sage" },
+            { p: "freeagent", l: "FreeAgent" },
+          ].map(({ p, l }) => (
+            <a
+              key={p}
+              href={`/api/admin/accounting/export?provider=${p}&start=${sales.year}-${String(sales.month).padStart(2, "0")}-01&end=${sales.year}-${String(sales.month).padStart(2, "0")}-${String(new Date(sales.year, sales.month, 0).getDate()).padStart(2, "0")}`}
+              className="adm-btn justify-center"
+            >
+              {l} CSV
+            </a>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-black/45">
+          Generic CSV also available on the Accounting page. Amounts: Net = Gross ÷ 1.2, VAT 20% incl. Remap tax to No VAT/T9 if not VAT-registered.
+        </p>
       </Panel>
     </div>
   );

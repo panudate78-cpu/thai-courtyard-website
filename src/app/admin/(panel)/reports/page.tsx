@@ -62,6 +62,20 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
             </div>
             <p className="mt-3 text-xs text-black/45">Conversion rate is completed jobs divided by total non-cancelled bookings and orders. Average job value uses non-cancelled collection orders because table bookings do not have stored revenue.</p>
           </Panel>
+          <Panel
+            title="Accounting exports — QuickBooks / Xero / Sage / FreeAgent"
+            description={`One-click CSVs for ${dateLabel} — same live orders, sales-only, per-order, VAT-split 20%.`}
+            action={<a href={`/admin/accounting?start=${dates.start}&end=${dates.end}`} className="adm-btn-primary">Open Accounting →</a>}
+          >
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {["quickbooks", "xero", "sage", "freeagent"].map((p) => (
+                <a key={p} href={`/api/admin/accounting/export?provider=${p}&start=${dates.start}&end=${dates.end}`} className="adm-btn justify-center capitalize">
+                  {p} CSV
+                </a>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-black/45">Generic CSV also on the Accounting page. Cancelled excluded, collected date window.</p>
+          </Panel>
         </>
       ) : (
         <div className="rounded-2xl bg-white p-8 text-center ring-1 ring-black/5" role="status">
