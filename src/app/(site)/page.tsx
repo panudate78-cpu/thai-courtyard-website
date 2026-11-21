@@ -126,15 +126,15 @@ export default async function HomePage() {
       img: IMG.crispy,
       icon: MapPin,
       title: "Delivered to your door",
-      text: "Staying in tonight? Enjoy your Thai Courtyard favourites delivered to your home through Deliveroo.",
+      text: "Staying in tonight? Enjoy your Demo Restaurant favourites delivered to your home through Deliveroo.",
       cta: <DeliverooButton className="w-full" label="Order Delivery on Deliveroo" />,
     },
   ];
 
   const HOME_FAQS: { question: string; answer: string }[] = [
     {
-      question: "Where is Thai Courtyard located?",
-      answer: "Thai Courtyard is at 105 Walton Road, East Molesey, Surrey KT8 0DR — a two-minute walk from Hampton Court Palace, near Bushy Park and Molesey Heath. We're easy to find on Walton Road, the main route through East Molesey.",
+      question: "Where is Demo Restaurant located?",
+      answer: "Demo Restaurant is at 123 High Street, Sample Town, Surrey KT9 1AB — a two-minute walk from Sample Town Palace, near Bushy Park and Molesey Heath. We're easy to find on Walton Road, the main route through Sample Town.",
     },
     {
       question: "What are your opening hours?",
@@ -142,11 +142,11 @@ export default async function HomePage() {
     },
     {
       question: "Do you offer takeaway and delivery?",
-      answer: "Yes. Order online for collection at thaicourtyardmolesey.co.uk/order — choose your dishes and collection time, then pay in the restaurant by cash or card when you collect. For home delivery, find us on Deliveroo.",
+      answer: "Yes. Order online for collection at example.com/order — choose your dishes and collection time, then pay in the restaurant by cash or card when you collect. For home delivery, find us on Deliveroo.",
     },
     {
       question: "Are you BYOB? Do you serve alcohol?",
-      answer: "Thai Courtyard does not currently hold an alcohol licence. Guests are welcome to bring their own alcoholic beverages to enjoy with their meal — corkage charges apply, please ask our team for details.",
+      answer: "Demo Restaurant does not currently hold an alcohol licence. Guests are welcome to bring their own alcoholic beverages to enjoy with their meal — corkage charges apply, please ask our team for details.",
     },
     {
       question: "Do you cater for vegetarians, vegans and allergies?",
@@ -154,7 +154,7 @@ export default async function HomePage() {
     },
     {
       question: "How do I book a table?",
-      answer: "Book online at thaicourtyardmolesey.co.uk/book or call 020 8941 3595. For same-day bookings, large parties (8+) or special celebrations, please call us and we'll do our best to accommodate you.",
+      answer: "Book online at example.com/book or call 020 1234 5678. For same-day bookings, large parties (8+) or special celebrations, please call us and we'll do our best to accommodate you.",
     },
   ];
 
@@ -194,7 +194,7 @@ export default async function HomePage() {
               Enjoy freshly prepared Thai favourites for dine-in or collection. Bringing warmth, flavour and genuine Thai hospitality to every visit.
             </p>
             <p className="mt-4 max-w-xl rounded-xl border border-gold/30 bg-charcoal/50 px-4 py-3 text-sm text-cream/90">
-            🍷 Bring Your Own Alcohol: Thai Courtyard does not currently hold an alcohol licence. Guests are welcome to bring their own alcoholic beverages. Corkage charges apply. Please ask a member of staff for details.
+            🍷 Bring Your Own Alcohol: Demo Restaurant does not currently hold an alcohol licence. Guests are welcome to bring their own alcoholic beverages. Corkage charges apply. Please ask a member of staff for details.
             </p>
             <div className="mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
               <Link href="/order" className="btn btn-gold col-span-2 py-3.5 text-base sm:py-3 sm:text-sm">
@@ -302,13 +302,13 @@ export default async function HomePage() {
           </div>
 
           <div>
-            <p className="eyebrow-dark">Welcome to Thai Courtyard</p>
+            <p className="eyebrow-dark">Welcome to Demo Restaurant</p>
             <h2 className="mt-3 font-serif text-4xl leading-tight font-semibold sm:text-5xl">
-              Traditional Thai hospitality in the heart of East Molesey
+              Traditional Thai hospitality in the heart of Sample Town
             </h2>
             <Ornament className="mt-5" />
             <p className="mt-6 text-lg leading-relaxed text-charcoal/75">
-              Thai Courtyard is a warm, cosy and family-friendly Thai restaurant on Walton Road, in the heart of East
+              Demo Restaurant is a warm, cosy and family-friendly Thai restaurant on Walton Road, in the heart of East
               Molesey. Authentic cooking, freshly prepared dishes and genuine Thai hospitality.
             </p>
             <p className="mt-4 leading-relaxed text-charcoal/70">
@@ -448,7 +448,7 @@ export default async function HomePage() {
         <div className="container-x">
           <SectionHeading
             eyebrow="From our kitchen"
-            title="A taste of Thai Courtyard"
+            title="A taste of Demo Restaurant"
             intro="Vibrant colours, fresh herbs and bold, balanced flavours — cooked to order, every time."
           />
           <div className="mt-12 grid grid-flow-dense auto-rows-[150px] grid-cols-2 gap-3 sm:auto-rows-[210px] md:grid-cols-4 lg:auto-rows-[240px]">
@@ -481,7 +481,7 @@ export default async function HomePage() {
             <p className="eyebrow">Find us on Google</p>
             <h2 className="mt-3 font-serif text-4xl leading-tight font-semibold">Loved your meal? Tell others about it</h2>
             <p className="mt-4 max-w-lg leading-relaxed text-cream/75">
-              Your reviews help local diners discover authentic Thai food in East Molesey — and help our new team keep
+              Your reviews help local diners discover authentic Thai food in Sample Town — and help our new team keep
               getting better. Thank you for supporting your local Thai restaurant.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -520,7 +520,7 @@ export default async function HomePage() {
           <p className="eyebrow-dark">Stay in the loop</p>
           <h2 className="mt-3 font-serif text-3xl font-semibold sm:text-4xl">Get VIP offers & new-dish alerts</h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-charcoal/65">
-            Join the Thai Courtyard VIP list — occasional email offers (never spam) for East Molesey locals. Unsubscribe anytime. Share with a friend who loves Thai food.
+            Join the Demo Restaurant VIP list — occasional email offers (never spam) for Sample Town locals. Unsubscribe anytime. Share with a friend who loves Thai food.
           </p>
           <div className="mx-auto mt-6 max-w-xl">
             {/* eslint-disable-next-line @next/next/no-page-custom-font */}

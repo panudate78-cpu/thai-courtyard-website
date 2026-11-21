@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const name = cfg?.restaurantName || SITE.name;
   const fullName = cfg?.fullName || SITE.fullName;
   const description = cfg?.description || SITE.description;
-  const titleDefault = cfg ? `${name} | ${cfg.tagline || `Authentic ${cfg.servesCuisine[0] || "Restaurant"} in ${cfg.addressLocality}`}` : "Thai Courtyard | Authentic Thai Restaurant in East Molesey";
+  const titleDefault = cfg ? `${name} | ${cfg.tagline || `Authentic ${cfg.servesCuisine[0] || "Restaurant"} in ${cfg.addressLocality}`}` : "Demo Restaurant | Fresh seasonal dining in Sample Town";
   const locality = cfg?.addressLocality || "East Molesey";
   const area = cfg?.areaServed?.[0] || SITE.areaServed[0];
   const cuisine = cfg?.servesCuisine?.[0] || "Thai";

@@ -11,34 +11,34 @@ export const restaurantConfig = pgTable("restaurant_config", {
   id: integer("id").primaryKey().default(1),
   setupCompleted: boolean("setup_completed").notNull().default(false),
   // Identity
-  restaurantName: text("restaurant_name").notNull().default("Thai Courtyard"),
-  fullName: text("full_name").notNull().default("Thai Courtyard East Molesey"),
-  tagline: text("tagline").notNull().default("Authentic Thai Cuisine in the Heart of East Molesey"),
+  restaurantName: text("restaurant_name").notNull().default("Demo Restaurant"),
+  fullName: text("full_name").notNull().default("Demo Restaurant Sample Town"),
+  tagline: text("tagline").notNull().default("Fresh seasonal dining in Sample Town"),
   description: text("description")
     .notNull()
     .default(
-      "Authentic Thai restaurant on Walton Road, East Molesey — warm, cosy and family-friendly. Dine in, book a table or order Thai takeaway online for collection. Pay on collection. Near Hampton Court Palace, Surrey KT8.",
+      "Sample restaurant on High Street, Sample Town — warm, welcoming and family-friendly. Dine in, book a table or order takeaway online for collection. Pay on collection.",
     ),
   shortDescription: text("short_description")
     .notNull()
     .default(
-      "Authentic Thai restaurant in East Molesey, Surrey — dine in, takeaway collection & Deliveroo delivery. Fresh, fragrant Thai food cooked to order.",
+      "Family-friendly restaurant in Sample Town — dine in, takeaway collection & delivery. Fresh seasonal food cooked to order.",
     ),
   // Contact & location
-  addressStreet: text("address_street").notNull().default("105 Walton Road"),
-  addressLocality: text("address_locality").notNull().default("East Molesey"),
+  addressStreet: text("address_street").notNull().default("123 High Street"),
+  addressLocality: text("address_locality").notNull().default("Sample Town"),
   addressRegion: text("address_region").notNull().default("Surrey"),
-  addressPostcode: text("address_postcode").notNull().default("KT8 0DR"),
+  addressPostcode: text("address_postcode").notNull().default("KT9 1AB"),
   addressCountry: text("address_country").notNull().default("GB"),
-  geoLat: numeric("geo_lat", { precision: 10, scale: 7 }).notNull().default("51.4006153"),
-  geoLng: numeric("geo_lng", { precision: 10, scale: 7 }).notNull().default("-0.3557349"),
-  phoneDisplay: text("phone_display").notNull().default("020 8941 3595"),
-  phoneHref: text("phone_href").notNull().default("tel:+442089413595"),
-  phoneIntl: text("phone_intl").notNull().default("+44 20 8941 3595"),
-  email: text("email").notNull().default("info@thaicourtyardmolesey.co.uk"),
+  geoLat: numeric("geo_lat", { precision: 10, scale: 7 }).notNull().default("51.5074000"),
+  geoLng: numeric("geo_lng", { precision: 10, scale: 7 }).notNull().default("-0.1278000"),
+  phoneDisplay: text("phone_display").notNull().default("020 1234 5678"),
+  phoneHref: text("phone_href").notNull().default("tel:+442012345678"),
+  phoneIntl: text("phone_intl").notNull().default("+44 20 1234 5678"),
+  email: text("email").notNull().default("info@example.com"),
   orderEmail: text("order_email"),
   // Links
-  deliverooUrl: text("deliveroo_url").notNull().default("https://deliveroo.co.uk/menu/london/east-molesey-and-hampton-court/thai-courtyard-walton-road-105-walton-road"),
+  deliverooUrl: text("deliveroo_url").notNull().default(""),
   googlePlaceId: text("google_place_id").notNull().default(""),
   googleReviewUrl: text("google_review_url").notNull().default(""),
   googleMapsUrl: text("google_maps_url").notNull().default(""),
@@ -53,13 +53,13 @@ export const restaurantConfig = pgTable("restaurant_config", {
     .array()
     .notNull()
     .default(
-      sql`'{ "East Molesey", "West Molesey", "Hampton Court", "Thames Ditton", "Hampton", "Teddington", "Esher", "Walton-on-Thames", "Hersham", "Surbiton", "Kingston upon Thames"}'::text[]`,
+      sql`'{ "Sample Town", "Riverside", "Hilltop", "Westfield", "Northwood", "Eastford", "Southgate", "Meadowbank", "Kingston", "Richmond"}'::text[]`,
     ),
   priceRange: text("price_range").notNull().default("££"),
-  servesCuisine: text("serves_cuisine").array().notNull().default(sql`'{"Thai","Asian"}'::text[]`),
+  servesCuisine: text("serves_cuisine").array().notNull().default(sql`'{"International","European"}'::text[]`),
   currenciesAccepted: text("currencies_accepted").notNull().default("GBP"),
   paymentAccepted: text("payment_accepted").notNull().default("Cash, Credit Card, Debit Card"),
-  foundingLocation: text("founding_location").notNull().default("East Molesey, Surrey"),
+  foundingLocation: text("founding_location").notNull().default("Sample Town, Surrey"),
   hoursSummary: text("hours_summary").notNull().default("Tuesday – Saturday, 12:00 – 21:00"),
   hoursShort: text("hours_short").notNull().default("Tue – Sat · 12:00 – 21:00"),
   paymentNotice: text("payment_notice").notNull().default("Payment will be taken in restaurant when you collect your order. We accept cash and card."),
@@ -75,8 +75,8 @@ export const restaurantConfig = pgTable("restaurant_config", {
   // Copy
   heroTitle: text("hero_title"),
   heroIntro: text("hero_intro"),
-  aboutTitle: text("about_title").notNull().default("About Thai Courtyard"),
-  aboutIntro: text("about_intro").notNull().default("A cosy Thai restaurant on Walton Road, East Molesey — authentic cuisine, warm hospitality and freshly prepared dishes, minutes from Hampton Court Palace."),
+  aboutTitle: text("about_title").notNull().default("About Demo Restaurant"),
+  aboutIntro: text("about_intro").notNull().default("A welcoming restaurant on High Street, Sample Town — seasonal dishes, warm hospitality and freshly prepared food, minutes from the town centre."),
   aboutStory: text("about_story"),
   // Slot rules (also duplicated in site_settings for backwards compat — kept in sync)
   slotIntervalMinutes: integer("slot_interval_minutes").notNull().default(15),
@@ -86,7 +86,7 @@ export const restaurantConfig = pgTable("restaurant_config", {
   // Payments
   paymentMode: text("payment_mode").notNull().default("pay_on_collection"),
   // Site / email
-  siteUrl: text("site_url").notNull().default("https://www.thaicourtyardmolesey.co.uk"),
+  siteUrl: text("site_url").notNull().default("https://www.example.com"),
   emailFrom: text("email_from"),
   restaurantEmail: text("restaurant_email"),
   // Auth

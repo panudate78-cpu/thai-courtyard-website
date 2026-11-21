@@ -39,7 +39,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
           <CheckCircle2 className="mx-auto h-12 w-12 text-gold-light" aria-hidden="true" />
           <h1 className="mt-3 font-serif text-3xl font-semibold sm:text-4xl">Thank you, {firstName}!</h1>
           <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-cream/80 sm:text-[15px]">
-            {order.paymentMethod === "stripe_online" && order.paymentStatus === "paid" ? "Your order is paid online and has been sent to Thai Courtyard. We’ll have it freshly prepared for you." : order.paymentMethod === "stripe_online" ? "Your Stripe payment is being confirmed — we’ll email you once it succeeds." : "Your collection order has been sent to Thai Courtyard. We’ll have it freshly prepared for you."}
+            {order.paymentMethod === "stripe_online" && order.paymentStatus === "paid" ? "Your order is paid online and has been sent to Demo Restaurant. We’ll have it freshly prepared for you." : order.paymentMethod === "stripe_online" ? "Your Stripe payment is being confirmed — we’ll email you once it succeeds." : "Your collection order has been sent to Demo Restaurant. We’ll have it freshly prepared for you."}
           </p>
           <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-cream/10 px-4 py-1.5 text-sm ring-1 ring-cream/20">
             Order number <strong className="text-lg text-gold-light">#{order.number}</strong>
@@ -64,7 +64,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
                 <p className="flex items-center gap-2 text-xs font-semibold tracking-wider text-charcoal/55 uppercase">
                   <MapPin className="h-4 w-4" aria-hidden="true" /> Collect from
                 </p>
-                <p className="mt-2 font-semibold">Thai Courtyard</p>
+                <p className="mt-2 font-semibold">Demo Restaurant</p>
                 <p className="text-sm text-charcoal/70">{SITE.addressLine}</p>
                 <a
                   href={SITE.googleDirectionsUrl}
@@ -125,13 +125,13 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
           <div className="card p-6 text-center">
             <h2 className="font-serif text-2xl font-semibold">Enjoyed ordering? Help us grow</h2>
             <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-charcoal/65">
-              Business is built on word of mouth. Share Thai Courtyard with a friend in East Molesey or Hampton Court, or leave a quick Google review after you collect — it helps locals find us and keeps our family-run kitchen thriving.
+              Business is built on word of mouth. Share Demo Restaurant with a friend in Sample Town or Sample Town, or leave a quick Google review after you collect — it helps locals find us and keeps our family-run kitchen thriving.
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
               <a href={SITE.googleReviewUrl} target="_blank" rel="noopener noreferrer" className="btn btn-gold">
                 Leave a Google review
               </a>
-              <a href={`https://wa.me/?text=${encodeURIComponent(`Thai Courtyard — authentic Thai in East Molesey, near Hampton Court. Order collection: ${SITE.url}/order`)}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+              <a href={`https://wa.me/?text=${encodeURIComponent(`Demo Restaurant — authentic Thai in Sample Town, near Sample Town. Order collection: ${SITE.url}/order`)}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
                 Share on WhatsApp
               </a>
             </div>

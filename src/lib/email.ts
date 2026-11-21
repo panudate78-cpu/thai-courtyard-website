@@ -34,8 +34,8 @@ export async function restaurantEmailAsync(settings?: Pick<Settings, "notificati
 function fromAddressSync() {
   if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
   if (process.env.SMTP_FROM) return process.env.SMTP_FROM;
-  if (process.env.SMTP_USER && process.env.SMTP_USER.includes("@")) return `Thai Courtyard <${process.env.SMTP_USER}>`;
-  return "Thai Courtyard <onboarding@resend.dev>";
+  if (process.env.SMTP_USER && process.env.SMTP_USER.includes("@")) return `Demo Restaurant <${process.env.SMTP_USER}>`;
+  return "Demo Restaurant <onboarding@resend.dev>";
 }
 async function fromAddress(): Promise<string> {
   try {
@@ -49,7 +49,7 @@ function fromAddressForTemplate(cfgName?: string, cfgEmailFrom?: string | null, 
   if (cfgEmailFrom) return cfgEmailFrom;
   if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
   if (process.env.SMTP_FROM) return process.env.SMTP_FROM;
-  const name = cfgName || "Thai Courtyard";
+  const name = cfgName || "Demo Restaurant";
   const email = cfgEmail || process.env.SMTP_USER || "onboarding@resend.dev";
   const addr = email.includes("@") ? email : "onboarding@resend.dev";
   return `${name} <${addr}>`;
@@ -105,8 +105,8 @@ export async function sendMail(mail: Mail): Promise<MailResult> {
 /* ----------------------------- Templates ----------------------------- */
 
 function shell(heading: string, body: string, cfg?: { restaurantName?: string; addressLine?: string; phoneDisplay?: string } | null) {
-  const name = cfg?.restaurantName || "Thai Courtyard";
-  const locality = cfg?.addressLine ? cfg.addressLine.split(",").slice(1).join(",").trim() || "East Molesey" : "East Molesey";
+  const name = cfg?.restaurantName || "Demo Restaurant";
+  const locality = cfg?.addressLine ? cfg.addressLine.split(",").slice(1).join(",").trim() || "Sample Town" : "Sample Town";
   const addr = cfg?.addressLine || SITE.addressLine;
   const phone = cfg?.phoneDisplay || SITE.phoneDisplay;
   return `<!doctype html><html><body style="margin:0;background:#f4eee3;font-family:Arial,Helvetica,sans-serif;color:#1d1b1a">
@@ -231,7 +231,7 @@ Total: ${formatPrice(order.subtotalPence)}
 ${paymentText2}
 
 Questions? Call ${SITE.phoneDisplay}.`;
-  return { subject: `Your Thai Courtyard order #${order.number} — collection ${order.collectionTime}`, html, text };
+  return { subject: `Your order #${order.number} — collection ${order.collectionTime} — ${SITE.name}`, html, text };
 }
 
 export function orderReadyEmail(order: OrderView) {
@@ -240,7 +240,7 @@ export function orderReadyEmail(order: OrderView) {
     `<p style="font-size:15px;line-height:1.6">Good news, ${e(order.customerName)} — your order is ready to collect from ${e(SITE.addressLine)}.</p>${notice}`,
   );
   return {
-    subject: `Your Thai Courtyard order #${order.number} is ready to collect`,
+    subject: `Your order #${order.number} is ready to collect — ${SITE.name}`,
     html,
     text: `Good news, ${order.customerName} — your order #${order.number} is ready to collect from ${SITE.addressLine}.\n${SITE.paymentNotice}`,
   };
@@ -281,7 +281,7 @@ export function bookingCustomerEmail(b: BookingView, kind: "received" | "confirm
     },
   }[kind];
   return {
-    subject: `Thai Courtyard — ${copy.subject}`,
+    subject: `${SITE.name} — ${copy.subject}`,
     html: shell(copy.heading, `<p style="font-size:15px;line-height:1.6">Hello ${e(b.name)},</p><p style="font-size:15px;line-height:1.6">${copy.body}</p>`),
     text: `Hello ${b.name},\n\n${copy.body.replace(/<[^>]+>/g, "")}\n\nThai Courtyard · ${SITE.addressLine} · ${SITE.phoneDisplay}`,
   };

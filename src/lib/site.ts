@@ -12,46 +12,46 @@ export const OPENING_HOURS: Record<number, { open: string; close: string } | nul
 export const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
 
 const placeId = process.env.NEXT_PUBLIC_GOOGLE_PLACE_ID || "";
-const mapsQuery = encodeURIComponent("Thai Courtyard, 105 Walton Road, East Molesey KT8 0DR");
+// Generic demo placeholder — replace via /setup wizard (restaurant_config) for each restaurant.
+// Thai Courtyard live data stays on thai-courtyard-website main via DB seed; this fallback is for the template.
+const mapsQuery = encodeURIComponent("Demo Restaurant, 123 High Street, Sample Town KT9 1AB");
 
 export const SITE = {
-  name: "Thai Courtyard",
-  fullName: "Thai Courtyard East Molesey",
-  tagline: "Authentic Thai Cuisine in the Heart of East Molesey",
+  name: "Demo Restaurant",
+  fullName: "Demo Restaurant Sample Town",
+  tagline: "Fresh seasonal dining in Sample Town",
   description:
-    "Authentic Thai restaurant on Walton Road, East Molesey — warm, cosy and family-friendly. Dine in, book a table or order Thai takeaway online for collection. Pay on collection. Near Hampton Court Palace, Surrey KT8.",
+    "Sample restaurant on High Street, Sample Town — warm, welcoming and family-friendly. Dine in, book a table or order takeaway online for collection. Pay on collection.",
   shortDescription:
-    "Authentic Thai restaurant in East Molesey, Surrey — dine in, takeaway collection & Deliveroo delivery. Fresh, fragrant Thai food cooked to order.",
-  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://www.thaicourtyardmolesey.co.uk").replace(/\/$/, ""),
-  phoneDisplay: "020 8941 3595",
-  phoneHref: "tel:+442089413595",
-  phoneIntl: "+44 20 8941 3595",
-  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "info@thaicourtyardmolesey.co.uk",
+    "Family-friendly restaurant in Sample Town — dine in, takeaway collection & delivery. Fresh seasonal food cooked to order.",
+  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://www.example.com").replace(/\/$/, ""),
+  phoneDisplay: "020 1234 5678",
+  phoneHref: "tel:+442012345678",
+  phoneIntl: "+44 20 1234 5678",
+  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "info@example.com",
   address: {
-    street: "105 Walton Road",
-    locality: "East Molesey",
+    street: "123 High Street",
+    locality: "Sample Town",
     region: "Surrey",
-    postcode: "KT8 0DR",
+    postcode: "KT9 1AB",
     country: "GB",
   },
-  addressLine: "105 Walton Road, East Molesey, KT8 0DR",
-  geo: { lat: 51.40061537335302, lng: -0.35573498220902167 },
-  // Extended geo for local SEO
+  addressLine: "123 High Street, Sample Town, KT9 1AB",
+  geo: { lat: 51.5074, lng: -0.1278 },
+  // Extended geo for local SEO — overwritten by restaurant_config.area_served via /setup
   areaServed: [
-    "East Molesey",
-    "West Molesey",
-    "Hampton Court",
-    "Thames Ditton",
-    "Hampton",
-    "Teddington",
-    "Esher",
-    "Walton-on-Thames",
-    "Hersham",
-    "Surbiton",
-    "Kingston upon Thames",
+    "Sample Town",
+    "Riverside",
+    "Hilltop",
+    "Westfield",
+    "Northwood",
+    "Eastford",
+    "Southgate",
+    "Meadowbank",
+    "Kingston",
+    "Richmond",
   ],
-  deliverooUrl:
-    "https://deliveroo.co.uk/menu/london/east-molesey-and-hampton-court/thai-courtyard-walton-road-105-walton-road",
+  deliverooUrl: "",
   googleMapsUrl: placeId
     ? `https://www.google.com/maps/place/?q=place_id:${placeId}`
     : `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
@@ -72,8 +72,8 @@ export const SITE = {
   priceRange: "££",
   currenciesAccepted: "GBP",
   paymentAccepted: "Cash, Credit Card, Debit Card",
-  servesCuisine: ["Thai", "Asian"] as const,
-  foundingLocation: "East Molesey, Surrey",
+  servesCuisine: ["International", "European"] as const,
+  foundingLocation: "Sample Town, Surrey",
 } as const;
 
 export const NAV_LINKS = [

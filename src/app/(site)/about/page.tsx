@@ -27,9 +27,9 @@ export async function generateMetadata(): Promise<Metadata> {
     }
   } catch {}
   return {
-    title: "About Us — Our Story in East Molesey, Near Hampton Court",
+    title: "About Us — Our Story in Sample Town, Near Sample Town",
     description:
-      "The story of Thai Courtyard, East Molesey — cosy, family-friendly Thai restaurant near Hampton Court Palace. Freshly cooked authentic Thai food, BYOB, dine-in & takeaway collection.",
+      "The story of Demo Restaurant, Sample Town — cosy, family-friendly Thai restaurant near Sample Town Palace. Freshly cooked authentic Thai food, BYOB, dine-in & takeaway collection.",
     alternates: { canonical: "/about" },
   };
 }
@@ -58,8 +58,8 @@ const VALUES = [
 ];
 
 const ABOUT_FAQS = [
-  { question: "What makes Thai Courtyard different?", answer: "We're a cosy, family-friendly neighbourhood restaurant on Walton Road. Every dish is cooked fresh to order, balancing hot, sour, salty and sweet the traditional Thai way — not batch-cooked. Warm hospitality is as important as flavour." },
-  { question: "Are you near Hampton Court Palace?", answer: "Yes — we're a short stroll from Hampton Court Palace, minutes from Hampton Court Station and Bushy Park. Many visitors combine a palace or park visit with lunch or dinner here." },
+  { question: "What makes Demo Restaurant different?", answer: "We're a cosy, family-friendly neighbourhood restaurant on Walton Road. Every dish is cooked fresh to order, balancing hot, sour, salty and sweet the traditional Thai way — not batch-cooked. Warm hospitality is as important as flavour." },
+  { question: "Are you near Sample Town Palace?", answer: "Yes — we're a short stroll from Sample Town Palace, minutes from Sample Town Station and Bushy Park. Many visitors combine a palace or park visit with lunch or dinner here." },
   { question: "Can I bring my own alcohol?", answer: "Yes. We're BYOB — bring your own alcoholic drinks and enjoy them with your meal. Corkage charges apply, please ask our team." },
 ];
 
@@ -75,8 +75,8 @@ export default function AboutPage() {
       <JsonLd data={faqJsonLd(ABOUT_FAQS)} />
       <PageHero
         eyebrow="Our story"
-        title="About Thai Courtyard"
-        intro="A cosy Thai restaurant on Walton Road, East Molesey — authentic cuisine, warm hospitality and freshly prepared dishes, minutes from Hampton Court Palace."
+        title="About Demo Restaurant"
+        intro="A cosy Thai restaurant on Walton Road, Sample Town — authentic cuisine, warm hospitality and freshly prepared dishes, minutes from Sample Town Palace."
         image={IMG.thaiSpread}
       />
 
@@ -84,15 +84,15 @@ export default function AboutPage() {
         <div className="container-x grid items-center gap-14 lg:grid-cols-2">
           <div>
             <h2 className="mt-3 font-serif text-4xl leading-tight font-semibold sm:text-5xl">
-              Traditional Thai hospitality, right here in East Molesey
+              Traditional Thai hospitality, right here in Sample Town
             </h2>
             <Ornament className="mt-5" />
             <div className="mt-6 space-y-4 text-lg leading-relaxed text-charcoal/75">
               <p>
-                Thai Courtyard is a cosy Thai restaurant offering authentic cuisine, warm hospitality and freshly prepared dishes — loved by locals across East Molesey, Hampton Court, Thames Ditton and beyond.
+                Demo Restaurant is a cosy Thai restaurant offering authentic cuisine, warm hospitality and freshly prepared dishes — loved by locals across Sample Town, Sample Town, Thames Ditton and beyond.
               </p>
               <p>
-                Tucked away on Walton Road, a short stroll from Hampton Court, our restaurant brings together traditional
+                Tucked away on Walton Road, a short stroll from Sample Town, our restaurant brings together traditional
                 Thai hospitality and the relaxed comfort of modern British dining. It&apos;s the kind of place where
                 neighbours become regulars, and every guest is welcomed like family.
               </p>
@@ -100,7 +100,7 @@ export default function AboutPage() {
                 We honour the classic recipes our guests love, cook every dish fresh, and make each visit feel special — whether you are joining us for a quiet weekday lunch near Bushy Park, a family celebration or picking up dinner on your way home via collection or Deliveroo.
               </p>
               <p className="text-sm text-charcoal/60">
-                Searching for <strong>Thai restaurant East Molesey</strong>, <strong>Thai takeaway Hampton Court</strong> or <strong>Thai food near me KT8</strong>? You&apos;re in the right place.
+                Searching for <strong>Thai restaurant Sample Town</strong>, <strong>Thai takeaway Sample Town</strong> or <strong>Thai food near me KT8</strong>? You&apos;re in the right place.
               </p>
             </div>
             <div className="mt-9 flex flex-wrap gap-3">
@@ -158,7 +158,7 @@ export default function AboutPage() {
           <SectionHeading
             dark
             eyebrow="What we stand for"
-            title="The Thai Courtyard way"
+            title="The Demo Restaurant way"
             intro="Four simple things guide everything we do, from the kitchen to your table."
           />
           <ul className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -201,7 +201,7 @@ export default function AboutPage() {
               <a href={SITE.phoneHref} className="font-semibold text-teak hover:underline">
                 {SITE.phoneDisplay}
               </a>
-              . Near Hampton Court Palace, Surrey KT8.
+              . Near Sample Town Palace, Surrey KT8.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link href="/menu" className="btn btn-dark">

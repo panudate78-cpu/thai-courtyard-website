@@ -39,10 +39,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Menu",
     description:
-      "The Thai Courtyard menu — starters, soups, curries, stir-fries, salads, noodles & chef's specials in East Molesey, Surrey KT8. Prices, protein choices, BYOB. Order for collection or dine in.",
+      "The Demo Restaurant menu — starters, soups, curries, stir-fries, salads, noodles & chef's specials in Sample Town, Surrey KT8. Prices, protein choices, BYOB. Order for collection or dine in.",
     alternates: { canonical: "/menu" },
     openGraph: {
-      title: "Thai Courtyard Menu | East Molesey • Hampton Court",
+      title: "Demo Restaurant Menu | Sample Town • Sample Town",
       description: "Freshly cooked Thai favourites: red, green & Phanaeng curries, Pad Thai, stir-fries, Thai salads. Dine in or order for collection.",
       url: "/menu",
       images: ["/opengraph-image", "/images/thai-spread.jpg"],
@@ -104,11 +104,11 @@ function PhotoBand({ images }: { images: SiteImage[] }) {
 }
 
 const MENU_FAQS = [
-  { question: "Is Thai Courtyard BYOB?", answer: "Yes — we don't hold an alcohol licence, so you're welcome to bring your own beer, wine or spirits to enjoy with your meal. Corkage charges apply; ask our team for details." },
+  { question: "Is Demo Restaurant BYOB?", answer: "Yes — we don't hold an alcohol licence, so you're welcome to bring your own beer, wine or spirits to enjoy with your meal. Corkage charges apply; ask our team for details." },
   { question: "Can I order takeaway for collection?", answer: "Yes. Order online at /order, choose your dishes and collection time (ready from ~20 minutes), then pay in the restaurant by cash or card when you collect. You can also order for Deliveroo delivery." },
   { question: "Do you have vegetarian, vegan and gluten-free options?", answer: "Many dishes can be made with tofu or vegetables and are marked V / VG / GF on the menu as a guide. Please tell us about allergies when ordering — our kitchen handles nuts, gluten, shellfish and more, so we can't guarantee any dish is completely allergen-free." },
   { question: "What is the Express Lunch Menu?", answer: "Tuesday–Saturday, 12:00–15:00 — choose a curry, stir-fry, noodle or rice dish with prawn crackers and a soft drink from £9.95 (vegetable/tofu), £10.50 (chicken/pork) or £11.50 (beef/king prawns). See in store for full details." },
-  { question: "Where are you located?", answer: "105 Walton Road, East Molesey KT8 0DR — near Hampton Court Palace. Two minutes from Hampton Court Station and Bushy Park. Easy for Hampton, Thames Ditton, Esher, Walton and Surbiton." },
+  { question: "Where are you located?", answer: "123 High Street, Sample Town KT9 1AB — near Sample Town Palace. Two minutes from Sample Town Station and Bushy Park. Easy for Hampton, Thames Ditton, Esher, Walton and Surbiton." },
 ];
 
 export default async function MenuPage() {
@@ -126,11 +126,11 @@ export default async function MenuPage() {
       <JsonLd data={faqJsonLd(MENU_FAQS)} />
       <PageHero
         eyebrow="Our menu"
-        title="Thai Courtyard Menu"
-        intro="Authentic Thai dishes, freshly prepared to order in East Molesey — near Hampton Court. Many dishes can be made with your choice of protein and spice level."
+        title="Demo Restaurant Menu"
+        intro="Authentic Thai dishes, freshly prepared to order in Sample Town — near Sample Town. Many dishes can be made with your choice of protein and spice level."
         image={IMG.thaiSpread}
       >
-        <p className="mx-auto mt-2 max-w-2xl text-sm text-cream/60">East Molesey • Hampton Court • Thames Ditton • Esher • Walton-on-Thames • KT8 • BYOB • Family-friendly</p>
+        <p className="mx-auto mt-2 max-w-2xl text-sm text-cream/60">Sample Town • Sample Town • Thames Ditton • Esher • Walton-on-Thames • KT8 • BYOB • Family-friendly</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link href="/order" className="btn btn-gold">
             <ShoppingBag aria-hidden="true" />
@@ -169,7 +169,7 @@ export default async function MenuPage() {
       <section className="container-x py-6 sm:py-7">
   <div className="rounded-2xl border border-gold/30 bg-cream-dark p-5 sm:p-6">
     <p className="eyebrow text-xs">Express Lunch</p>
-    <h2 className="mt-1 font-serif text-2xl font-semibold sm:text-3xl">Express Lunch — East Molesey</h2>
+    <h2 className="mt-1 font-serif text-2xl font-semibold sm:text-3xl">Express Lunch — Sample Town</h2>
     <p className="mt-1.5 text-xs text-charcoal/70 sm:text-sm">Tue–Sat • 12:00–15:00 • Dine-in & collection</p>
     <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
       Choice of select curries, stir-fries, noodle or rice dishes with prawn crackers (2 pcs) and a soft drink. <em>See menu in store for more details.</em>
@@ -265,7 +265,7 @@ export default async function MenuPage() {
             <DeliverooButton />
           </div>
           <p className="mx-auto mt-6 max-w-xl text-xs leading-relaxed text-cream/50">
-            Serving East Molesey, Hampton Court, Thames Ditton, Hampton, Teddington, Esher & Walton-on-Thames. 105 Walton Road, KT8 0DR — Tue–Sat 12:00–21:00.
+            Serving Sample Town, Sample Town, Thames Ditton, Hampton, Teddington, Esher & Walton-on-Thames. 123 High Street, KT9 1AB — Tue–Sat 12:00–21:00.
           </p>
         </div>
       </section>

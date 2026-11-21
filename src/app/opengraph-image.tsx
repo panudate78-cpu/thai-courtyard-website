@@ -1,20 +1,20 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Thai Courtyard — Authentic Thai Cuisine in East Molesey, near Hampton Court";
+export const alt = "Demo Restaurant — Fresh seasonal dining in Sample Town";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
   // Try to read DB config — but edge runtime has no DB; fallback to env/SITE defaults
-  let name = "Thai Courtyard";
-  let locality = "East Molesey";
-  let street = "Walton Road";
-  let postcode = "KT8 0DR";
-  let phone = "020 8941 3595";
+  let name = "Demo Restaurant";
+  let locality = "Sample Town";
+  let street = "High Street";
+  let postcode = "KT9 1AB";
+  let phone = "020 1234 5678";
   let hoursShort = "Tue–Sat 12:00–21:00";
-  let siteHost = "thaicourtyardmolesey.co.uk";
-  let cuisine = "Authentic Thai";
+  let siteHost = "example.com";
+  let cuisine = "Fresh seasonal";
   try {
     // Edge cannot use pg pool; read from env that setup wizard sets
     name = process.env.NEXT_PUBLIC_RESTAURANT_NAME || name;
