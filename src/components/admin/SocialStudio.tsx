@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Camera, Check, Copy, ExternalLink, MessageCircle, Share2, Sparkles, Wand2 } from "lucide-react";
+import { Camera, Check, Copy, ExternalLink, Loader2, MessageCircle, Share2, Sparkles, Upload, Wand2 } from "lucide-react";
 import { SITE } from "@/lib/site";
 
 // Minimal dish shape passed from server
@@ -241,6 +241,9 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
   const [cta, setCta] = useState<Cta>("order");
   const [withEmoji, setWithEmoji] = useState(true);
   const [withHashtags, setWithHashtags] = useState(true);
+  const [publishImage, setPublishImage] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState<number | null>(null);
+  const [publishMsg, setPublishMsg] = useState<{ type: "ok" | "error"; text: string } | null>(null);
 
   const dish = useMemo(() => dishes.find((d) => d.id === dishId) ?? null, [dishes, dishId]);
   const offer = useMemo(() => offers.find((o) => o.id === offerId) ?? null, [offers, offerId]);
@@ -258,6 +261,46 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
 
   const insta = useMemo(() => [1, 2, 3].map((n) => buildCopy(input, "instagram", n as 1 | 2 | 3)), [input]);
   const facebook = useMemo(() => [1, 2, 3].map((n) => buildCopy(input, "facebook", n as 1 | 2 | 3)), [input]);
+
+  function onPublishImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      setPublishMsg({ type: "error", text: "Image too large — use under 4 MB (PNG/JPEG/WebP)." });
+      e.target.value = "";
+      return;
+    }
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      setPublishMsg({ type: "error", text: "Use PNG, JPEG or WebP." });
+      e.target.value = "";
+      return;
+    }
+    const r = new FileReader();
+    r.onload = () => {
+      setPublishImage(typeof r.result === "string" ? r.result : null);
+      setPublishMsg(null);
+    };
+    r.readAsDataURL(file);
+  }
+
+  async function publish(caption: string, idx: number) {
+    setPublishing(idx);
+    setPublishMsg(null);
+    try {
+      const res = await fetch("/api/admin/social/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ caption, imageData: publishImage }),
+      });
+      const data = await res.json().catch(() => ({})) as { ok?: boolean; id?: string; error?: string; note?: string };
+      if (!res.ok || !data.ok) throw new Error(data.error || "Could not publish.");
+      setPublishMsg({ type: "ok", text: data.note ? `Posted to Facebook #${data.id}. ${data.note}` : `Posted to Facebook ✓ #${data.id} — if Auto-share to Instagram is on, it will appear on Instagram too.` });
+    } catch (e) {
+      setPublishMsg({ type: "error", text: e instanceof Error ? e.message : "Publish failed." });
+    } finally {
+      setPublishing(null);
+    }
+  }
 
   const dishesByCategory = useMemo(() => {
     const map = new Map<string, SocialDish[]>();
@@ -397,6 +440,24 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
                 </label>
               </div>
 
+              <div className="adm-card overflow-hidden border-dashed">
+                <div className="p-3">
+                  <p className="flex items-center gap-2 text-sm font-semibold"><Upload className="h-4 w-4" /> Photo for Publish <span className="text-xs font-normal text-black/45">(needed for Instagram auto-share)</span></p>
+                  <p className="mt-1 text-xs leading-5 text-black/55">Add a photo here — Facebook image posts auto-share to Instagram if your Page toggle is on. Without a photo, the post is text-only and won’t cross-post to IG.</p>
+                  <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onPublishImage} className="adm-input mt-2" />
+                  {publishImage ? (
+                    <div className="mt-3 flex items-center gap-3">
+                      <img src={publishImage} alt="Publish preview" className="h-16 w-24 rounded-lg object-cover ring-1 ring-black/10" />
+                      <button type="button" onClick={() => setPublishImage(null)} className="adm-btn">Remove</button>
+                      <span className="text-xs text-black/50">{Math.round(publishImage.length / 1024)} KB · will post as Facebook photo</span>
+                    </div>
+                  ) : null}
+                  {publishMsg ? (
+                    <p className={`mt-2 rounded-lg px-3 py-2 text-xs ${publishMsg.type === "ok" ? "bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200" : "bg-red-50 text-red-800 ring-1 ring-red-200"}`}>{publishMsg.text}</p>
+                  ) : null}
+                </div>
+              </div>
+
               <div className="rounded-xl bg-cream-dark p-3 text-xs leading-5 text-black/60 ring-1 ring-black/5">
                 <p className="font-semibold text-charcoal">Tip</p>
                 <p className="mt-1">
@@ -441,7 +502,13 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
                 <div key={i} className="rounded-2xl border border-black/10 bg-white p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs font-bold tracking-wide text-black/50 uppercase">Variant {String.fromCharCode(65 + i)} · {text.length} chars</p>
-                    <CopyButton text={text} />
+                    <div className="flex items-center gap-2">
+                      <button type="button" onClick={() => publish(text, i)} disabled={publishing !== null} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${publishImage ? "bg-pink-600 text-white hover:bg-pink-700" : "bg-charcoal text-cream hover:bg-black"} disabled:opacity-50`}>
+                        {publishing === i ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        {publishImage ? "Publish + IG" : "Publish"}
+                      </button>
+                      <CopyButton text={text} />
+                    </div>
                   </div>
                   <pre className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-cream p-3 text-sm leading-6 text-charcoal ring-1 ring-black/5">
                     {text}
@@ -482,7 +549,13 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
                 <div key={i} className="rounded-2xl border border-black/10 bg-white p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs font-bold tracking-wide text-black/50 uppercase">Variant {String.fromCharCode(65 + i)} · {text.length} chars</p>
-                    <CopyButton text={text} />
+                    <div className="flex items-center gap-2">
+                      <button type="button" onClick={() => publish(text, 100 + i)} disabled={publishing !== null} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${publishImage ? "bg-[#1877F2] text-white hover:bg-[#166fe5]" : "bg-charcoal text-cream hover:bg-black"} disabled:opacity-50`}>
+                        {publishing === 100 + i ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        {publishImage ? "Publish + IG" : "Publish (text)"}
+                      </button>
+                      <CopyButton text={text} />
+                    </div>
                   </div>
                   <pre className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-cream p-3 text-sm leading-6 text-charcoal ring-1 ring-black/5">
                     {text}
