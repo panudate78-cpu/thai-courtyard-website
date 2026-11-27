@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Leaf, Plus, Search, ShoppingBag, X } from "lucide-react";
+import { Check, Leaf, Plus, ShoppingBag, X } from "lucide-react";
 import { AllergenBadges, DietaryBadges } from "@/components/ui";
 import { formatPrice } from "@/lib/format";
 import { getCollectionDays, type SlotConfig, type SlotDay } from "@/lib/hours";
@@ -76,7 +76,6 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
   const [hydrated, setHydrated] = useState(false);
   const [activeCategory, setActiveCategory] = useState<number>(() => categories[0]?.id ?? 0);
   const [veggieOnly, setVeggieOnly] = useState(false);
-  const [query, setQuery] = useState("");
   const [dialogItem, setDialogItem] = useState<MenuItem | null>(() => {
     const item = initialItemId ? itemsById.get(initialItemId) : undefined;
     return item && item.available ? item : null;
@@ -200,18 +199,11 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
     return map;
   }, [basket]);
 
-  const q = query.trim().toLowerCase();
-  // Without the "All dishes" tab the left pane is one category at a time; when searching,
-  // show matches across all categories so search still feels global.
-  const baseCategories = q ? categories : categories.filter((c) => c.id === activeCategory);
-  const visibleCategories = baseCategories
+  const visibleCategories = categories
+    .filter((c) => c.id === activeCategory)
     .map((c) => ({
       ...c,
-      items: c.items.filter(
-        (i) =>
-          (!veggieOnly || i.dietary.some((d) => d === "vegetarian" || d === "vegan" || d === "veg_option")) &&
-          (!q || i.name.toLowerCase().includes(q) || (i.description ?? "").toLowerCase().includes(q)),
-      ),
+      items: c.items.filter((i) => !veggieOnly || i.dietary.some((d) => d === "vegetarian" || d === "vegan" || d === "veg_option")),
     }))
     .filter((c) => c.items.length > 0);
 
@@ -283,21 +275,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
     <div className="container-x grid gap-4 pt-2 pb-32 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:pb-16 xl:grid-cols-[minmax(0,1fr)_380px]">
       <div className="min-w-0">
         <div className="sticky top-16 z-20 -mx-4 border-b border-sand bg-cream/95 px-4 pt-2.5 pb-2.5 backdrop-blur sm:-mx-6 sm:px-6 lg:top-20 lg:mx-0 lg:px-0">
-          <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-charcoal/40" aria-hidden="true" />
-            <label htmlFor="menu-search" className="sr-only">
-              Search the menu
-            </label>
-            <input
-              id="menu-search"
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search dishes, e.g. Pad Thai"
-              className="block w-full rounded-full border border-sand bg-white py-2 pr-4 pl-10 text-sm shadow-sm placeholder:text-charcoal/40 focus:border-gold focus:ring-2 focus:ring-gold/30 focus:outline-none sm:py-2"
-            />
-          </div>
-          <div className="mt-2.5 flex flex-wrap gap-1.5" role="group" aria-label="Filter by category">
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by category">
             {categories.map((c) => (
               <button
                 key={c.id}
@@ -330,18 +308,16 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
 
         {visibleCategories.length === 0 ? (
           <div className="py-20 text-center text-charcoal/65">
-            <p>No dishes match your search.</p>
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("");
-                setActiveCategory(categories[0]?.id ?? 0);
-                setVeggieOnly(false);
-              }}
-              className="mt-3 font-semibold text-teak underline"
-            >
-              Clear filters
-            </button>
+            <p>{veggieOnly ? "No vegetarian options in this category." : "No dishes in this category."}</p>
+            {veggieOnly ? (
+              <button
+                type="button"
+                onClick={() => setVeggieOnly(false)}
+                className="mt-3 font-semibold text-teak underline"
+              >
+                Show all dishes
+              </button>
+            ) : null}
           </div>
         ) : (
           visibleCategories.map((category) => (
