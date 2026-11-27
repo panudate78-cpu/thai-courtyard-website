@@ -94,108 +94,107 @@ function buildCopy(input: GenInput, platform: "instagram" | "facebook", variant:
 
   const custom = customLine.trim() ? `\n\n${customLine.trim()}` : "";
 
-  // CTA line
   let ctaLine = "";
   if (cta === "order") ctaLine = `${emoji ? "🥢 " : ""}Order for collection → ${linkOrder}`;
-  if (cta === "book") ctaLine = `${emoji ? "📅 " : ""}Book a table → ${linkBook}`;
+  if (cta === "book") ctaLine = `${emoji ? "📅 " : ""}Reserve your table → ${linkBook}`;
   if (cta === "both") ctaLine = `${emoji ? "🥢 " : ""}Order for collection → ${linkOrder}\n${emoji ? "📅 " : ""}Book a table → ${linkBook}`;
-  if (cta === "review") ctaLine = `${emoji ? "⭐ " : ""}Loved us? Leave a Google review → ${SITE.googleReviewUrl}`;
+  if (cta === "review") ctaLine = `${emoji ? "⭐ " : ""}Enjoyed us? Leave a Google review → ${SITE.googleReviewUrl}`;
 
-  // Dish helpers
   const dishName = dish?.name ?? "Chef’s Special";
-  const dishDesc = dish?.description ? dish.description : "fresh, fragrant and wok-cooked to order";
-  const dishPrice = dish ? ` — ${formatPrice(dish.pricePence)}` : "";
-  const cat = dish?.categoryName ?? "Thai favourite";
-
-  // Variant helpers to give 3 distinct voices without AI
-  const intro = {
-    dish: [
-      `${emoji ? "🇹🇭✨ " : ""}Craving something fragrant?`,
-      `${emoji ? "🍜 " : ""}Your next Thai favourite is waiting`,
-      `${emoji ? "🌶️ " : ""}Fresh from our East Molesey kitchen —`,
-    ],
-    collection: [
-      `${emoji ? "✨ Tonight? " : "Tonight? "}Let us do the cooking`,
-      `${emoji ? "🍛 " : ""}Fresh Thai, ready when you are`,
-      `${emoji ? "⏱️ " : ""}Collection in ~20 mins — no hassle`,
-    ],
-    weekend: [
-      `${emoji ? "🌿 " : ""}Weekend in East Molesey / Hampton Court?`,
-      `${emoji ? "🥂 " : ""}Making weekend plans around KT8?`,
-      `${emoji ? "👨‍👩‍👧‍👦 " : ""}Gather your favourites this weekend`,
-    ],
-    review: [
-      `${emoji ? "💛 " : ""}Enjoyed ordering with us?`,
-      `${emoji ? "🙏 " : ""}If we made your night — help us grow`,
-      `${emoji ? "⭐ " : ""}Word of mouth keeps our family-run kitchen thriving`,
-    ],
-    hours: [
-      `${emoji ? "🕛 " : ""}We’re open & firing the woks`,
-      `${emoji ? "📍 " : ""}Find us on Walton Road this week`,
-      `${emoji ? "🔥 " : ""}Fresh, fragrant Thai — dine in or take away`,
-    ],
-    offer: [
-      `${emoji ? "🎉 " : ""}${offer?.title ?? "A little treat from us"}`,
-      `${emoji ? "✨ " : ""}${offer?.title ?? "This week at Thai Courtyard"}`,
-      `${emoji ? "💫 " : ""}${offer?.title ?? "Not to be missed"}`,
-    ],
-  } as const;
+  const dishDescRaw = dish?.description ? dish.description : "slow-cooked with fragrant herbs, toasted spices and our family recipe";
+  const dishDesc = dishDescRaw.length > 120 ? dishDescRaw.slice(0, 117) + "…" : dishDescRaw;
+  const dishPrice = dish ? ` · ${formatPrice(dish.pricePence)}` : "";
+  const cat = dish?.categoryName ?? "house favourite";
 
   const v = variant - 1;
 
+  // Premium, story-led intros
+  const intro = {
+    dish: [
+      `${emoji ? "🇹🇭✨ " : ""}The first bite says a lot.`,
+      `${emoji ? "🍜 " : ""}The one regulars order before they’ve sat down —`,
+      `${emoji ? "🔥 " : ""}Wok-kissed in East Molesey —`,
+    ],
+    collection: [
+      `${emoji ? "Tonight, let us do the cooking " : "Tonight, let us do the cooking "}—`,
+      `${emoji ? "No washing up. Just wok heat. " : "No washing up. Just wok heat. "}`,
+      `${emoji ? "Your Thai, ready when you are " : "Your Thai, ready when you are "}—`,
+    ],
+    weekend: [
+      `${emoji ? "🌿 " : ""}Weekend plans around Hampton Court?`,
+      `${emoji ? "✨ " : ""}Molesey at the weekend — done right.`,
+      `${emoji ? "👨‍👩‍👧‍👦 " : ""}A table for two, a takeaway for four —`,
+    ],
+    review: [
+      `${emoji ? "💛 " : ""}Small restaurant, big word of mouth.`,
+      `${emoji ? "🙏 " : ""}If we made your evening —`,
+      `${emoji ? "⭐ " : ""}Family-run, community-powered.`,
+    ],
+    hours: [
+      `${emoji ? "🔥 " : ""}Woks on. Door open.`,
+      `${emoji ? "📍 " : ""}Find us on Walton Road —`,
+      `${emoji ? "🕛 " : ""}Your local Thai, this week:`,
+    ],
+    offer: [
+      `${emoji ? "🎉 " : ""}${offer?.title ?? "A little thank-you from our kitchen"}`,
+      `${emoji ? "✨ " : ""}${offer?.title ?? "This week’s little extra"}`,
+      `${emoji ? "💫 " : ""}${offer?.title ?? "Not to be missed on Walton Road"}`,
+    ],
+  } as const;
+
   if (template === "dish" && dish) {
     const bodies = [
-      `${intro.dish[v]}\n\n${dishName}${dishPrice} — ${dishDesc}.\nWok-cooked to order with authentic Thai herbs & spices in our ${cat} selection.\n\n${ctaLine}\n${emoji ? "📍 " : ""}${addressLine()}${custom}`,
-      `${intro.dish[v]} — ${dishName}${dishPrice}.\n${dishDesc.charAt(0).toUpperCase() + dishDesc.slice(1)}${dishDesc.endsWith(".") ? "" : "."} A house favourite from our ${cat} menu.\n\n${ctaLine}\n${emoji ? "📍 " : ""}${addressLine()}${custom}`,
-      `${dishName} — the one regulars come back for ${emoji ? "😋" : ""}\n\n${dishDesc} · ${cat} · ${formatPrice(dish.pricePence)} · Available for collection tonight.\n\n${ctaLine}\n${emoji ? "📞 " : ""}${SITE.phoneDisplay} · ${SITE.addressLine}${custom}`,
+      `${intro.dish[v]}\n\n${dishName}${dishPrice}\n${dishDesc}. Our ${cat.toLowerCase()} — balanced, fragrant and cooked to order in our East Molesey kitchen. A perfect start (or the main event).\n\n${ctaLine}\n${emoji ? "📍 " : ""}Thai Courtyard · ${addressLine()} · ${SITE.hoursSummary}${custom}`,
+      `${intro.dish[v]} ${dishName}${dishPrice}.\n\n${dishDesc.charAt(0).toUpperCase() + dishDesc.slice(1)}${dishDesc.endsWith(".") ? "" : "."} Finished with fresh herbs, served exactly how our chefs eat it — generous, aromatic and made to be shared.\n\n${ctaLine}\n${emoji ? "📞 " : ""}${SITE.phoneDisplay} · Collection in ~20 mins, pay on collection (cash/card)${custom}`,
+      `${dishName} — ${emoji ? "the quiet star of our " + cat.toLowerCase() + " menu " : "the quiet star of our " + cat.toLowerCase() + " menu "}${dishPrice}\n\n${dishDesc} — wok-tossed to order, never pre-made. Regulars have it on repeat, newcomers get it once and understand why.\n\n${ctaLine}\n${emoji ? "📍 " : ""}105 Walton Road, East Molesey KT8 0DR — 5 mins from Hampton Court${custom}`,
     ];
     return bodies[v] + hashtags;
   }
 
   if (template === "collection") {
     const bodies = [
-      `${intro.collection[v]}\n\nOrder authentic Thai for collection tonight — curries, stir-fries, Pad Thai & chef’s specials. Ready in ~20 mins, pay on collection (cash/card).${custom}\n\n${ctaLine}\n${emoji ? "📍 " : ""}${addressLine()}\n${emoji ? "🕛 " : ""}${SITE.hoursSummary}`,
-      `${intro.collection[v]} — Thai Courtyard, East Molesey.\n\nSkip the washing up. Pick a collection time, we’ll have it freshly cooked for you at 105 Walton Road, KT8 0DR.${custom}\n\n${ctaLine}\n${emoji ? "💳 " : ""}Pay on collection · ${SITE.hoursSummary}`,
-      `Fresh Thai takeaway without the wait ${emoji ? "🍜" : ""}\n\n${intro.collection[v]} — choose your dishes, choose your time, collect in ~20 minutes. Near Hampton Court & Thames Ditton.${custom}\n\n${ctaLine}\n${emoji ? "📍 " : ""}105 Walton Road, East Molesey`,
+      `${intro.collection[v]} fresh Thai, cooked to order on Walton Road.\n\nPick your dishes, pick your time — curries, stir-fries, Pad Thai, noodles & chef’s specials. Ready in ~20 mins, handed to you at the door. Pay on collection, cash or card.${custom}\n\n${ctaLine}\n${emoji ? "📍 " : ""}${addressLine()} · ${SITE.hoursSummary}`,
+      `${intro.collection[v]} skip the shop, skip the wait.\n\nYour local Thai in Molesey — fragrant, generous and made fresh, not reheated. From Massaman to Pad Kra Pao, we cook when you order.${custom}\n\n${ctaLine}\n${emoji ? "💳 " : ""}Pay on collection · Collection slots every 15 mins`,
+      `${intro.collection[v]} wok heat, then straight to your box.\n\nCollection tonight from Thai Courtyard — 105 Walton Road, KT8. Near Hampton Court Palace, Thames Ditton & Esher. Choose your time and we’ll have it ready, steaming.\n\n${ctaLine}\n${emoji ? "🕛 " : ""}${SITE.hoursSummary} · ${custom ? "" : "Free on-street parking when you collect."}${custom}`,
     ];
     return bodies[v] + hashtags;
   }
 
   if (template === "weekend") {
     const bodies = [
-      `${intro.weekend[v]}\n\nMake it Thai Courtyard — cosy, family-run and full of fragrance. Dine in on Walton Road or order for collection if you’re staying in. Near Bushy Park & Hampton Court Palace.${custom}\n\n${ctaLine}\n${emoji ? "📍 " : ""}${addressLine()}\n${emoji ? "🕛 " : ""}${SITE.hoursSummary}`,
-      `${intro.weekend[v]} — we’ve got your table (or your takeaway box) ready.\n\nBring friends, bring appetite. Authentic Thai, cooked to order, 5 mins from Hampton Court station.${custom}\n\n${ctaLine}\n${emoji ? "🚗 " : ""}Free on-street parking nearby`,
-      `Weekend sorted ${emoji ? "✨" : ""}\n\n${intro.weekend[v]} — from fragrant Massaman to fiery Pad Kra Pao. Dine in or collect. Family-friendly, BYOB-friendly, flavour-packed.${custom}\n\n${ctaLine}`,
+      `${intro.weekend[v]}\n\nLet us host. Thai Courtyard is cosy, family-run and 5 minutes from Hampton Court Palace — dine in on Walton Road or order for collection if you’re staying in. BYOB-friendly, flavour-packed, cooked to order.${custom}\n\n${ctaLine}\n${emoji ? "📍 " : ""}${addressLine()} · ${SITE.hoursSummary}`,
+      `${intro.weekend[v]}\n\nFrom slow-cooked Massaman to fiery Tom Yum, silk noodles to crisp starters — bring the people you love, we’ll bring the fragrance. Book a table or pre-order for collection.${custom}\n\n${ctaLine}\n${emoji ? "🚗 " : ""}Thames Ditton · Hampton · Esher · Teddington — all a few minutes away`,
+      `${intro.weekend[v]} we’ve saved your seat — or your takeaway slot.\n\nBushy Park walk then Thai? Hampton Court day then a feast? We’re open ${SITE.hoursSummary.toLowerCase()} for dine-in and collection, pay on collection.${custom}\n\n${ctaLine}`,
     ];
     return bodies[v] + hashtags;
   }
 
   if (template === "review") {
     const bodies = [
-      `${intro.review[v]}\n\nWord of mouth built Thai Courtyard. If you enjoyed your collection or dine-in, a quick Google review helps neighbours in East Molesey & Hampton Court find us — and keeps our family-run kitchen thriving.${custom}\n\n${ctaLine}\n${emoji ? "💛 " : ""}Thank you — every review and share really counts while business is quieter.`,
-      `${intro.review[v]} — one minute of your time makes a huge difference.\n\nShare us with a friend in Thames Ditton / Esher / Teddington, or tap to leave a Google review. It helps locals discover authentic Thai close to home.${custom}\n\n${ctaLine}`,
-      `Loved your Thai? ${emoji ? "🙏" : ""}\n\n${intro.review[v]}. Your review on Google keeps us visible to the Molesey & Hampton Court community — and means the world to our small team.${custom}\n\n${ctaLine}\n${emoji ? "📣 " : ""}Share with a friend → ${SITE.url}`,
+      `${intro.review[v]}\n\nIf you’ve collected or dined with us in East Molesey or Hampton Court, a quick Google review goes further than any advert. It helps neighbours find a local, family-run kitchen that cooks everything to order — and it keeps us going while business is quieter.${custom}\n\n${ctaLine}\n${emoji ? "💛 " : ""}Thank you — every word and share truly counts. — The Thai Courtyard family`,
+      `${intro.review[v]} a minute of your time makes a real difference.\n\nShare us with a friend in Thames Ditton, Hampton, Esher or Teddington, or tap to leave stars on Google. Your words help our small team stay visible to the community we love to feed.${custom}\n\n${ctaLine}\n${emoji ? "📣 " : ""}Share with a friend → ${SITE.url}`,
+      `Loved your night? ${emoji ? "Tell Molesey. " : "Tell Molesey. "}\n\n${intro.review[v]} Your review on Google keeps authentic Thai in KT8 discoverable — and tells our chefs their wok work mattered.${custom}\n\n${ctaLine}\n${emoji ? "⭐ " : ""}We read every single one.`,
     ];
     return bodies[v] + hashtags;
   }
 
   if (template === "hours") {
     const bodies = [
-      `${intro.hours[v]}\n\n${SITE.hoursSummary}\n${SITE.addressLine} — dine in or order for collection. Pay on collection. Near Hampton Court Palace.${custom}\n\n${ctaLine}`,
-      `${intro.hours[v]} — Tue to Sat on Walton Road.\n\n12:00–21:00 · Fresh Thai curries, stir-fries & noodles, cooked to order.${custom}\n\n${ctaLine}\n${emoji ? "📞 " : ""}${SITE.phoneDisplay}`,
-      `Your local Thai ${emoji ? "🇹🇭" : ""} — open this week:\n\n${SITE.hoursSummary} · 105 Walton Road, KT8 0DR\nDine in, or order Thai takeaway for collection.${custom}\n\n${ctaLine}`,
+      `${intro.hours[v]}\n\nWe’re open ${SITE.hoursSummary} on Walton Road — dine in or take away. Fresh Thai, cooked when you order, not before.\n\n${ctaLine}\n${emoji ? "📍 " : ""}${SITE.addressLine} · ${SITE.phoneDisplay}${custom}`,
+      `${intro.hours[v]} Tuesday to Saturday, 12:00–21:00.\n\nFrom jasmine rice to jasmine nights — pop in, book ahead, or pre-order for collection. Pay on collection, cash or card.${custom}\n\n${ctaLine}`,
+      `${intro.hours[v]}\n\n${SITE.hoursSummary.toLowerCase()} · 105 Walton Road, KT8 0DR — 5 mins from Hampton Court Station. Your local, family-run Thai, firing the woks daily.${custom}\n\n${ctaLine}\n${emoji ? "📞 " : ""}${SITE.phoneDisplay} for last-minute tables & collections`,
     ];
     return bodies[v] + hashtags;
   }
 
   if (template === "offer") {
-    const title = offer?.title ?? "Special at Thai Courtyard";
-    const desc = offer?.description ?? (customLine ? "" : "Ask us about our current specials — fresh dishes and great value, changing regularly.");
+    const title = offer?.title ?? "A little extra from us";
+    const desc = offer?.description ?? (customLine ? "" : "Fresh specials, generous portions — something new to try, same family kitchen, same wok heat.");
     const offerCta = offer ? `${offer.ctaText} → ${offer.ctaLink}` : ctaLine;
     const bodies = [
-      `${intro.offer[v]}\n\n${title}${desc ? ` — ${desc}` : ""}${custom}\n\n${offer ? offerCta : ctaLine}\n${emoji ? "📍 " : ""}${addressLine()}`,
-      `${title} ${emoji ? "— don't miss it" : ""}\n\n${desc}${custom}\n\n${offer ? offerCta : ctaLine}`,
-      `${intro.offer[v]} — ${title}\n${desc}${custom}\n\n${offer ? offerCta : ctaLine}\n${emoji ? "🕛 " : ""}${SITE.hoursSummary}`,
+      `${intro.offer[v]}\n\n${title}${desc ? ` — ${desc}` : ""}${custom}\n\n${offer ? offerCta : ctaLine}\n${emoji ? "📍 " : ""}${addressLine()} · ${SITE.hoursSummary}`,
+      `${title} — on now at Thai Courtyard ${emoji ? "✨" : ""}\n\n${desc}${custom}\n\n${offer ? offerCta : ctaLine}\n${emoji ? "⏳ " : ""}While it lasts — collection & dine-in.`,
+      `${intro.offer[v]}: ${title}\n${desc}${custom}\n\n${offer ? offerCta : ctaLine}\n${emoji ? "💛 " : ""}Family-run in Molesey — thank you for supporting local.`,
     ];
     return bodies[v] + hashtags;
   }
@@ -440,11 +439,16 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
                 </label>
               </div>
 
-              <div className="adm-card overflow-hidden border-dashed">
-                <div className="p-3">
-                  <p className="flex items-center gap-2 text-sm font-semibold"><Upload className="h-4 w-4" /> Photo for Publish <span className="text-xs font-normal text-black/45">(needed for Instagram auto-share)</span></p>
-                  <p className="mt-1 text-xs leading-5 text-black/55">Add a photo here — Facebook image posts auto-share to Instagram if your Page toggle is on. Without a photo, the post is text-only and won’t cross-post to IG.</p>
-                  <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onPublishImage} className="adm-input mt-2" />
+              <div className="adm-card overflow-hidden border-dashed bg-white">
+                <div className="p-4">
+                  <p className="flex items-center gap-2 text-sm font-semibold"><Upload className="h-4 w-4 text-gold-deep" /> Post image <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900">Required for Instagram</span></p>
+                  <p className="mt-1 text-xs leading-5 text-black/55">Upload a dish or dining-room photo — it appears in the previews on the right and will publish as a Facebook photo (auto-shares to Instagram). 1080×1080 square is perfect for IG, 4:3 also works for Facebook. Max 4 MB.</p>
+                  <label className="mt-3 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-black/10 bg-cream px-4 py-6 text-center transition hover:border-gold/40 hover:bg-gold/5">
+                    <Camera className="h-6 w-6 text-black/30" />
+                    <span className="text-sm font-medium text-charcoal">Click to upload or drag & drop</span>
+                    <span className="text-xs text-black/45">PNG, JPEG or WebP</span>
+                    <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onPublishImage} className="hidden" />
+                  </label>
                   {publishImage ? (
                     <div className="mt-3 flex items-center gap-3">
                       <img src={publishImage} alt="Publish preview" className="h-16 w-24 rounded-lg object-cover ring-1 ring-black/10" />
@@ -509,6 +513,11 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
                       <CopyButton text={text} />
                     </div>
                   </div>
+                  {publishImage ? (
+                    <img src={publishImage} alt="Post preview" className="mt-3 aspect-[4/3] w-full rounded-xl object-cover ring-1 ring-black/10" />
+                  ) : (
+                    <div className="mt-3 grid h-24 place-items-center rounded-xl bg-cream-dark text-xs text-black/40 ring-1 ring-black/5">No photo — adds as text-only Facebook post (won’t auto-share to IG)</div>
+                  )}
                   <pre className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-cream p-3 text-sm leading-6 text-charcoal ring-1 ring-black/5">
                     {text}
                   </pre>
@@ -538,6 +547,11 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
                       <CopyButton text={text} />
                     </div>
                   </div>
+                  {publishImage ? (
+                    <img src={publishImage} alt="Post preview" className="mt-3 aspect-square w-full rounded-xl object-cover ring-1 ring-black/10" />
+                  ) : (
+                    <div className="mt-3 grid h-24 place-items-center rounded-xl bg-cream-dark text-xs text-black/40 ring-1 ring-black/5">No photo — add one in “Photo for Publish” to preview</div>
+                  )}
                   <pre className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-cream p-3 text-sm leading-6 text-charcoal ring-1 ring-black/5">
                     {text}
                   </pre>
