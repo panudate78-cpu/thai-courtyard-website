@@ -4,7 +4,7 @@ import { SocialStudio } from "@/components/admin/SocialStudio";
 import { getMenu } from "@/lib/menu";
 import { getOffers } from "@/lib/offers";
 
-export const metadata: Metadata = { title: "Social Studio · Instagram & Facebook" };
+export const metadata: Metadata = { title: "Social Studio · Facebook first" };
 export const dynamic = "force-dynamic";
 
 export default async function SocialPage() {
@@ -48,7 +48,7 @@ export default async function SocialPage() {
       <PageIntro
         eyebrow="Business"
         title="Social Studio"
-        description="Generate ready-to-paste Instagram & Facebook captions from your live menu and offers. Text-only — add your photo in Instagram/Facebook and post. No AI key needed."
+        description="Generate ready-to-paste Facebook captions from your live menu and offers — auto-shares to Instagram when your Page is linked. Text-only — add your photo and publish to Facebook."
       />
       <SocialStudio dishes={dishes} offers={offersForStudio} />
     </div>

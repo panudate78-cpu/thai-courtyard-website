@@ -321,7 +321,7 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
             <h2 className="flex items-center gap-2 font-semibold">
               <Wand2 className="h-4 w-4 text-gold-deep" /> Generator
             </h2>
-            <p className="mt-1 text-xs leading-5 text-black/60">Templates + your live menu. Text-only, ready to paste into Instagram & Facebook.</p>
+            <p className="mt-1 text-xs leading-5 text-black/60">Templates + your live menu. Text-only, ready to paste into <strong className="font-semibold text-charcoal">Facebook</strong> — auto-shares to Instagram when your Page is linked.</p>
 
             <div className="mt-4 space-y-4">
               <div>
@@ -459,10 +459,9 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
               </div>
 
               <div className="rounded-xl bg-cream-dark p-3 text-xs leading-5 text-black/60 ring-1 ring-black/5">
-                <p className="font-semibold text-charcoal">Tip</p>
+                <p className="font-semibold text-charcoal">Facebook first</p>
                 <p className="mt-1">
-                  Instagram links aren’t clickable in captions — we output <span className="font-medium">“link in bio”</span>. Facebook gets a full clickable URL (
-                  <span className="font-mono text-[11px]">{SITE.url}/order</span>). Copy, paste, add your photo and post.
+                  Facebook links are clickable (<span className="font-mono text-[11px]">{SITE.url}/order</span>) and <span className="font-medium">image posts auto-share to Instagram</span> when your Page is linked in Meta Business Suite. Instagram alone shows “link in bio” — paste to Facebook and it covers both.
                 </p>
               </div>
             </div>
@@ -487,15 +486,44 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
           </div>
         </div>
 
-        {/* Previews */}
+        {/* Previews — Facebook first */}
         <div className="space-y-5">
-          {/* Instagram */}
-          <section className="adm-card overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b border-black/5 bg-gradient-to-r from-fuchsia-50 to-amber-50 px-4 py-3">
+          {/* Facebook — dominant */}
+          <section className="adm-card overflow-hidden ring-2 ring-[#1877F2]/10">
+            <div className="flex items-center justify-between gap-3 border-b border-black/5 bg-[#1877F2]/10 px-4 py-3">
               <h3 className="flex items-center gap-2 text-sm font-semibold">
-                <Camera className="h-4 w-4 text-pink-600" /> Instagram — 3 ready-to-copy captions
+                <MessageCircle className="h-4 w-4 text-[#1877F2]" /> Facebook — 3 ready-to-copy captions · clickable link
               </h3>
-              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-black/60 ring-1 ring-black/10">2200 char limit</span>
+              <span className="rounded-full bg-[#1877F2] px-2.5 py-1 text-xs font-bold text-white">Primary</span>
+            </div>
+            <div className="grid gap-4 p-4">
+              {facebook.map((text, i) => (
+                <div key={i} className="rounded-2xl border border-black/10 bg-white p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs font-bold tracking-wide text-black/50 uppercase">Variant {String.fromCharCode(65 + i)} · {text.length} chars</p>
+                    <div className="flex items-center gap-2">
+                      <button type="button" onClick={() => publish(text, 100 + i)} disabled={publishing !== null} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${publishImage ? "bg-[#1877F2] text-white hover:bg-[#166fe5]" : "bg-charcoal text-cream hover:bg-black"} disabled:opacity-50`}>
+                        {publishing === 100 + i ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        {publishImage ? "Publish + IG" : "Publish to Facebook"}
+                      </button>
+                      <CopyButton text={text} />
+                    </div>
+                  </div>
+                  <pre className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-cream p-3 text-sm leading-6 text-charcoal ring-1 ring-black/5">
+                    {text}
+                  </pre>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Instagram — secondary, auto-shared from Facebook */}
+          <section className="adm-card overflow-hidden opacity-[0.96]">
+            <div className="flex items-center justify-between gap-3 border-b border-black/5 bg-gradient-to-r from-fuchsia-50/60 to-amber-50/60 px-4 py-3">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-black/70">
+                <Camera className="h-4 w-4 text-pink-600" /> Instagram — auto-shared from Facebook
+              </h3>
+              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-black/60 ring-1 ring-black/10">via Facebook · link in bio</span>
             </div>
             <div className="grid gap-4 p-4">
               {insta.map((text, i) => (
@@ -503,9 +531,9 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-xs font-bold tracking-wide text-black/50 uppercase">Variant {String.fromCharCode(65 + i)} · {text.length} chars</p>
                     <div className="flex items-center gap-2">
-                      <button type="button" onClick={() => publish(text, i)} disabled={publishing !== null} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${publishImage ? "bg-pink-600 text-white hover:bg-pink-700" : "bg-charcoal text-cream hover:bg-black"} disabled:opacity-50`}>
+                      <button type="button" onClick={() => publish(text, i)} disabled={publishing !== null} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${publishImage ? "bg-pink-600 text-white hover:bg-pink-700" : "bg-black/10 text-black/60 hover:bg-black/15"} disabled:opacity-50`} title={publishImage ? "Publishes to Facebook and auto-shares to Instagram" : "Publishes to Facebook (text-only — won’t auto-share to IG without a photo)"}>
                         {publishing === i ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                        {publishImage ? "Publish + IG" : "Publish"}
+                        Publish
                       </button>
                       <CopyButton text={text} />
                     </div>
@@ -536,37 +564,8 @@ export function SocialStudio({ dishes, offers }: { dishes: SocialDish[]; offers:
             </div>
           </section>
 
-          {/* Facebook */}
-          <section className="adm-card overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b border-black/5 bg-[#1877F2]/5 px-4 py-3">
-              <h3 className="flex items-center gap-2 text-sm font-semibold">
-                <MessageCircle className="h-4 w-4 text-[#1877F2]" /> Facebook — same story, clickable link
-              </h3>
-              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-black/60 ring-1 ring-black/10">Link is clickable</span>
-            </div>
-            <div className="grid gap-4 p-4">
-              {facebook.map((text, i) => (
-                <div key={i} className="rounded-2xl border border-black/10 bg-white p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs font-bold tracking-wide text-black/50 uppercase">Variant {String.fromCharCode(65 + i)} · {text.length} chars</p>
-                    <div className="flex items-center gap-2">
-                      <button type="button" onClick={() => publish(text, 100 + i)} disabled={publishing !== null} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${publishImage ? "bg-[#1877F2] text-white hover:bg-[#166fe5]" : "bg-charcoal text-cream hover:bg-black"} disabled:opacity-50`}>
-                        {publishing === 100 + i ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                        {publishImage ? "Publish + IG" : "Publish (text)"}
-                      </button>
-                      <CopyButton text={text} />
-                    </div>
-                  </div>
-                  <pre className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-xl bg-cream p-3 text-sm leading-6 text-charcoal ring-1 ring-black/5">
-                    {text}
-                  </pre>
-                </div>
-              ))}
-            </div>
-          </section>
-
           <div className="flex items-center gap-2 text-xs text-black/45">
-            <Sparkles className="h-3.5 w-3.5" /> Templates + your live menu & offers. Add your photo in Instagram/Facebook — text is ready.
+            <Sparkles className="h-3.5 w-3.5" /> Facebook is primary — add your photo and hit Publish to Facebook. Instagram gets the image post automatically when your Page’s “Auto-share to Instagram” is on.
           </div>
         </div>
       </div>
