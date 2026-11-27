@@ -89,7 +89,7 @@ export default async function OrderPage({ searchParams }: { searchParams: Promis
           </ul>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
             <DeliverooButton className="px-5 py-2.5" />
-            <span className="text-sm text-cream/60">Prefer delivery? We&apos;re on Deliveroo for Hampton Court & Molesey.</span>
+            <span className="text-sm text-cream/60">Prefer delivery? We&apos;re on Deliveroo — delivery area and fee set by Deliveroo; enter your postcode to check.</span>
           </div>
         </div>
       </section>
