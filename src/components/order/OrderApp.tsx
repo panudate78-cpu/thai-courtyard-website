@@ -74,7 +74,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
 
   const [basket, setBasket] = useState<BasketLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<number | "all">("all");
+  const [activeCategory, setActiveCategory] = useState<number>(() => categories[0]?.id ?? 0);
   const [veggieOnly, setVeggieOnly] = useState(false);
   const [query, setQuery] = useState("");
   const [dialogItem, setDialogItem] = useState<MenuItem | null>(() => {
@@ -105,6 +105,12 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
     }
     setHydrated(true);
   }, [itemsById]);
+
+  // Keep selected category valid if menu changes; default to first category (no "All" view).
+  useEffect(() => {
+    if (!categories.length) return;
+    if (!categories.some((c) => c.id === activeCategory)) setActiveCategory(categories[0].id);
+  }, [categories, activeCategory]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -195,8 +201,10 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
   }, [basket]);
 
   const q = query.trim().toLowerCase();
-  const visibleCategories = categories
-    .filter((c) => activeCategory === "all" || c.id === activeCategory)
+  // Without the "All dishes" tab the left pane is one category at a time; when searching,
+  // show matches across all categories so search still feels global.
+  const baseCategories = q ? categories : categories.filter((c) => c.id === activeCategory);
+  const visibleCategories = baseCategories
     .map((c) => ({
       ...c,
       items: c.items.filter(
@@ -290,14 +298,6 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
             />
           </div>
           <div className="mt-2.5 flex flex-wrap gap-1.5" role="group" aria-label="Filter by category">
-            <button
-              type="button"
-              onClick={() => setActiveCategory("all")}
-              aria-pressed={activeCategory === "all"}
-              className={`chip ${activeCategory === "all" ? "chip-active" : ""}`}
-            >
-              All dishes
-            </button>
             {categories.map((c) => (
               <button
                 key={c.id}
@@ -335,7 +335,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
               type="button"
               onClick={() => {
                 setQuery("");
-                setActiveCategory("all");
+                setActiveCategory(categories[0]?.id ?? 0);
                 setVeggieOnly(false);
               }}
               className="mt-3 font-semibold text-teak underline"
@@ -363,7 +363,7 @@ export function OrderApp({ categories, initialDays, slotConfig, orderingEnabled,
       </div>
 
       <aside className="hidden lg:block" aria-label="Your basket">
-        <div className="sticky top-24 mt-4 rounded-3xl bg-white shadow-xl ring-1 shadow-teak/5 ring-teak/10">
+        <div className="sticky top-24 mt-4 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain rounded-3xl bg-white shadow-xl ring-1 shadow-teak/5 ring-teak/10 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-sand">
           <BasketPanel {...panelProps} idPrefix="desktop" showTitle />
         </div>
       </aside>
